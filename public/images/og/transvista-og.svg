@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">TransVista Africa Open Graph Image</title>
+  <desc id="desc">A modern branded preview card for TransVista Africa.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="52%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#0ea5e9" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" rx="28" />
+  <circle cx="1040" cy="110" r="130" fill="rgba(255,255,255,0.08)" />
+  <circle cx="980" cy="520" r="170" fill="rgba(251,146,60,0.16)" />
+  <g fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2">
+    <path d="M80 470 C 230 340, 360 340, 490 470" />
+    <path d="M600 500 C 720 360, 850 360, 980 500" />
+  </g>
+  <g>
+    <rect x="84" y="84" width="260" height="72" rx="18" fill="rgba(255,255,255,0.12)" />
+    <text x="112" y="128" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#ffffff" font-weight="700">
+      TransVista Africa
+    </text>
+  </g>
+  <text x="84" y="250" font-family="Arial, Helvetica, sans-serif" font-size="68" fill="#ffffff" font-weight="700">
+    Discover Ghana
+  </text>
+  <text x="84" y="324" font-family="Arial, Helvetica, sans-serif" font-size="68" fill="#ffffff" font-weight="700">
+    Through Trusted Travel
+  </text>
+  <text x="84" y="390" font-family="Arial, Helvetica, sans-serif" font-size="68" fill="#ffffff" font-weight="700">
+    Experiences
+  </text>
+  <text x="84" y="468" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="rgba(255,255,255,0.84)">
+    Trusted transport, curated experiences, and seamless trip planning.
+  </text>
+  <rect x="84" y="512" width="226" height="54" rx="27" fill="url(#accent)" />
+  <text x="115" y="547" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#ffffff" font-weight="700">
+    Join the Waitlist
+  </text>
+</svg>

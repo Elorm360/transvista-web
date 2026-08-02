@@ -5,7 +5,7 @@ export function Logo() {
   return (
     <Link
       href="/"
-      className="flex items-center"
+      className="flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
       aria-label="TransVista Africa Home"
     >
       <Image
@@ -13,7 +13,7 @@ export function Logo() {
         alt="TransVista Africa"
         width={180}
         height={60}
-        priority
+        sizes="180px"
       />
     </Link>
   );

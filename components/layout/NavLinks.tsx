@@ -11,7 +11,7 @@ export function NavLinks() {
         <Link
           key={item.label}
           href={item.href}
-          className="text-sm font-medium text-slate-700 transition-colors hover:text-blue-700"
+          className="rounded-full text-sm font-medium text-slate-700 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
         >
           {item.label}
         </Link>
