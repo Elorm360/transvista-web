@@ -8,11 +8,15 @@ export const navigation = [
     href: "#experiences",
   },
   {
-    label: "About",
-    href: "#about",
+    label: "Explore Ghana",
+    href: "#explore-by-experience",
+  },
+  {
+    label: "How It Works",
+    href: "#how-it-works",
   },
   {
     label: "Partners",
-    href: "#partners",
+    href: "#ecosystem",
   },
 ] as const;

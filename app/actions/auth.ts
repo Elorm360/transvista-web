@@ -11,11 +11,6 @@ export interface SignInState {
   failed: boolean;
 }
 
-const initialState: SignInState = {
-  error: null,
-  failed: false,
-};
-
 /**
  * signIn
  *

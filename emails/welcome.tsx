@@ -65,12 +65,12 @@ export default function WelcomeEmail({
           </Text>
 
           <Text style={paragraph}>
-            You're now one of our earliest community members, helping us
-            build Africa's trusted digital travel ecosystem.
+            You&apos;re now one of our earliest community members, helping us
+            build Africa&apos;s trusted digital travel ecosystem.
           </Text>
 
           <Text style={paragraph}>
-            We'll keep you updated with:
+            We&apos;ll keep you updated with:
           </Text>
 
           <Text style={listItem}>

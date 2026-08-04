@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ShieldAlert, Home } from "lucide-react";
+import { Logo } from "@/components/layout/Logo";
 
 /**
  * Unauthorized
@@ -13,20 +13,7 @@ export default function UnauthorizedPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12">
       {/* Brand */}
       <div className="mb-8 text-center">
-        <Link
-          href="/"
-          className="inline-block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
-          aria-label="TransVista Africa Home"
-        >
-          <Image
-            src="/images/TransVista logo.jpeg"
-            alt="TransVista Africa"
-            width={180}
-            height={60}
-            sizes="180px"
-            className="h-auto w-auto"
-          />
-        </Link>
+        <Logo width={80} height={80} className="justify-center" imageClassName="h-20 w-auto" />
       </div>
 
       {/* Card */}
@@ -61,4 +48,3 @@ export default function UnauthorizedPage() {
     </main>
   );
 }
-

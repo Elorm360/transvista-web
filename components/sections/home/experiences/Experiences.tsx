@@ -23,6 +23,7 @@ export function Experiences() {
               title={experience.title}
               category={experience.category}
               location={experience.location}
+              image={experience.image}
             />
           ))}
         </div>
@@ -30,4 +31,3 @@ export function Experiences() {
     </Section>
   );
 }
-

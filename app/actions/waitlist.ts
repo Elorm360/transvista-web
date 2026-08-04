@@ -34,26 +34,30 @@ export async function joinWaitlist(data: {
   country: string;
   interest: string;
 }) {
+  const fullName = data.fullName.trim();
+  const normalizedEmail = data.email.trim().toLowerCase();
+  const phone = data.phone?.trim() || null;
+  const country = data.country.trim();
+  const interest = data.interest.trim();
+
   /* ── Server-side validation (never trust client input) ── */
-  if (!data.fullName.trim()) {
+  if (!fullName) {
     throw new Error("Full name is required.");
   }
 
-  if (!data.email.trim()) {
+  if (!normalizedEmail) {
     throw new Error("Email is required.");
   }
-
-  const normalizedEmail = data.email.trim().toLowerCase();
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
     throw new Error("Please enter a valid email address.");
   }
 
-  if (!data.country) {
+  if (!country) {
     throw new Error("Country is required.");
   }
 
-  if (!data.interest) {
+  if (!interest) {
     throw new Error("Interest is required.");
   }
 
@@ -78,11 +82,11 @@ export async function joinWaitlist(data: {
 
   /* ── Step 2: Insert into Supabase ── */
   const { error } = await supabase.from("leads").insert({
-    full_name: data.fullName,
+    full_name: fullName,
     email: normalizedEmail,
-    phone: data.phone || null,
-    country: data.country,
-    interest: data.interest,
+    phone,
+    country,
+    interest,
   });
 
   if (error) {
@@ -92,7 +96,7 @@ export async function joinWaitlist(data: {
   /* ── Step 2: Send welcome email (graceful failure) ── */
   let emailSent = false;
   try {
-    await sendWelcomeEmail(data.fullName, data.email);
+    await sendWelcomeEmail(fullName, normalizedEmail);
     emailSent = true;
   } catch (emailError) {
     console.error("[joinWaitlist] Failed to send welcome email:", {
@@ -105,8 +109,8 @@ export async function joinWaitlist(data: {
             }
           : emailError,
       lead: {
-        email: data.email,
-        fullName: data.fullName,
+        email: normalizedEmail,
+        fullName,
       },
     });
   }
@@ -115,11 +119,11 @@ export async function joinWaitlist(data: {
   let adminNotified = false;
   try {
     await sendAdminNotification({
-      fullName: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      country: data.country,
-      interest: data.interest,
+      fullName,
+      email: normalizedEmail,
+      phone: phone ?? undefined,
+      country,
+      interest,
     });
     adminNotified = true;
   } catch (notificationError) {
@@ -133,8 +137,8 @@ export async function joinWaitlist(data: {
             }
           : notificationError,
       lead: {
-        email: data.email,
-        fullName: data.fullName,
+        email: normalizedEmail,
+        fullName,
       },
     });
   }

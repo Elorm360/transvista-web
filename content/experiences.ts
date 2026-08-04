@@ -4,6 +4,7 @@ export interface Experience {
   title: string;
   category: string;
   location: string;
+  image: string;
 }
 
 export interface ExperiencesContent {
@@ -28,6 +29,7 @@ export const experiencesContent = {
       title: "Cape Coast Heritage",
       category: "History & Culture",
       location: "Central Region",
+      image: "/images/experiences/cape-coast-heritage.jpg",
     },
     {
       id: "mole",
@@ -35,6 +37,7 @@ export const experiencesContent = {
       title: "Mole National Park",
       category: "Wildlife",
       location: "Savannah Region",
+      image: "/images/experiences/mole-national-park.jpg",
     },
     {
       id: "wli",
@@ -42,6 +45,7 @@ export const experiencesContent = {
       title: "Wli Waterfalls",
       category: "Nature",
       location: "Volta Region",
+      image: "/images/experiences/wli-waterfalls.jpg",
     },
   ],
 } as const;

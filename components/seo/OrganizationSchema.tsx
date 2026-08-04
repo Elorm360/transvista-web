@@ -23,7 +23,7 @@ export function OrganizationSchema() {
 
     url: seoConfig.url,
 
-    logo: `${seoConfig.url}/images/TransVista logo.jpeg`,
+    logo: `${seoConfig.url}/images/transvista-logo.svg`,
 
     description: seoConfig.description,
 

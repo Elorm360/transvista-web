@@ -98,9 +98,17 @@ export function WaitlistForm() {
     setSubmitSuccess(false);
 
     try {
-      const result = await joinWaitlist(form);
+      const result = await joinWaitlist({
+        ...form,
+        fullName: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        country: form.country.trim(),
+        interest: form.interest.trim(),
+      });
 
       setSubmitSuccess(true);
+      setSubmitError("");
       setEmailSent(result.emailSent);
 
       setForm({
@@ -128,7 +136,10 @@ export function WaitlistForm() {
     <>
       {/* Success Message */}
       {submitSuccess && (
-        <div className="mx-auto mt-8 w-full max-w-md rounded-xl border border-green-200 bg-green-50 p-6">
+        <div
+          aria-live="polite"
+          className="mx-auto mt-8 w-full max-w-md rounded-xl border border-green-200 bg-green-50 p-6"
+        >
           <div className="flex flex-col items-center text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
               <CheckCircle2 className="h-8 w-8 text-green-600" aria-hidden="true" />
@@ -153,7 +164,10 @@ export function WaitlistForm() {
 
       {/* Error Message */}
       {submitError && (
-        <div className="mx-auto mt-8 w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-4">
+        <div
+          aria-live="polite"
+          className="mx-auto mt-8 w-full max-w-md rounded-xl border border-red-200 bg-red-50 p-4"
+        >
           <p className="whitespace-pre-line text-sm text-red-800">
             {submitError}
           </p>

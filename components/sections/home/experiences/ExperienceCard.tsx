@@ -1,7 +1,10 @@
+import Image from "next/image";
+
 interface ExperienceCardProps {
   title: string;
   category: string;
   location: string;
+  image: string;
 }
 
 /**
@@ -13,37 +16,37 @@ interface ExperienceCardProps {
  * title, location, and an inviting "Explore" action. Whitespace and
  * typographic hierarchy do the heavy lifting.
  *
- * @todo — Add an `image: string` prop when original photography is introduced.
  * @todo — Wire "Explore" to `/experiences/${slug}` when routing exists.
  */
 export function ExperienceCard({
   title,
   category,
   location,
+  image,
 }: ExperienceCardProps) {
   return (
     <article className="group rounded-[28px] border border-slate-200 bg-white p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl">
-      {/* Photography placeholder — reserved for original content */}
+      {/* Destination image with gradient overlay */}
       <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-slate-100">
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="h-10 w-10 rounded-full border border-slate-300" />
+        <Image
+          src={image}
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+        />
 
-          <p className="mt-4 text-xs uppercase tracking-[0.25em] text-slate-400">
-            Original Photography
-          </p>
+        {/* Gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-          <p className="mt-2 text-sm text-slate-500">
-            Coming Soon
-          </p>
+        {/* Category pill */}
+        <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 shadow-lg backdrop-blur-sm">
+          {category}
         </div>
       </div>
 
       <div className="pt-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-700">
-          {category}
-        </p>
-
-        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
+        <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
           {title}
         </h3>
 

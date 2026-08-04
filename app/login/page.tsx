@@ -1,10 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import { signIn, type SignInState } from "@/app/actions/auth";
+import { Logo } from "@/components/layout/Logo";
 
 const initialState: SignInState = {
   error: null,
@@ -21,20 +20,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12">
       {/* Brand */}
       <div className="mb-8 text-center">
-        <Link
-          href="/"
-          className="inline-block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
-          aria-label="TransVista Africa Home"
-        >
-          <Image
-            src="/images/TransVista logo.jpeg"
-            alt="TransVista Africa"
-            width={180}
-            height={60}
-            sizes="180px"
-            className="h-auto w-auto"
-          />
-        </Link>
+        <Logo width={80} height={80} className="justify-center" imageClassName="h-20 w-auto" />
         <h1 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
           Sign in to your Admin Dashboard
         </h1>

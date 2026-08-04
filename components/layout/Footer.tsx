@@ -13,8 +13,6 @@ import { footerContent } from "@/content/footer";
  * Only subtle link color transitions — no bouncing, rotating, or flashy animations.
  */
 export function Footer() {
-  const year = new Date().getFullYear();
-
   return (
     <footer className="bg-slate-900 pt-20 text-slate-300 lg:pt-28">
       <Container>
@@ -22,7 +20,7 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1 — Brand */}
           <div>
-            <Logo />
+            <Logo width={40} height={40} className="shrink-0" imageClassName="h-[40px] w-auto" />
 
             <p className="mt-4 text-lg font-semibold text-white">
               {footerContent.brand.tagline}
@@ -159,4 +157,3 @@ export function Footer() {
     </footer>
   );
 }
-

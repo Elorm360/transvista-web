@@ -8,7 +8,7 @@ import { HeroVisual } from "./HeroVisual";
 
 export function Hero() {
   return (
-    <Section className="overflow-hidden pt-20 pb-16 lg:pt-28 lg:pb-24">
+    <Section id="discover" className="overflow-hidden pt-20 pb-16 lg:pt-28 lg:pb-24">
       <Container>
         <div className="grid items-center gap-20 lg:grid-cols-[45%_55%]">
           <div>
