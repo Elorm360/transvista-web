@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { Reveal } from "@/components/motion/Reveal";
 import { ValueCard } from "./ValueCard";
 
 import { featureIcons } from "@/lib/icons";
@@ -10,21 +11,24 @@ export function WhyTransVista() {
   return (
     <Section id="why-transvista">
       <Container>
-        <SectionHeader
-          badge={whyTransVistaContent.badge}
-          title={whyTransVistaContent.title}
-          description={whyTransVistaContent.description}
-          align="center"
-        />
+        <Reveal>
+          <SectionHeader
+            badge={whyTransVistaContent.badge}
+            title={whyTransVistaContent.title}
+            description={whyTransVistaContent.description}
+            align="center"
+          />
+        </Reveal>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {whyTransVistaContent.cards.map((card) => (
-            <ValueCard
-              key={card.title}
-              title={card.title}
-              description={card.description}
-              icon={featureIcons[card.icon]}
-            />
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {whyTransVistaContent.cards.map((card, i) => (
+            <Reveal key={card.title} delay={i * 80}>
+              <ValueCard
+                title={card.title}
+                description={card.description}
+                icon={featureIcons[card.icon]}
+              />
+            </Reveal>
           ))}
         </div>
       </Container>

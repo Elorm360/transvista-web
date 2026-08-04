@@ -1,37 +1,65 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 
 export function HeroVisual() {
-  return (
-    <div className="relative h-[420px] overflow-hidden rounded-[32px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50 shadow-[0_25px_80px_-30px_rgba(15,23,42,0.35)] lg:h-[560px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.18),transparent_32%)]" />
+  const imageRef = useRef<HTMLDivElement>(null);
 
-      <div className="absolute inset-0 overflow-hidden">
+  useEffect(() => {
+    const node = imageRef.current;
+    if (!node) return;
+
+    let raf = 0;
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const rect = node.getBoundingClientRect();
+        const offset = (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.04;
+        node.style.transform = `translate3d(0, ${offset}px, 0) scale(1.06)`;
+      });
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  return (
+    <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-amber-50 shadow-[0_25px_70px_-30px_rgba(15,23,42,0.3)] lg:h-[500px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,164,96,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(15,76,129,0.12),transparent_32%)]" />
+
+      <div ref={imageRef} className="absolute inset-0 overflow-hidden will-change-transform">
         <Image
           src="/images/hero/hero.jpeg"
           alt="Traveler exploring Ghana with TransVista Africa"
           fill
-          sizes="(max-width: 1024px) 100vw, 55vw"
-          className="object-cover transition-transform duration-700 hover:scale-105"
+          sizes="(max-width: 1024px) 100vw, 52vw"
+          className="object-cover"
           priority
         />
       </div>
 
-      <div className="absolute left-6 top-6 rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-lg backdrop-blur-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+      <div className="absolute left-5 top-5 rounded-xl border border-white/70 bg-white/85 px-3.5 py-2.5 shadow-lg backdrop-blur-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700">
           Ghana
         </p>
-        <p className="mt-1 text-sm font-semibold text-slate-900">
+        <p className="mt-0.5 text-sm font-semibold text-slate-900">
           Trusted journeys, expertly planned
         </p>
       </div>
 
-      <div className="absolute right-6 top-6 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
-        <p className="text-xs font-medium text-slate-500">Live routes</p>
-        <p className="mt-1 text-lg font-bold text-slate-900">12+ curated</p>
+      <div className="absolute right-5 top-5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-lg">
+        <p className="text-[11px] font-medium text-slate-500">Live routes</p>
+        <p className="mt-0.5 text-lg font-bold text-slate-900">12+ curated</p>
       </div>
 
-      <div className="absolute bottom-6 left-6 right-6 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white/85 px-4 py-3 shadow-lg backdrop-blur-sm">
-        <div className="h-10 w-10 rounded-full bg-blue-100" />
+      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-4 py-3 shadow-lg backdrop-blur-sm">
+        <div className="h-9 w-9 rounded-full bg-amber-100" />
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-900">Curated by local experts</p>
           <p className="text-xs text-slate-500">Transport, travel, and trust in one place</p>

@@ -1,6 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { Reveal } from "@/components/motion/Reveal";
 import { EcosystemCard } from "./EcosystemCard";
 
 import { ecosystemIcons } from "@/lib/icons";
@@ -8,34 +9,37 @@ import { ecosystemContent } from "@/content/ecosystem";
 
 export function Ecosystem() {
   return (
-    <Section id="ecosystem" className="bg-slate-50">
+    <Section id="ecosystem" className="bg-amber-50/40">
       <Container>
-        <SectionHeader
-          badge={ecosystemContent.badge}
-          title={ecosystemContent.title}
-          description={ecosystemContent.description}
-          align="center"
-        />
+        <Reveal>
+          <SectionHeader
+            badge={ecosystemContent.badge}
+            title={ecosystemContent.title}
+            description={ecosystemContent.description}
+            align="center"
+          />
+        </Reveal>
 
-        <div className="mt-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          {ecosystemContent.pillars.map((pillar) => (
-            <EcosystemCard
-              key={pillar.title}
-              title={pillar.title}
-              description={pillar.description}
-              icon={ecosystemIcons[pillar.icon]}
-            />
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {ecosystemContent.pillars.map((pillar, i) => (
+            <Reveal key={pillar.title} delay={i * 80}>
+              <EcosystemCard
+                title={pillar.title}
+                description={pillar.description}
+                icon={ecosystemIcons[pillar.icon]}
+              />
+            </Reveal>
           ))}
         </div>
 
-        <div className="mt-16 text-center">
+        <Reveal className="mt-12 text-center">
           <a
             href="#"
-            className="inline-flex items-center rounded-full font-semibold text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
+            className="inline-flex items-center rounded-full font-semibold text-amber-700 transition-colors hover:text-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
           >
             {ecosystemContent.cta.label} <span className="ml-1" aria-hidden="true">&rarr;</span>
           </a>
-        </div>
+        </Reveal>
       </Container>
     </Section>
   );

@@ -49,15 +49,15 @@ export function SectionHeader({
         className,
       )}
     >
-      <span className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">
+      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
         {badge}
       </span>
 
-      <h2 className="mt-4 text-4xl font-bold leading-tight tracking-tight text-slate-900 lg:text-5xl">
+      <h2 className="font-display mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
         {title}
       </h2>
 
-      <p className="mt-6 text-lg leading-8 text-slate-600">
+      <p className="mt-4 text-base leading-7 text-slate-600">
         {description}
       </p>
     </div>

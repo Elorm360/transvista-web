@@ -22,37 +22,37 @@
 
 export const spacing = {
   /** Standard section vertical padding */
-  section: "py-20 lg:py-28",
+  section: "py-14 lg:py-20",
 
   /** Compact section vertical padding */
-  sectionCompact: "py-16 lg:py-24",
+  sectionCompact: "py-12 lg:py-16",
 
   /** Container horizontal padding */
   container: "px-6 lg:px-8",
 
   /** Large grid gap (cards) */
-  gridGap: "gap-10",
+  gridGap: "gap-6 lg:gap-8",
 
   /** Medium grid gap */
-  gridGapSm: "gap-6",
+  gridGapSm: "gap-5",
 
   /** Section header → content */
-  headerToContent: "mt-16",
+  headerToContent: "mt-10 lg:mt-12",
 
   /** Badge → title */
-  badgeToTitle: "mt-4",
+  badgeToTitle: "mt-3",
 
   /** Title → description */
-  titleToDescription: "mt-6",
+  titleToDescription: "mt-4",
 
   /** Card content padding */
-  cardPadding: "p-8",
+  cardPadding: "p-6",
 
   /** Inner card text padding */
-  cardTextPadding: "pt-6",
+  cardTextPadding: "pt-5",
 
   /** Icon → card title */
-  iconToTitle: "mt-6",
+  iconToTitle: "mt-5",
 } as const;
 
 /* ── Border Radius ─────────────────────────────────────────── */
