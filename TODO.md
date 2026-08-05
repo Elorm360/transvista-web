@@ -9,3 +9,18 @@
 - [x] 6. ExperienceCard: remove backdrop-blur-sm from category pill
 - [x] 7. Run `npm run build` to verify no errors
 - [x] 8. Commit and push to trigger redeploy
+
+# TODO — Fix waitlist form scroll-jump on typing
+
+## Root cause
+The `Reveal` wrapper around the waitlist section permanently applied
+`will-change-transform` + a transform (`translate-x-0 translate-y-0`) on the
+revealed state. This compositing layer caused iOS Safari to re-anchor the
+scroll position whenever the form subtree re-rendered (every keystroke),
+jumping the page back to the waitlist.
+
+## Fix
+- [x] Only apply the transform + `will-change-transform` in the hidden state.
+      Once visible, the wrapper returns to a plain, un-transformed element so
+      typing in the form never triggers a scroll jump.
+- [x] Run `npm run build` to verify (passed cleanly).

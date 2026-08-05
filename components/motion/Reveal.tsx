@@ -18,6 +18,13 @@ type RevealProps = {
  * A lightweight scroll-reveal wrapper built on IntersectionObserver.
  * Fades + rises content into view the first time it enters the viewport.
  * No animation library required — keeps the bundle small and the feel bespoke.
+ *
+ * IMPORTANT (scroll-jump fix): once the element is revealed, we remove the
+ * transform and `will-change-transform` entirely. Keeping a permanent transform
+ * + compositing layer on the wrapper (which contains interactive forms like the
+ * waitlist) can trigger scroll-reanchoring jumps on iOS Safari whenever the
+ * subtree re-renders (e.g. on each keystroke). Only the hidden state carries the
+ * transform and will-change, so the entrance animation still works.
  */
 export function Reveal({
   children,
@@ -70,10 +77,10 @@ export function Reveal({
       ref={ref}
       style={{ transitionDelay: `${delay}ms` }}
       className={cn(
-        "transition-all duration-700 ease-out will-change-transform",
+        "transition-opacity duration-700 ease-out",
         visible
-          ? "translate-x-0 translate-y-0 opacity-100"
-          : cn("opacity-0", hiddenTransform),
+          ? "opacity-100"
+          : cn("opacity-0", hiddenTransform, "will-change-transform"),
         className,
       )}
     >
