@@ -33,3 +33,9 @@ Tighten, simplify, and elevate the landing page to a warm, premium, modern aesth
 - [x] 2. Update `content/footer.ts` social platform list to include TikTok
 - [x] 3. Replace text-based "Stay Connected" column with `react-icons/si` social icons in `components/layout/Footer.tsx`
 - [x] 4. Verify lint passes
+
+## Admin: Delete Member + Welcome Email Logo
+- [x] 1. Create `app/actions/community.ts` server action `deleteMember` with admin auth check
+- [x] 2. Add per-row action menu + confirmation dialog + detail view to `components/admin/CommunityTable.tsx`
+- [x] 3. Update `emails/welcome.tsx` logo `src` to production URL
+- [x] 4. Verify type check + lint pass

@@ -25,8 +25,7 @@ interface WelcomeEmailProps {
  * Designed to feel like an extension of the product — same tone, branding,
  * and professionalism as the website.
  *
- * @todo — Replace placeholder logo with the actual TransVista logo asset.
- * @todo — Add social links when available.
+* @todo — Add social links when available.
  */
 export default function WelcomeEmail({
   fullName,
@@ -38,11 +37,11 @@ export default function WelcomeEmail({
       <Preview>{previewText}</Preview>
 
       <Body style={main}>
-        <Container style={container}>
+<Container style={container}>
           {/* Logo */}
           <Section style={logoSection}>
             <Img
-              src="https://placehold.co/180x60?text=TransVista"
+              src="https://transvistaafrica.com/images/hero/transvista-logo.png"
               alt="TransVista Africa"
               width="180"
               height="60"
