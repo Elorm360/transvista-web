@@ -24,8 +24,11 @@ export interface WaitlistContent {
     body: string;
     emailNote: string;
   };
+  duplicate: {
+    heading: string;
+    body: string;
+  };
   error: {
-    duplicate: string;
     unknown: string;
   };
 }
@@ -72,9 +75,12 @@ export const waitlistContent: WaitlistContent = {
       "Your welcome email couldn't be delivered right now, but we've saved your details. We'll reach out soon!",
   },
 
+  duplicate: {
+    heading: "You're already on the list!",
+    body: "You're already part of the TransVista Community — thank you for joining us! 🎉\n\nIf you'd like to update any details, please use the same email address you originally signed up with so we can match your account. No need to sign up again.",
+  },
+
   error: {
-    duplicate:
-      "You're already part of the TransVista Community. Thank you for joining us!",
     unknown:
       "We couldn't complete your request at the moment.\n\nPlease try again in a few moments.",
   },

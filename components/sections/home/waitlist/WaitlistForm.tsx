@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { countries } from "@/constants/data/countries";
 import { interests } from "@/constants/data/interests";
@@ -13,10 +13,8 @@ import { joinWaitlist } from "@/app/actions/waitlist";
  *
  * Collects full name, email, phone, country, and interest.
  * Validates client-side, then submits via Server Action to Supabase.
- * Displays success confirmation or friendly error messages.
- *
- * @todo — Duplicate email handling (Milestone 5 continued).
- * Final UX polish (Milestone 6).
+ * Displays a friendly duplicate notice when the email is already on
+ * the waitlist, a success confirmation, or a friendly error message.
  */
 export function WaitlistForm() {
   const [form, setForm] = useState({
@@ -36,6 +34,7 @@ export function WaitlistForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const [emailSent, setEmailSent] = useState(true);
   const [submitError, setSubmitError] = useState("");
 
@@ -96,6 +95,7 @@ export function WaitlistForm() {
     setIsSubmitting(true);
     setSubmitError("");
     setSubmitSuccess(false);
+    setIsDuplicate(false);
 
     try {
       const result = await joinWaitlist({
@@ -123,7 +123,8 @@ export function WaitlistForm() {
         error instanceof Error ? error.message : "";
 
       if (message.toLowerCase().includes("duplicate")) {
-        setSubmitError(waitlistContent.error.duplicate);
+        setIsDuplicate(true);
+        setSubmitError("");
       } else {
         setSubmitError(waitlistContent.error.unknown);
       }
@@ -158,6 +159,32 @@ export function WaitlistForm() {
                 {waitlistContent.success.emailNote}
               </p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Already Joined Notice */}
+      {isDuplicate && (
+        <div
+          aria-live="polite"
+          className="mx-auto mt-8 w-full max-w-md rounded-xl border border-amber-200 bg-amber-50 p-6"
+        >
+          <div className="flex flex-col items-center text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+              <Heart
+                className="h-7 w-7 text-amber-600"
+                fill="currentColor"
+                aria-hidden="true"
+              />
+            </div>
+
+            <h3 className="mt-4 text-xl font-bold text-amber-900">
+              {waitlistContent.duplicate.heading}
+            </h3>
+
+            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-amber-800">
+              {waitlistContent.duplicate.body}
+            </p>
           </div>
         </div>
       )}
