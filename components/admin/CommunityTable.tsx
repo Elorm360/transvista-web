@@ -14,6 +14,7 @@ import {
   MapPin,
   User,
   Tag,
+  Download,
 } from "lucide-react";
 import InterestBadge from "@/components/admin/InterestBadge";
 import { deleteMember } from "@/app/actions/community";
@@ -35,6 +36,9 @@ interface CommunityTableProps {
  *   - View Details
  *   - Copy Email
  *   - Delete Member (with confirmation dialog)
+ *
+ * Toolbar also includes an Export CSV button that downloads the
+ * currently filtered set of members as a spreadsheet-ready file.
  *
  * Mobile-friendly: the table scrolls horizontally instead of squeezing.
  */
@@ -97,6 +101,53 @@ export default function CommunityTable({ members }: CommunityTableProps) {
     });
   }, [members, search, country, interest]);
 
+  /** Export the currently filtered members as a CSV file. */
+  function exportCsv() {
+    if (filtered.length === 0) {
+      setToast("Nothing to export — no members match the current filters.");
+      return;
+    }
+
+    const headers = ["Name", "Email", "Phone", "Country", "Interest", "Joined"];
+    const rows = filtered.map((member) => [
+      member.fullName,
+      member.email,
+      member.phone ?? "",
+      member.country,
+      member.interest,
+      formatDate(member.createdAt),
+    ]);
+
+    // Properly escape CSV fields (quotes, commas, newlines).
+    const escape = (value: string) => {
+      const needsQuoting = /[",\n\r]/.test(value);
+      const sanitized = value.replace(/"/g, '""');
+      return needsQuoting ? `"${sanitized}"` : sanitized;
+    };
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escape).join(","))
+      .join("\n");
+
+    const blob = new Blob([`\uFEFF${csv}`], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transvista-community-${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setToast(
+      `Exported ${filtered.length} member${filtered.length === 1 ? "" : "s"} to CSV.`,
+    );
+  }
+
   /** Copy a member's email address to the clipboard. */
   async function copyEmail(email: string) {
     try {
@@ -130,7 +181,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6">
-      {/* Toolbar: search + filters */}
+      {/* Toolbar: search + filters + export */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Search */}
         <div className="relative w-full lg:max-w-xs">
@@ -145,8 +196,8 @@ export default function CommunityTable({ members }: CommunityTableProps) {
           />
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        {/* Filters + Export */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
@@ -174,6 +225,17 @@ export default function CommunityTable({ members }: CommunityTableProps) {
               </option>
             ))}
           </select>
+
+          {/* Export CSV */}
+          <button
+            type="button"
+            onClick={exportCsv}
+            aria-label="Export members to CSV"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/20"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
         </div>
       </div>
 
@@ -435,7 +497,11 @@ function MemberDetailModal({
           <DetailRow icon={Phone} label="Phone" value={member.phone ?? "—"} />
           <DetailRow icon={MapPin} label="Country" value={member.country} />
           <DetailRow icon={Tag} label="Interest" value={member.interest} />
-          <DetailRow icon={CheckCircle2} label="Joined" value={formatDate(member.createdAt)} />
+          <DetailRow
+            icon={CheckCircle2}
+            label="Joined"
+            value={formatDate(member.createdAt)}
+          />
         </div>
 
         <div className="mt-6 flex justify-end">

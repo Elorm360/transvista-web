@@ -44,7 +44,7 @@ export const seoConfig: SeoConfig = {
     "Travel experiences Ghana",
   ],
 
-  openGraphImage: "/images/og/transvista-og.svg",
+  openGraphImage: "/images/og/transvista-og.png",
 
   twitterHandle: "@transvistaafrica",
 };
