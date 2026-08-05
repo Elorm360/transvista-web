@@ -25,9 +25,12 @@ export function ExperienceCard({
   image,
 }: ExperienceCardProps) {
   return (
-<article className="group relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-amber-200 hover:shadow-[0_24px_55px_-24px_rgba(180,83,9,0.2)]">
+    <article className="group relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-amber-200 hover:shadow-[0_24px_55px_-24px_rgba(180,83,9,0.2)]">
       {/* top highlight edge */}
-      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      />
       {/* Destination image with gradient overlay */}
       <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-slate-100">
         <Image
@@ -59,7 +62,10 @@ export function ExperienceCard({
         <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-amber-700 transition-colors focus-visible:outline-none group-hover:text-amber-800">
           Explore
 
-          <span className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">
+          <span
+            className="transition-transform duration-300 group-hover:translate-x-1"
+            aria-hidden="true"
+          >
             →
           </span>
         </div>
@@ -67,4 +73,3 @@ export function ExperienceCard({
     </article>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type MagneticButtonProps = {
@@ -24,13 +24,17 @@ export function MagneticButton({ children, className }: MagneticButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
 
-  // Detect hover capability on mount (client only).
-  const [hoverReady] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return (
-      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
+  // Detect hover capability. Starts false on both server + first client
+  // render (so hydration HTML matches), then resolves to the real value in
+  // useEffect after mount. This avoids a hydration mismatch caused by
+  // matchMedia returning a different value on the client than the server.
+  const [hoverReady, setHoverReady] = useState(false);
+
+  useEffect(() => {
+    setHoverReady(
+      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false,
     );
-  });
+  }, []);
 
   const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!hoverReady) return;

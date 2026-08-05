@@ -21,7 +21,7 @@ export function Navbar() {
   }, []);
 
   return (
-<header
+    <header
       className={cn(
         "sticky top-0 z-50 border-b transition-all duration-300",
         scrolled
@@ -30,7 +30,10 @@ export function Navbar() {
       )}
     >
       {/* refined top accent edge */}
-      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"
+      />
       <Container>
         <div className="flex h-16 items-center justify-between gap-4 lg:h-[72px]">
           <Logo priority className="shrink-0" />
