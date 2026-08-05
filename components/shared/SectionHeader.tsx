@@ -49,8 +49,10 @@ export function SectionHeader({
         className,
       )}
     >
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
+      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
+        <span aria-hidden="true" className="h-px w-6 bg-gradient-to-r from-transparent to-amber-500" />
         {badge}
+        <span aria-hidden="true" className="h-px w-6 bg-gradient-to-l from-transparent to-amber-500" />
       </span>
 
       <h2 className="font-display mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
@@ -63,4 +65,3 @@ export function SectionHeader({
     </div>
   );
 }
-

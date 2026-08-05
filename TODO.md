@@ -1,26 +1,18 @@
-# TODO — Fix mobile Safari / older iPhone freezes
+# TODO — Premium Landing Page Enhancements
 
-## Steps
-- [x] 1. HeroVisual: disable parallax + scale on touch/coarse-pointer devices
-- [x] 2. HeroVisual: remove backdrop-blur-sm from floating cards (use solid opaque backgrounds)
-- [x] 3. Navbar: replace backdrop-blur-xl with solid opaque backgrounds
-- [x] 4. MagneticButton: only enable magnetic effect on hover-capable (fine pointer) devices
-- [x] 5. Reveal: add IntersectionObserver fallback so content is never left hidden
-- [x] 6. ExperienceCard: remove backdrop-blur-sm from category pill
-- [x] 7. Run `npm run build` to verify no errors
-- [x] 8. Commit and push to trigger redeploy
+## Tier A (Recommended — visible polish, safe)
+- [ ] A1. Hero — gradient keyword highlight (`HeroContent`)
+- [ ] A2. Hero — soft amber glow behind visual (`HeroVisual` / `Hero`)
+- [ ] A3. Buttons — premium gradients, glow shadows, sheen hover, amber focus rings (`button.tsx`)
+- [ ] A4. Cards — hover gradient + top-highlight border (`ValueCard`, `EcosystemCard`)
+- [ ] A5. ExperienceCard — image zoom + refined gradient overlay
+- [ ] A6. Section headers — decorative divider/glyph (`SectionHeader`)
 
-# TODO — Fix waitlist form scroll-jump on typing
+## Tier B (Extra polish)
+- [ ] B1. Hero stat chips — count-up animation (`HeroVisual`)
+- [ ] B2. Navbar edge refinement
+- [ ] B3. Smooth scrolling (already present in globals.css — verify)
 
-## Root cause
-The `Reveal` wrapper around the waitlist section permanently applied
-`will-change-transform` + a transform (`translate-x-0 translate-y-0`) on the
-revealed state. This compositing layer caused iOS Safari to re-anchor the
-scroll position whenever the form subtree re-rendered (every keystroke),
-jumping the page back to the waitlist.
-
-## Fix
-- [x] Only apply the transform + `will-change-transform` in the hidden state.
-      Once visible, the wrapper returns to a plain, un-transformed element so
-      typing in the form never triggers a scroll jump.
-- [x] Run `npm run build` to verify (passed cleanly).
+## Followup
+- [ ] Run `npm run build` to verify no errors
+- [ ] Commit and push to trigger redeploy
