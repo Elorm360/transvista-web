@@ -8,4 +8,4 @@
 - [x] 5. Reveal: add IntersectionObserver fallback so content is never left hidden
 - [x] 6. ExperienceCard: remove backdrop-blur-sm from category pill
 - [x] 7. Run `npm run build` to verify no errors
-- [ ] 8. Commit and push to trigger redeploy
+- [x] 8. Commit and push to trigger redeploy
