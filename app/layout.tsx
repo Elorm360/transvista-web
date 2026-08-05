@@ -42,6 +42,11 @@ export const metadata: Metadata = {
 
   applicationName: seoConfig.shortTitle,
 
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
+
   openGraph: {
     type: "website",
     locale: seoConfig.locale,
