@@ -11,9 +11,10 @@ export const brand = {
   website: "https://transvistaafrica.com",
 
   socials: {
-    facebook: "",
-    instagram: "",
-    linkedin: "",
+    facebook: "https://web.facebook.com/transvista.africa",
+    instagram: "https://www.instagram.com/transvista_africa",
+    linkedin: "https://www.linkedin.com/company/112234830/",
+    tiktok: "https://www.tiktok.com/@transvista.africa",
     x: "",
     youtube: "",
   },

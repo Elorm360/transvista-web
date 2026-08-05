@@ -27,3 +27,9 @@ Tighten, simplify, and elevate the landing page to a warm, premium, modern aesth
 - [x] 14. Waitlist: elegant split panel (copy left, short form right)
 - [x] 15. Footer: tighter, calmer
 - [x] 16. Verify type check passes (tsc --noEmit clean)
+
+## Social Icons (Step 2)
+- [x] 1. Add real social URLs to `constants/config/brand.ts` (LinkedIn, Facebook, Instagram, TikTok)
+- [x] 2. Update `content/footer.ts` social platform list to include TikTok
+- [x] 3. Replace text-based "Stay Connected" column with `react-icons/si` social icons in `components/layout/Footer.tsx`
+- [x] 4. Verify lint passes

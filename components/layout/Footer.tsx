@@ -1,7 +1,25 @@
 import { Container } from "@/components/ui/Container";
 import { Logo } from "./Logo";
 
-import { footerContent } from "@/content/footer";
+import { SiFacebook, SiInstagram, SiTiktok } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa";
+import type { IconType } from "react-icons";
+
+import { footerContent, type SocialPlatformKey } from "@/content/footer";
+
+const SOCIAL_ICONS: Partial<Record<SocialPlatformKey, IconType>> = {
+  linkedin: FaLinkedin,
+  facebook: SiFacebook,
+  instagram: SiInstagram,
+  tiktok: SiTiktok,
+};
+
+const SOCIAL_HOVER: Record<SocialPlatformKey, string> = {
+  linkedin: "hover:text-blue-500",
+  facebook: "hover:text-blue-500",
+  instagram: "hover:text-pink-500",
+  tiktok: "hover:text-white",
+};
 
 /**
  * Footer
@@ -97,30 +115,24 @@ export function Footer() {
               Stay Connected
             </h4>
 
-            <ul className="mt-5 space-y-3">
-              {footerContent.socials.map((social) => (
-                <li key={social.label}>
-                  {social.comingSoon ? (
-                    <span className="flex cursor-default items-center gap-2 text-sm text-slate-600">
-                      {social.label}
-                      <span className="text-xs uppercase tracking-wider text-slate-700">
-                        Coming Soon
-                      </span>
-                    </span>
-                  ) : (
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
-                      aria-label={`Follow TransVista on ${social.label}`}
-                    >
-                      {social.label}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 flex items-center gap-4">
+              {footerContent.socials.map((social) => {
+                const Icon = SOCIAL_ICONS[social.key];
+                if (!Icon) return null;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Follow TransVista Africa on ${social.label}`}
+                    className={`text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600 ${SOCIAL_HOVER[social.key]}`}
+                  >
+                    <Icon size={22} />
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </div>
 

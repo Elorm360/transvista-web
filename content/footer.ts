@@ -7,6 +7,18 @@ export interface FooterColumnLink {
   comingSoon?: boolean;
 }
 
+export type SocialPlatformKey =
+  | "linkedin"
+  | "facebook"
+  | "instagram"
+  | "tiktok";
+
+export interface SocialLink {
+  label: string;
+  key: SocialPlatformKey;
+  href: string;
+}
+
 export interface FooterContent {
   brand: {
     tagline: string;
@@ -23,11 +35,7 @@ export interface FooterContent {
     emailHref: string;
     location: string;
   };
-  socials: Array<{
-    label: string;
-    href: string;
-    comingSoon: boolean;
-  }>;
+  socials: SocialLink[];
   bottom: {
     copyright: string;
     builtWith: string;
@@ -35,11 +43,14 @@ export interface FooterContent {
   };
 }
 
-const socialPlatforms = [
-  { label: "LinkedIn", key: "linkedin" as const },
-  { label: "Facebook", key: "facebook" as const },
-  { label: "Instagram", key: "instagram" as const },
-  { label: "X (Twitter)", key: "x" as const },
+const socialPlatforms: Array<{
+  label: string;
+  key: SocialPlatformKey;
+}> = [
+  { label: "LinkedIn", key: "linkedin" },
+  { label: "Facebook", key: "facebook" },
+  { label: "Instagram", key: "instagram" },
+  { label: "TikTok", key: "tiktok" },
 ];
 
 export const footerContent: FooterContent = {
@@ -74,8 +85,8 @@ export const footerContent: FooterContent = {
     const href = brand.socials[key];
     return {
       label,
+      key,
       href: href || "#",
-      comingSoon: !href,
     };
   }),
 
@@ -98,4 +109,3 @@ export const footerContent: FooterContent = {
     ],
   },
 };
-
