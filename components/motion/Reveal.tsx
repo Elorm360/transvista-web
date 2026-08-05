@@ -32,6 +32,14 @@ export function Reveal({
     const node = ref.current;
     if (!node) return;
 
+    // Fallback for older browsers (e.g. older iOS Safari) that don't support
+    // IntersectionObserver — show the content immediately so it is never
+    // stuck invisible/unusable.
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

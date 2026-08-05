@@ -7,6 +7,13 @@ export function HeroVisual() {
   const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Disable the parallax scroll animation on touch devices (older iPhones
+    // and tablets). Continuous transform updates on scroll can cause Safari
+    // to freeze or stutter, especially on lower-end hardware.
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
     const node = imageRef.current;
     if (!node) return;
 
@@ -33,7 +40,7 @@ export function HeroVisual() {
     <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-amber-50 shadow-[0_25px_70px_-30px_rgba(15,23,42,0.3)] lg:h-[500px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,164,96,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(15,76,129,0.12),transparent_32%)]" />
 
-      <div ref={imageRef} className="absolute inset-0 overflow-hidden will-change-transform">
+      <div ref={imageRef} className="absolute inset-0 overflow-hidden">
         <Image
           src="/images/hero/hero.jpeg"
           alt="Traveler exploring Ghana with TransVista Africa"
@@ -44,7 +51,7 @@ export function HeroVisual() {
         />
       </div>
 
-      <div className="absolute left-5 top-5 rounded-xl border border-white/70 bg-white/85 px-3.5 py-2.5 shadow-lg backdrop-blur-sm">
+      <div className="absolute left-5 top-5 rounded-xl border border-white/70 bg-white/95 px-3.5 py-2.5 shadow-lg">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700">
           Ghana
         </p>
@@ -58,7 +65,7 @@ export function HeroVisual() {
         <p className="mt-0.5 text-lg font-bold text-slate-900">12+ curated</p>
       </div>
 
-      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-4 py-3 shadow-lg backdrop-blur-sm">
+      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg">
         <div className="h-9 w-9 rounded-full bg-amber-100" />
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-900">Curated by local experts</p>

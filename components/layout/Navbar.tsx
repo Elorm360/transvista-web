@@ -23,10 +23,10 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b backdrop-blur-xl transition-all duration-300",
+        "sticky top-0 z-50 border-b transition-all duration-300",
         scrolled
-          ? "border-slate-200 bg-white/90 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]"
-          : "border-transparent bg-white/70",
+          ? "border-slate-200 bg-white/95 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]"
+          : "border-transparent bg-white/90",
       )}
     >
       <Container>
