@@ -23,10 +23,41 @@ import { sendAdminNotification } from "@/lib/email/sendAdminNotification";
  *       the success response.
  *   3. Return success to the user.
  *
- * Centralizing all database writes in a single action makes it easy to
+* Centralizing all database writes in a single action makes it easy to
  * extend with email automation, Slack notifications, analytics, and
  * rate limiting later — without changing any component code.
  */
+
+/**
+ * classifySupabaseError
+ *
+ * Maps common Postgres/Supabase error codes to a human-friendly
+ * message so the user sees something actionable instead of the
+ * generic "couldn't complete your request" catch-all.
+ *
+ *   - 42P01  undefined_table       → table missing → run the migration
+ *   - 42501  insufficient_privilege → RLS/policy blocks the operation
+ *   - 23505  unique_violation      → email already exists (duplicate)
+ *
+ * @param error - The Supabase error object
+ * @returns A user-facing message string
+ */
+function classifySupabaseError(error: {
+  code?: string;
+  message?: string;
+}): string {
+  switch (error?.code) {
+    case "42P01":
+      return "Our database isn't ready yet. Please try again later.";
+    case "42501":
+      return "We couldn't save your details due to a permissions issue. Please try again later.";
+    case "23505":
+      return "duplicate"; // handled by the client as an already-joined notice
+    default:
+      return error?.message || "We couldn't complete your request at the moment.";
+  }
+}
+
 export async function joinWaitlist(data: {
   fullName: string;
   email: string;
@@ -61,7 +92,7 @@ export async function joinWaitlist(data: {
     throw new Error("Interest is required.");
   }
 
-  /* ── Step 1: Check for duplicates before insert ── */
+/* ── Step 1: Check for duplicates before insert ── */
   const supabase = await createClient();
 
   const { data: existingLead, error: lookupError } = await supabase
@@ -71,7 +102,15 @@ export async function joinWaitlist(data: {
     .maybeSingle();
 
   if (lookupError) {
-    throw new Error(lookupError.message);
+    // Log the real Supabase error so the root cause is visible in the
+    // server console (e.g. 42P01 = table missing, 42501 = RLS/permission).
+    console.error("[joinWaitlist] Duplicate lookup failed:", {
+      code: lookupError.code,
+      message: lookupError.message,
+      details: lookupError.details,
+      hint: lookupError.hint,
+    });
+    throw new Error(classifySupabaseError(lookupError));
   }
 
   if (existingLead) {
@@ -90,7 +129,19 @@ export async function joinWaitlist(data: {
   });
 
   if (error) {
-    throw new Error(error.message);
+    // Log the real Supabase error so the root cause is visible in the
+    // server console (e.g. 42P01 = table missing, 42501 = RLS/permission,
+    // 23505 = unique violation on email).
+    console.error("[joinWaitlist] Insert failed:", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+
+    // If the table is missing or RLS blocks the insert, surface a
+    // clearer message instead of the generic one.
+    throw new Error(classifySupabaseError(error));
   }
 
   /* ── Step 2: Send welcome email (graceful failure) ── */

@@ -1,18 +1,13 @@
-# TODO — Premium Landing Page Enhancements
+# TODO — Fix Waitlist "Couldn't complete your request" error
 
-## Tier A (Recommended — visible polish, safe)
-- [ ] A1. Hero — gradient keyword highlight (`HeroContent`)
-- [ ] A2. Hero — soft amber glow behind visual (`HeroVisual` / `Hero`)
-- [ ] A3. Buttons — premium gradients, glow shadows, sheen hover, amber focus rings (`button.tsx`)
-- [ ] A4. Cards — hover gradient + top-highlight border (`ValueCard`, `EcosystemCard`)
-- [ ] A5. ExperienceCard — image zoom + refined gradient overlay
-- [ ] A6. Section headers — decorative divider/glyph (`SectionHeader`)
+## Root Cause
+The generic error shown is the catch-all in `WaitlistForm.tsx`. The `joinWaitlist` server action throws when the Supabase `leads` table select/insert fails (table missing, RLS blocks, or schema mismatch). Email failures are already gracefully handled and are NOT the cause.
 
-## Tier B (Extra polish)
-- [ ] B1. Hero stat chips — count-up animation (`HeroVisual`)
-- [ ] B2. Navbar edge refinement
-- [ ] B3. Smooth scrolling (already present in globals.css — verify)
+## Steps
+- [x] **Step 1:** Create `supabase/migrations/0001_create_leads_table.sql` with the `leads` table, RLS policies, and unique email index.
+- [x] **Step 2:** Improve `app/actions/waitlist.ts` to log the actual Supabase error code/message and return more specific messages for common failures (table missing / permission denied).
+- [ ] **Step 3:** Run the migration in the Supabase SQL Editor (or `supabase db push`).
+- [ ] **Step 4:** Verify form submission works; if it still fails, read the server logs for the specific error code.
 
 ## Followup
-- [ ] Run `npm run build` to verify no errors
-- [ ] Commit and push to trigger redeploy
+- [ ] Run `npm run dev` (or `npm run build`) to verify no compile errors.
