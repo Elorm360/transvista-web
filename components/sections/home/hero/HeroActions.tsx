@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { TrustBadge } from "@/components/shared/TrustBadge";
-import { MagneticButton } from "@/components/motion/MagneticButton";
 import { heroTrustItems } from "@/constants/data/hero";
 import { cn } from "@/lib/utils";
 
@@ -9,17 +8,15 @@ export function HeroActions() {
   return (
     <div className="mt-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <MagneticButton>
-          <Link
-            href="#waitlist"
-            className={cn(
-              buttonVariants({ variant: "default", size: "lg" }),
-              "w-full sm:w-auto",
-            )}
-          >
-            Join Waitlist
-          </Link>
-        </MagneticButton>
+        <Link
+          href="#waitlist"
+          className={cn(
+            buttonVariants({ variant: "default", size: "lg" }),
+            "w-full sm:w-auto",
+          )}
+        >
+          Join Waitlist
+        </Link>
 
         <Link
           href="#explore-by-experience"

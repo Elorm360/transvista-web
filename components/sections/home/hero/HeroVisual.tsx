@@ -36,29 +36,36 @@ export function HeroVisual() {
   const routes = useCountUp(12);
 
   useEffect(() => {
-    // Disable the parallax scroll animation on touch devices (older iPhones
-    // and tablets). Continuous transform updates on scroll can cause Safari
-    // to freeze or stutter, especially on lower-end hardware.
-    if (window.matchMedia("(pointer: coarse)").matches) {
-      return;
-    }
-
     const node = imageRef.current;
     if (!node) return;
+
+    // Keep the hero image static on touch devices.
+    // This avoids unnecessary scroll-driven transforms on iOS Safari.
+    const isTouchDevice =
+      window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
+    if (isTouchDevice) {
+      return;
+    }
 
     let raf = 0;
 
     const onScroll = () => {
       cancelAnimationFrame(raf);
+
       raf = requestAnimationFrame(() => {
         const rect = node.getBoundingClientRect();
-        const offset = (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.04;
+        const offset =
+          (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.04;
+
         node.style.transform = `translate3d(0, ${offset}px, 0) scale(1.06)`;
       });
     };
 
     onScroll();
+
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
