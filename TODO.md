@@ -1,13 +1,10 @@
-# TODO — Fix Waitlist "Couldn't complete your request" error
-
-## Root Cause
-The generic error shown is the catch-all in `WaitlistForm.tsx`. The `joinWaitlist` server action throws when the Supabase `leads` table select/insert fails (table missing, RLS blocks, or schema mismatch). Email failures are already gracefully handled and are NOT the cause.
+# Waitlist Duplicate Handling Fix
 
 ## Steps
-- [x] **Step 1:** Create `supabase/migrations/0001_create_leads_table.sql` with the `leads` table, RLS policies, and unique email index.
-- [x] **Step 2:** Improve `app/actions/waitlist.ts` to log the actual Supabase error code/message and return more specific messages for common failures (table missing / permission denied).
-- [x] **Step 3:** Run the migration in the Supabase SQL Editor — the `leads` table, RLS policies, and unique email index were created successfully ("Success. No rows returned").
-- [ ] **Step 4:** Verify form submission works; if it still fails, read the server logs for the specific error code.
-
-## Followup
-- [ ] Run `npm run dev` (or `npm run build`) to verify no compile errors.
+- [x] Step 1: Replace thrown `DuplicateWaitlistEntry` in `app/actions/waitlist.ts` with a structured return
+- [x] Step 1: Add `duplicate: false` to the success return in `app/actions/waitlist.ts`
+- [x] Step 1: Update `classifySupabaseError` `23505` case to return a clear message instead of `"duplicate"`
+- [x] Step 2: Update success handling in `WaitlistForm.tsx` to handle `result.duplicate`
+- [x] Step 2: Simplify the `catch` block (remove string-matching duplicate logic)
+- [x] Step 3: Reset the form on the duplicate response as well
+- [x] Follow-up: Run TypeScript check / lint

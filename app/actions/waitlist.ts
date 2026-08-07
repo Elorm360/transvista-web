@@ -47,12 +47,12 @@ function classifySupabaseError(error: {
   message?: string;
 }): string {
   switch (error?.code) {
-    case "42P01":
+case "42P01":
       return "Our database isn't ready yet. Please try again later.";
     case "42501":
       return "We couldn't save your details due to a permissions issue. Please try again later.";
     case "23505":
-      return "duplicate"; // handled by the client as an already-joined notice
+      return "This email is already registered.";
     default:
       return error?.message || "We couldn't complete your request at the moment.";
   }
@@ -113,10 +113,13 @@ export async function joinWaitlist(data: {
     throw new Error(classifySupabaseError(lookupError));
   }
 
-  if (existingLead) {
-    const duplicateError = new Error("duplicate");
-    duplicateError.name = "DuplicateWaitlistEntry";
-    throw duplicateError;
+if (existingLead) {
+    return {
+      success: false,
+      duplicate: true,
+      emailSent: false,
+      adminNotified: false,
+    };
   }
 
   /* ── Step 2: Insert into Supabase ── */
@@ -194,6 +197,11 @@ export async function joinWaitlist(data: {
     });
   }
 
-  /* ── Step 3: Return success ── */
-  return { success: true, emailSent, adminNotified };
+/* ── Step 3: Return success ── */
+  return {
+    success: true,
+    duplicate: false,
+    emailSent,
+    adminNotified,
+  };
 }

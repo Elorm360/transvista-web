@@ -107,7 +107,24 @@ export function WaitlistForm() {
         interest: form.interest.trim(),
       });
 
+      if (result.duplicate) {
+        setIsDuplicate(true);
+        setSubmitSuccess(false);
+        setSubmitError("");
+
+        setForm({
+          fullName: "",
+          email: "",
+          phone: "",
+          country: "",
+          interest: "",
+        });
+
+        return;
+      }
+
       setSubmitSuccess(true);
+      setIsDuplicate(false);
       setSubmitError("");
       setEmailSent(result.emailSent);
 
@@ -119,15 +136,8 @@ export function WaitlistForm() {
         interest: "",
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "";
-
-      if (message.toLowerCase().includes("duplicate")) {
-        setIsDuplicate(true);
-        setSubmitError("");
-      } else {
-        setSubmitError(waitlistContent.error.unknown);
-      }
+      console.error("[WaitlistForm] Submission error:", error);
+      setSubmitError(waitlistContent.error.unknown);
     } finally {
       setIsSubmitting(false);
     }
