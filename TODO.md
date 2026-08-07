@@ -8,3 +8,10 @@
 - [x] Step 2: Simplify the `catch` block (remove string-matching duplicate logic)
 - [x] Step 3: Reset the form on the duplicate response as well
 - [x] Follow-up: Run TypeScript check / lint
+
+# iOS Safari Waitlist Fix
+
+## Steps
+- [x] Remove `Reveal` wrapper from the interactive waitlist form container in `Waitlist.tsx`
+- [x] Keep `Reveal.tsx` intact for ordinary content
+- [ ] Commit and push to `origin/main` for Vercel auto-deploy
