@@ -212,9 +212,11 @@ export function WaitlistForm() {
       )}
 
       <form
+        id="waitlist-form"
         className="mx-auto mt-8 w-full max-w-md space-y-5"
         onSubmit={handleSubmit}
         noValidate
+        autoComplete="on"
       >
         {/* Full Name */}
         <div className="text-left">
@@ -231,6 +233,7 @@ export function WaitlistForm() {
             id="fullName"
             name="fullName"
             type="text"
+            autoComplete="name"
             placeholder={waitlistContent.form.fullNamePlaceholder}
             value={form.fullName}
             onChange={handleChange}
@@ -371,3 +374,4 @@ export function WaitlistForm() {
     </>
   );
 }
+

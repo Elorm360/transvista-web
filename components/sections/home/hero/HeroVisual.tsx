@@ -39,12 +39,16 @@ export function HeroVisual() {
     const node = imageRef.current;
     if (!node) return;
 
-    // Keep the hero image static on touch devices.
-    // This avoids unnecessary scroll-driven transforms on iOS Safari.
-    const isTouchDevice =
-      window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    // Keep the hero image static on small screens and touch devices.
+    // This avoids unnecessary scroll-driven transforms on iOS Safari,
+    // which can interfere with scrolling/focus on older iPhones.
+    const isSmallScreen = window.innerWidth < 768;
+    const isTouchDevice = window.matchMedia(
+      "(hover: none), (pointer: coarse)",
+    ).matches;
 
-    if (isTouchDevice) {
+    if (isSmallScreen || isTouchDevice) {
+      node.style.transform = "none";
       return;
     }
 

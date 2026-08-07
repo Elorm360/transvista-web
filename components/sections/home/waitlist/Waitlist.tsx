@@ -6,7 +6,7 @@ import { waitlistContent } from "@/content/waitlist";
 
 export function Waitlist() {
   return (
-    <section id="waitlist" className="py-14 lg:py-20">
+    <section id="waitlist" className="scroll-mt-6 py-14 lg:py-20">
       <Container>
         <div className="overflow-hidden rounded-[32px] bg-slate-900">
           <div className="grid lg:grid-cols-[1fr_1.2fr]">

@@ -1,27 +1,14 @@
-# Waitlist Duplicate Handling Fix
+# Waitlist Mobile Stability — Steps 1–6
 
 ## Steps
-- [x] Step 1: Replace thrown `DuplicateWaitlistEntry` in `app/actions/waitlist.ts` with a structured return
-- [x] Step 1: Add `duplicate: false` to the success return in `app/actions/waitlist.ts`
-- [x] Step 1: Update `classifySupabaseError` `23505` case to return a clear message instead of `"duplicate"`
-- [x] Step 2: Update success handling in `WaitlistForm.tsx` to handle `result.duplicate`
-- [x] Step 2: Simplify the `catch` block (remove string-matching duplicate logic)
-- [x] Step 3: Reset the form on the duplicate response as well
-- [x] Follow-up: Run TypeScript check / lint
-
-# iOS Safari Stabilization
-
-## Steps
-- [x] Remove `Reveal` wrapper from the interactive waitlist form container in `Waitlist.tsx`
-- [x] Keep `Reveal.tsx` intact for ordinary content
-
-# iPhone 7 Stabilization (Steps 1–3)
-
-## Steps
-- [x] Step 1: Remove `MagneticButton` from Join Waitlist in `HeroActions.tsx` (keep it a plain link)
-- [x] Step 2: Disable HeroVisual parallax on touch devices (`(hover: none), (pointer: coarse)`)
-- [x] Step 3: Keep Waitlist outside `Reveal` (verify only)
-- [x] TypeScript check passes
-- [ ] Deploy to Vercel (commit + push)
-- [ ] Send `app/globals.css` and `app/layout.tsx` to the user for inspection (contents shared in chat)
-- [ ] Get the iPhone 7 exact iOS version from the user
+- [x] Step 1: Remove Reveal from the Waitlist section (verified no wrapping Reveal)
+- [x] Step 2: Remove MagneticButton from Join Waitlist CTA (verified plain Link)
+- [x] Step 3: Change global `scroll-behavior: smooth` → `auto` in `app/globals.css`
+- [x] Step 4: Add `id="waitlist-form"`, `autoComplete="on"` to form; add `autoComplete="name"` to full name field
+- [x] Step 5: Review Reveal — confirm it removes transforms after reveal; not used around forms/buttons
+- [x] Step 6: Neutralize Hero scroll animation on screens < 768px and touch devices
+- [x] Add `scroll-mt-6` to waitlist section for anchor offset
+- [x] Build — `npm run build` succeeded (BUILD_ID generated)
+- [x] TypeScript — `npx tsc --noEmit` passed
+- [ ] Deploy to Vercel and test on iPhone 7 / newer iPhone / Safari
+- [ ] Test sequence: Open → Join Waitlist → Full Name (10-20 chars) → Email → Country → Interest → Submit
