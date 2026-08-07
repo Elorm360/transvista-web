@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Search,
   MoreVertical,
@@ -50,19 +50,24 @@ export default function CommunityTable({ members }: CommunityTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [detailMember, setDetailMember] = useState<CommunityMember | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CommunityMember | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close the action menu when clicking outside it.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement;
+
+      if (!target.closest("[data-member-action-menu]")) {
         setOpenMenuId(null);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   // Auto-dismiss toast after 3 seconds.
@@ -159,21 +164,31 @@ export default function CommunityTable({ members }: CommunityTableProps) {
     setOpenMenuId(null);
   }
 
-  /** Confirm and delete a member via the server action. */
+/** Confirm and delete a member via the server action. */
   async function confirmDelete() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || isDeleting) return;
+
     setIsDeleting(true);
+
     try {
-      await deleteMember(deleteTarget.id);
-      setToast("Member deleted successfully.");
+      const result = await deleteMember(deleteTarget.id);
+
+      console.log("[CommunityTable] Delete result:", result);
+
       setDeleteTarget(null);
-      // Re-fetch the community list from Supabase (server component).
+      setOpenMenuId(null);
+
+      setToast("Member deleted successfully.");
+
       router.refresh();
     } catch (err) {
+      console.error("[CommunityTable] Delete failed:", err);
+
       setToast(
-        err instanceof Error ? err.message : "Failed to delete member.",
+        err instanceof Error
+          ? err.message
+          : "Failed to delete member.",
       );
-      setDeleteTarget(null);
     } finally {
       setIsDeleting(false);
     }
@@ -293,9 +308,12 @@ export default function CommunityTable({ members }: CommunityTableProps) {
                 <td className="py-3.5 pr-4 text-sm text-slate-500">
                   {formatDate(member.createdAt)}
                 </td>
-                <td className="py-3.5 text-right">
+<td className="py-3.5 text-right">
                   {/* Row action menu */}
-                  <div className="relative inline-block" ref={menuRef}>
+                  <div
+                    className="relative inline-block"
+                    data-member-action-menu
+                  >
                     <button
                       type="button"
                       onClick={() =>

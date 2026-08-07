@@ -3,44 +3,61 @@
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth/isAdmin";
 
-/**
- * deleteMember
- *
- * Server Action that deletes a waitlist member from the leads table.
- *
- * Architecture:
- *   Admin Dashboard ──► deleteMember (Server Action) ──► Supabase ──► Dashboard refreshes
- *
- * Security:
- *   The admin layout already guards the page, but this action re-checks
- *   that the caller is an admin so authorization is enforced at the
- *   data layer too — never trust the browser alone.
- *
- * @param memberId - The id of the lead row to delete
- * @returns `{ success: true }` on success
- */
 export async function deleteMember(memberId: string) {
-  // Re-verify the caller is an authenticated admin (defense-in-depth).
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || !isAdmin(user)) {
-    throw new Error("You are not authorized to delete community members.");
-  }
+  console.log("[deleteMember] Starting deletion");
+  console.log("[deleteMember] memberId:", memberId);
 
   if (!memberId) {
     throw new Error("Member id is required.");
   }
 
-  const { error } = await supabase.from("leads").delete().eq("id", memberId);
+  const supabase = await createClient();
 
-  if (error) {
-    console.error("[deleteMember] Supabase error:", error);
-    throw new Error("Failed to delete this member. Please try again.");
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  console.log("[deleteMember] user:", user?.email);
+  console.log("[deleteMember] auth error:", userError);
+
+  if (userError) {
+    console.error("[deleteMember] Auth error:", userError);
+    throw new Error("Your admin session could not be verified.");
   }
 
-  return { success: true };
+  if (!user) {
+    throw new Error("You are not authenticated.");
+  }
+
+  if (!isAdmin(user)) {
+    console.error("[deleteMember] Unauthorized user:", user.email);
+    throw new Error("You are not authorized to delete community members.");
+  }
+
+  const { data, error } = await supabase
+    .from("leads")
+    .delete()
+    .eq("id", memberId)
+    .select("id, full_name, email");
+
+  if (error) {
+    console.error("[deleteMember] Supabase DELETE error:", error);
+    throw new Error(
+      `Failed to delete this member: ${error.message}`,
+    );
+  }
+
+  console.log("[deleteMember] Deleted rows:", data);
+
+  if (!data || data.length === 0) {
+    throw new Error(
+      "The member could not be deleted because no matching record was found.",
+    );
+  }
+
+  return {
+    success: true,
+    deletedMember: data[0],
+  };
 }
