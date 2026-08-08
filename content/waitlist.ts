@@ -76,8 +76,8 @@ export const waitlistContent: WaitlistContent = {
   },
 
   duplicate: {
-    heading: "You're already on the list!",
-    body: "You're already part of the TransVista Community — thank you for joining us! 🎉\n\nIf you'd like to update any details, please use the same email address you originally signed up with so we can match your account. No need to sign up again.",
+    heading: "You're already on the waitlist!",
+    body: "You're already part of the TransVista Community — thank you for joining us! 🎉\n\nIf you'd like to update any details, please use the same email address you originally signed up with so we can match your account. No need to join the waitlist again.",
   },
 
   error: {

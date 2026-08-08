@@ -92,37 +92,8 @@ export async function joinWaitlist(data: {
     throw new Error("Interest is required.");
   }
 
-/* ── Step 1: Check for duplicates before insert ── */
+  /* ── Step 1: Insert into Supabase ── */
   const supabase = await createClient();
-
-  const { data: existingLead, error: lookupError } = await supabase
-    .from("leads")
-    .select("id")
-    .eq("email", normalizedEmail)
-    .maybeSingle();
-
-  if (lookupError) {
-    // Log the real Supabase error so the root cause is visible in the
-    // server console (e.g. 42P01 = table missing, 42501 = RLS/permission).
-    console.error("[joinWaitlist] Duplicate lookup failed:", {
-      code: lookupError.code,
-      message: lookupError.message,
-      details: lookupError.details,
-      hint: lookupError.hint,
-    });
-    throw new Error(classifySupabaseError(lookupError));
-  }
-
-if (existingLead) {
-    return {
-      success: false,
-      duplicate: true,
-      emailSent: false,
-      adminNotified: false,
-    };
-  }
-
-  /* ── Step 2: Insert into Supabase ── */
   const { error } = await supabase.from("leads").insert({
     full_name: fullName,
     email: normalizedEmail,
@@ -141,6 +112,15 @@ if (existingLead) {
       details: error.details,
       hint: error.hint,
     });
+
+    if (error.code === "23505") {
+      return {
+        success: false,
+        duplicate: true,
+        emailSent: false,
+        adminNotified: false,
+      };
+    }
 
     // If the table is missing or RLS blocks the insert, surface a
     // clearer message instead of the generic one.
