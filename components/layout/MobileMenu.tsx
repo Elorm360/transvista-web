@@ -25,7 +25,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         ))}
 
         <div className="mt-2 px-1">
-          <WaitlistButton className="w-full" />
+          <WaitlistButton className="w-full" onClick={onClose} />
         </div>
       </nav>
     </div>
