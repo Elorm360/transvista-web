@@ -3,46 +3,69 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-/**
- * CountUp
- *
- * Lightweight count-up used for the "Live routes" stat chip. Animates from 0
- * to the target once the component mounts. Kept client-side and dependency-free.
- */
-function useCountUp(target: number, duration = 1200) {
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    let raf = 0;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      // ease-out cubic for a natural deceleration
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * target));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-
-  return value;
-}
+const heroImages = [
+  {
+    src: "/images/hero/hero 1.JPG",
+    alt: "Traveler exploring Ghana with TransVista Africa",
+  },
+  {
+    src: "/images/hero/hero 2.JPG",
+    alt: "Discovering Ghana with TransVista Africa",
+  },
+  {
+    src: "/images/hero/hero 3.JPG",
+    alt: "Travel experience in Ghana",
+  },
+  {
+    src: "/images/hero/hero 4.JPG",
+    alt: "Exploring Ghana with TransVista Africa",
+  },
+  {
+    src: "/images/hero/hero 5.jpg",
+    alt: "Travel and experiences across Ghana",
+  },
+  {
+    src: "/images/hero/hero 6.JPG",
+    alt: "A curated Ghana travel experience",
+  },
+];
 
 export function HeroVisual() {
   const imageRef = useRef<HTMLDivElement>(null);
-  const routes = useCountUp(12);
 
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  /*
+   * Automatic slideshow.
+   *
+   * Changes image every 7 seconds.
+   * Keeps running independently from the hero overlays.
+   */
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % heroImages.length);
+    }, 7000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  /*
+   * Desktop-only parallax effect.
+   *
+   * Important:
+   * We deliberately disable this on small/touch devices because
+   * older iPhones can experience scroll/focus instability when
+   * transforms are applied to interactive page content.
+   */
   useEffect(() => {
     const node = imageRef.current;
+
     if (!node) return;
 
-    // Keep the hero image static on small screens and touch devices.
-    // This avoids unnecessary scroll-driven transforms on iOS Safari,
-    // which can interfere with scrolling/focus on older iPhones.
     const isSmallScreen = window.innerWidth < 768;
+
     const isTouchDevice = window.matchMedia(
       "(hover: none), (pointer: coarse)",
     ).matches;
@@ -59,6 +82,7 @@ export function HeroVisual() {
 
       raf = requestAnimationFrame(() => {
         const rect = node.getBoundingClientRect();
+
         const offset =
           (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.04;
 
@@ -68,7 +92,9 @@ export function HeroVisual() {
 
     onScroll();
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+    });
 
     return () => {
       cancelAnimationFrame(raf);
@@ -77,50 +103,64 @@ export function HeroVisual() {
   }, []);
 
   return (
-    <div className="relative">
+    <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-amber-50 shadow-[0_25px_70px_-30px_rgba(15,23,42,0.3)] lg:h-[500px]">
       {/* Soft amber + blue glow behind the visual */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,164,96,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(15,76,129,0.12),transparent_32%)]" />
+
+      {/* Hero image carousel */}
       <div
-        aria-hidden="true"
-        className="absolute -inset-6 -z-10 rounded-[40px] bg-[radial-gradient(circle_at_50%_30%,rgba(244,164,96,0.35),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(15,76,129,0.22),transparent_50%)] blur-2xl"
-      />
-
-      <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-amber-50 shadow-[0_25px_70px_-30px_rgba(15,23,42,0.3)] lg:h-[500px]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,164,96,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(15,76,129,0.12),transparent_32%)]" />
-
-        <div ref={imageRef} className="absolute inset-0 overflow-hidden">
+        ref={imageRef}
+        className="absolute inset-0 overflow-hidden"
+      >
+        {heroImages.map((image, index) => (
           <Image
-            src="/images/hero/hero.jpeg"
-            alt="Traveler exploring Ghana with TransVista Africa"
+            key={image.src}
+            src={image.src}
+            alt={image.alt}
             fill
             sizes="(max-width: 1024px) 100vw, 52vw"
-            className="object-cover"
-            priority
+            priority={index === 0}
+            className={`object-cover transition-opacity duration-1000 ease-in-out ${
+              index === activeIndex ? "opacity-100" : "opacity-0"
+            }`}
           />
-        </div>
+        ))}
 
-        <div className="absolute left-5 top-5 rounded-xl border border-white/70 bg-white/95 px-3.5 py-2.5 shadow-lg">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700">
-            Ghana
-          </p>
-          <p className="mt-0.5 text-sm font-semibold text-slate-900">
-            Trusted journeys, expertly planned
-          </p>
-        </div>
+        {/* Subtle readability overlay */}
+        <div className="absolute inset-0 bg-black/[0.04]" />
+      </div>
 
-        <div className="absolute right-5 top-5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-lg">
-          <p className="text-[11px] font-medium text-slate-500">Live routes</p>
-          <p className="mt-0.5 text-lg font-bold text-slate-900">
-            {routes}+ curated
+{/* Bottom information card */}
+      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg">
+        <div className="h-9 w-9 rounded-full bg-amber-100" />
+
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-slate-900">
+            Curated by local experts
+          </p>
+
+          <p className="text-xs text-slate-500">
+            Transport, travel, and trust in one place
           </p>
         </div>
+      </div>
 
-        <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg">
-          <div className="h-9 w-9 rounded-full bg-amber-100" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-slate-900">Curated by local experts</p>
-            <p className="text-xs text-slate-500">Transport, travel, and trust in one place</p>
-          </div>
-        </div>
+      {/* Carousel indicators */}
+      <div
+        className="absolute bottom-[92px] left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/25 px-2.5 py-1.5 backdrop-blur-sm"
+        aria-label="Hero image slideshow"
+      >
+        {heroImages.map((image, index) => (
+          <span
+            key={image.src}
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              index === activeIndex
+                ? "w-5 bg-white"
+                : "w-1.5 bg-white/60"
+            }`}
+            aria-hidden="true"
+          />
+        ))}
       </div>
     </div>
   );
