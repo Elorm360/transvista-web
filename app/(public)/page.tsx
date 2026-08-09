@@ -1,11 +1,6 @@
 import { Hero } from "@/components/sections/home/hero/Hero";
-<<<<<<< HEAD
-import { DestinationGrid } from "@/components/destinations/DestinationGrid";
-import { ExperienceGrid } from "@/components/experiences/ExperienceGrid";
-=======
 import { TrustBar } from "@/components/sections/home/trust-bar/TrustBar";
 import { Services } from "@/components/sections/home/services/Services";
->>>>>>> d63619ecfb900b14905729bbb261de4f9a930c32
 import { WhyTransVista } from "@/components/sections/home/why-transvista";
 import { Experiences } from "@/components/sections/home/experiences";
 import { ExploreByExperience } from "@/components/sections/home/explore-by-experience";
@@ -18,13 +13,8 @@ export default function HomePage() {
   return (
     <main id="main-content">
       <Hero />
-<<<<<<< HEAD
-      <DestinationGrid />
-      <ExperienceGrid />
-=======
       <TrustBar />
       <Services />
->>>>>>> d63619ecfb900b14905729bbb261de4f9a930c32
       <WhyTransVista />
       <Experiences />
       <ExploreByExperience />
