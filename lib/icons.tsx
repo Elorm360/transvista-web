@@ -1,4 +1,16 @@
-import { Bus, Compass, Hotel, Mountain, Route, Store, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  Bus,
+  Compass,
+  Globe2,
+  Hotel,
+  MessageCircle,
+  Mountain,
+  Route,
+  ShieldCheck,
+  Store,
+  Users,
+} from "lucide-react";
 
 /**
  * Centralized icon mapping for feature cards and value propositions.
@@ -16,6 +28,10 @@ export const featureIcons = {
   Bus: <Bus className="h-8 w-8" />,
   Compass: <Compass className="h-8 w-8" />,
   Users: <Users className="h-8 w-8" />,
+  ShieldCheck: <ShieldCheck className="h-8 w-8" />,
+  BadgeCheck: <BadgeCheck className="h-8 w-8" />,
+  Globe2: <Globe2 className="h-8 w-8" />,
+  MessageCircle: <MessageCircle className="h-8 w-8" />,
 } as const;
 
 /** Union type of available feature icon keys */

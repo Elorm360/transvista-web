@@ -103,9 +103,16 @@ export function HeroVisual() {
   }, []);
 
   return (
-    <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-amber-50 shadow-[0_25px_70px_-30px_rgba(15,23,42,0.3)] lg:h-[500px]">
-      {/* Soft amber + blue glow behind the visual */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,164,96,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(15,76,129,0.12),transparent_32%)]" />
+    <div className="relative">
+      {/* Ambient glow ring behind the floating visual */}
+      <div
+        aria-hidden="true"
+        className="absolute -inset-4 rounded-[36px] bg-gradient-to-br from-brand-orange-500/30 via-brand-blue-400/20 to-transparent blur-2xl"
+      />
+
+      <div className="relative h-[380px] overflow-hidden rounded-[28px] border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-transparent shadow-[0_35px_90px_-30px_rgba(8,18,53,0.6)] backdrop-blur-sm lg:h-[500px]">
+        {/* Soft orange + blue glow behind the visual */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,123,32,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(87,118,214,0.18),transparent_32%)]" />
 
       {/* Hero image carousel */}
       <div
@@ -127,12 +134,12 @@ export function HeroVisual() {
         ))}
 
         {/* Subtle readability overlay */}
-        <div className="absolute inset-0 bg-black/[0.04]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
       </div>
 
-{/* Bottom information card */}
-      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg">
-        <div className="h-9 w-9 rounded-full bg-amber-100" />
+      {/* Bottom information card */}
+      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-white/20 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md">
+        <div className="h-9 w-9 rounded-full bg-brand-orange-100" />
 
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-900">
@@ -161,6 +168,7 @@ export function HeroVisual() {
             aria-hidden="true"
           />
         ))}
+      </div>
       </div>
     </div>
   );

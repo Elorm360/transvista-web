@@ -5,15 +5,44 @@
 @theme inline {
   --color-background: #ffffff;
   --color-foreground: #0f172a;
-  --color-primary: #1d4ed8;
-  --color-primary-dark: #1e40af;
-  --color-accent: #f97316;
+  --color-primary: #1a3a9c;
+  --color-primary-dark: #152f80;
+  --color-accent: #f47b20;
   --color-surface: #f8fafc;
   --color-muted: #475569;
   --color-border: #e2e8f0;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-error: #dc2626;
+
+  /* ── Brand Color Ramps ──
+       Royal Blue #1A3A9C and Vibrant Orange #F47B20 sit at the 600 step
+       of each scale (Tailwind's usual "primary interactive" position),
+       so bg-brand-blue-600 / bg-brand-orange-600 are always the exact
+       brand hex. Everything else is a generated tint/shade for depth. */
+  --color-brand-blue-50: #eef2fb;
+  --color-brand-blue-100: #dde5f7;
+  --color-brand-blue-200: #b9cbf0;
+  --color-brand-blue-300: #8faee6;
+  --color-brand-blue-400: #5c86d8;
+  --color-brand-blue-500: #3760c7;
+  --color-brand-blue-600: #1a3a9c;
+  --color-brand-blue-700: #152f80;
+  --color-brand-blue-800: #112566;
+  --color-brand-blue-900: #0c1b4d;
+  --color-brand-blue-950: #081235;
+
+  --color-brand-orange-50: #fff4ec;
+  --color-brand-orange-100: #ffe6d2;
+  --color-brand-orange-200: #ffc9a3;
+  --color-brand-orange-300: #ffa669;
+  --color-brand-orange-400: #fb9349;
+  --color-brand-orange-500: #f58530;
+  --color-brand-orange-600: #f47b20;
+  --color-brand-orange-700: #c85f16;
+  --color-brand-orange-800: #9c4a12;
+  --color-brand-orange-900: #78380e;
+  --color-brand-orange-950: #401d07;
 
   /* ── Design System (tv-*) Tokens ── */
   --color-tv-primary: var(--tv-primary);
@@ -25,14 +54,13 @@
   --color-tv-text-muted: var(--tv-text-muted);
   --color-tv-border: var(--tv-border);
 
---font-sans: var(--font-sans);
-  --font-heading: var(--font-jakarta);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-display);
   --font-display: var(--font-display);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 24px;
-  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -68,19 +96,34 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(244, 164, 96, 0.06), transparent 28%),
-    linear-gradient(180deg, #fffdfa 0%, #faf6f0 100%);
+    radial-gradient(circle at top left, rgba(244, 123, 32, 0.06), transparent 28%),
+    linear-gradient(180deg, #fbfcff 0%, #f4f6fd 100%);
   color: var(--color-foreground);
 }
 
 .font-display {
   font-family: var(--font-display);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes floatSoft {
@@ -94,10 +137,62 @@ body {
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 0 0 rgba(244, 123, 32, 0.35);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 14px rgba(244, 123, 32, 0);
+  }
+}
+
+@keyframes pulseRing {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(26, 58, 156, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(26, 58, 156, 0);
+  }
+}
+
+@keyframes pulseWhatsapp {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
+  }
+}
+
+.pulse-whatsapp {
+  animation: pulseWhatsapp 2.6s ease-in-out infinite;
+}
+
+@keyframes meshDrift {
+  0%, 100% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
+  33% {
+    background-position: 30% 20%, 70% 80%, 40% 60%;
+  }
+  66% {
+    background-position: 10% 40%, 90% 60%, 60% 30%;
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(0, -40px, 0) rotate(20deg);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 
@@ -106,14 +201,35 @@ body {
 }
 
 .pulse-glow {
-  animation: pulseGlow 3.6s ease-in-out infinite;
+  animation: pulseGlow 2.6s ease-in-out infinite;
+}
+
+.pulse-ring {
+  animation: pulseRing 2.4s ease-in-out infinite;
+}
+
+.mesh-gradient {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(244, 123, 32, 0.35), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(26, 58, 156, 0.45), transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(87, 118, 214, 0.3), transparent 55%);
+  background-size: 180% 180%;
+  animation: meshDrift 18s ease-in-out infinite;
+}
+
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
 }
 
 :root {
   /* Brand */
-  --primary: #1843c6;
-  --primary-hover: #1237a3;
-  --accent: #f28c28;
+  --primary: #1a3a9c;
+  --primary-hover: #152f80;
+  --accent: #f47b20;
 
   /* Backgrounds */
   --background: #ffffff;
@@ -145,9 +261,9 @@ body {
      ═══════════════════════════════════════════════════════ */
 
   /* Brand Colors */
-  --tv-primary: #0f4c81;
-  --tv-primary-light: #3b82c4;
-  --tv-accent: #2f9e44;
+  --tv-primary: #1a3a9c;
+  --tv-primary-light: #3760c7;
+  --tv-accent: #f47b20;
   --tv-background: #ffffff;
   --tv-surface: #f8fafc;
   --tv-text: #0f172a;

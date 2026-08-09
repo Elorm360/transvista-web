@@ -12,7 +12,7 @@ export function HeroActions() {
           href="#waitlist"
           className={cn(
             buttonVariants({ variant: "default", size: "lg" }),
-            "w-full sm:w-auto",
+            "pulse-glow w-full rounded-full sm:w-auto",
           )}
         >
           Join Waitlist
@@ -21,8 +21,8 @@ export function HeroActions() {
         <Link
           href="#explore-by-experience"
           className={cn(
-            buttonVariants({ variant: "outline", size: "lg" }),
-            "w-full transform transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200 sm:w-auto",
+            buttonVariants({ variant: "outline-white", size: "lg" }),
+            "w-full rounded-full transform transition-all duration-300 ease-out hover:-translate-y-0.5 sm:w-auto",
           )}
         >
           Explore Ghana
@@ -31,7 +31,7 @@ export function HeroActions() {
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-6">
         {heroTrustItems.map((item) => (
-          <TrustBadge key={item} text={item} />
+          <TrustBadge key={item} text={item} tone="dark" />
         ))}
       </div>
     </div>

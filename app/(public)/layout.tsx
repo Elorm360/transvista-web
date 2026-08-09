@@ -1,5 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ScrollProgress } from "@/components/layout/ScrollProgress";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 
 export default function PublicLayout({
   children,
@@ -8,6 +10,8 @@ export default function PublicLayout({
 }>) {
   return (
     <>
+      <ScrollProgress />
+
       {/* ── Skip to main content ── */}
       <a
         href="#main-content"
@@ -36,6 +40,8 @@ export default function PublicLayout({
       {children}
 
       <Footer />
+
+      <WhatsAppButton />
     </>
   );
 }

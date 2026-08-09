@@ -20,13 +20,13 @@ export function ExperienceCategoryCard({
   subtitle,
 }: ExperienceCategoryCardProps) {
   return (
-    <article className="group rounded-[24px] border border-slate-200 bg-white p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-amber-200 hover:shadow-[0_24px_55px_-24px_rgba(180,83,9,0.2)]">
+    <article className="group rounded-[24px] border border-slate-200 bg-white p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-brand-orange-200 hover:shadow-[0_24px_55px_-24px_rgba(180,83,9,0.2)]">
       {/* Photography placeholder — reserved for original content */}
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-50 to-orange-50">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-gradient-to-br from-brand-orange-50 to-orange-50">
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="h-10 w-10 rounded-full border border-amber-200" />
+          <div className="h-10 w-10 rounded-full border border-brand-orange-200" />
 
-          <p className="mt-4 text-xs uppercase tracking-[0.25em] text-amber-700/70">
+          <p className="mt-4 text-xs uppercase tracking-[0.25em] text-brand-orange-700/70">
             Original Photography
           </p>
 
@@ -45,7 +45,7 @@ export function ExperienceCategoryCard({
           {subtitle}
         </p>
 
-        <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-amber-700 transition-colors focus-visible:outline-none group-hover:text-amber-800">
+        <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-brand-orange-700 transition-colors focus-visible:outline-none group-hover:text-brand-orange-800">
           Discover
 
           <span className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">

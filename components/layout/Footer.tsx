@@ -32,7 +32,13 @@ const SOCIAL_HOVER: Record<SocialPlatformKey, string> = {
  */
 export function Footer() {
   return (
-    <footer className="bg-slate-900 pt-14 text-slate-300 lg:pt-20">
+    <footer className="relative overflow-hidden bg-gradient-to-b from-brand-blue-950 to-slate-950 pt-14 text-slate-300 lg:pt-20">
+      {/* top accent hairline, matches navbar */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-orange-500/60 to-transparent"
+      />
+
       <Container>
         {/* ── Grid: Brand + Explore + Contact + Stay Connected ── */}
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -60,7 +66,7 @@ export function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href || "#"}
-                    className="rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+                    className="rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-brand-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600"
                   >
                     {link.label}
                   </a>
@@ -79,7 +85,7 @@ export function Footer() {
               <li>
                 <a
                   href={footerContent.contact.phoneHref}
-                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-brand-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600"
                 >
                   <span className="text-base" aria-hidden="true">
                     &#9742;
@@ -91,7 +97,7 @@ export function Footer() {
               <li>
                 <a
                   href={footerContent.contact.emailHref}
-                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-brand-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600"
                 >
                   <span className="text-base" aria-hidden="true">
                     &#9993;
@@ -126,7 +132,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Follow TransVista Africa on ${social.label}`}
-                    className={`text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600 ${SOCIAL_HOVER[social.key]}`}
+                    className={`text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600 ${SOCIAL_HOVER[social.key]}`}
                   >
                     <Icon size={22} />
                   </a>
@@ -137,7 +143,7 @@ export function Footer() {
         </div>
 
         {/* ── Bottom Bar ── */}
-        <div className="mt-12 flex flex-col gap-3 border-t border-slate-800 py-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 py-6 lg:flex-row lg:items-center lg:justify-between">
           <p className="text-sm text-slate-500">
             {footerContent.bottom.copyright}
           </p>
