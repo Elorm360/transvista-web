@@ -14,7 +14,7 @@ export default async function AdminCommunityPage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         icon={Users}
-        title="Community Members"
+        title="community members"
         description="Manage and view everyone who has joined the TransVista Community."
       />
 
