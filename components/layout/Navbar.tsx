@@ -14,40 +14,57 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 48);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // The hero is dark, so the navbar starts as a transparent glass panel
+  // with light text, then crossfades to a solid white glass bar with
+  // dark text once the user scrolls past it.
+  const solid = scrolled || mobileOpen;
+
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b transition-all duration-300",
-        scrolled
-          ? "border-slate-200 bg-white/95 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]"
-          : "border-transparent bg-white/90",
+        "sticky top-0 z-50 border-b backdrop-blur-xl transition-all duration-300",
+        solid
+          ? "border-slate-200 bg-white/90 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]"
+          : "border-white/10 bg-white/[0.06]",
       )}
     >
       {/* refined top accent edge */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"
+        className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand-orange-500 to-transparent"
       />
       <Container>
         <div className="flex h-16 items-center justify-between gap-4 lg:h-[72px]">
-          <Logo priority className="shrink-0" />
+          <div
+            className={cn(
+              "shrink-0 rounded-full px-1 py-0.5 transition-colors duration-300",
+              !solid && "bg-white/90 backdrop-blur-sm",
+            )}
+          >
+            <Logo priority />
+          </div>
 
-          <NavLinks className="hidden lg:flex" />
+          <NavLinks className="hidden lg:flex" tone={solid ? "light" : "dark"} />
 
           <div className="hidden lg:block">
-            <WaitlistButton className="shadow-sm shadow-amber-900/10" />
+            <WaitlistButton className="rounded-full shadow-sm shadow-brand-orange-900/10" />
           </div>
 
           <button
             type="button"
             onClick={() => setMobileOpen((prev) => !prev)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600 lg:hidden"
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600 lg:hidden",
+              solid
+                ? "border-slate-200 text-slate-700 hover:border-slate-300 hover:text-slate-900"
+                : "border-white/25 text-white hover:border-white/50",
+            )}
             aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileOpen}
           >

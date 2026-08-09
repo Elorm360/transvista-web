@@ -9,7 +9,7 @@ import { ecosystemContent } from "@/content/ecosystem";
 
 export function Ecosystem() {
   return (
-    <Section id="ecosystem" className="bg-amber-50/40">
+    <Section id="ecosystem" className="bg-brand-orange-50/40">
       <Container>
         <Reveal>
           <SectionHeader
@@ -35,7 +35,7 @@ export function Ecosystem() {
         <Reveal className="mt-12 text-center">
           <a
             href="#"
-            className="inline-flex items-center rounded-full font-semibold text-amber-700 transition-colors hover:text-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-600"
+            className="inline-flex items-center rounded-full font-semibold text-brand-orange-700 transition-colors hover:text-brand-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600"
           >
             {ecosystemContent.cta.label} <span className="ml-1" aria-hidden="true">&rarr;</span>
           </a>

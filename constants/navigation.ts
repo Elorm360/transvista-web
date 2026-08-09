@@ -4,6 +4,10 @@ export const navigation = [
     href: "#discover",
   },
   {
+    label: "Services",
+    href: "#services",
+  },
+  {
     label: "Experiences",
     href: "#experiences",
   },

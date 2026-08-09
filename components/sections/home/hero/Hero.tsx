@@ -1,30 +1,44 @@
 import { Container } from "@/components/ui/Container";
-import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 
+import { HeroBackground } from "./HeroBackground";
 import { HeroBadge } from "./HeroBadge";
 import { HeroContent } from "./HeroContent";
 import { HeroActions } from "./HeroActions";
+import { HeroStats } from "./HeroStats";
 import { HeroVisual } from "./HeroVisual";
 
 export function Hero() {
   return (
-    <Section id="discover" className="overflow-hidden pt-10 pb-8 lg:pt-16 lg:pb-12">
-      <Container>
-        <div className="grid items-center gap-12 lg:grid-cols-[48%_52%] lg:gap-10">
-          <Reveal>
-            <div>
-              <HeroBadge />
-              <HeroContent />
-              <HeroActions />
-            </div>
-          </Reveal>
+    <section
+      id="discover"
+      className="relative isolate flex min-h-[92vh] scroll-mt-24 items-center overflow-hidden pt-28 pb-16 lg:scroll-mt-28 lg:pt-32"
+    >
+      <HeroBackground />
 
-          <Reveal delay={120} direction="right">
+      <Container className="relative">
+        <div className="grid items-center gap-12 lg:grid-cols-[48%_52%] lg:gap-10">
+          <div>
+            <Reveal delay={0}>
+              <HeroBadge />
+            </Reveal>
+
+            <Reveal delay={120}>
+              <HeroContent />
+            </Reveal>
+
+            <Reveal delay={280}>
+              <HeroActions />
+            </Reveal>
+
+            <HeroStats />
+          </div>
+
+          <Reveal delay={200} direction="right">
             <HeroVisual />
           </Reveal>
         </div>
       </Container>
-    </Section>
+    </section>
   );
 }

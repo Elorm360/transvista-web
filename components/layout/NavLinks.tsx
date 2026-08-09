@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils";
 interface NavLinksProps {
   className?: string;
   onNavigate?: () => void;
+  /** "light" text for solid/white bars (default), "dark" (white text) for the transparent glass navbar over the hero. */
+  tone?: "light" | "dark";
 }
 
-export function NavLinks({ className, onNavigate }: NavLinksProps) {
+export function NavLinks({ className, onNavigate, tone = "light" }: NavLinksProps) {
   return (
     <nav
       className={cn("items-center gap-8", className)}
@@ -18,7 +20,12 @@ export function NavLinks({ className, onNavigate }: NavLinksProps) {
           key={item.label}
           href={item.href}
           onClick={onNavigate}
-          className="rounded-full px-2 py-1 text-sm font-medium text-slate-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
+          className={cn(
+            "rounded-full px-2 py-1 text-sm font-medium transition-all duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600",
+            tone === "dark"
+              ? "text-white/90 hover:text-brand-orange-300"
+              : "text-slate-700 hover:text-brand-blue-700",
+          )}
         >
           {item.label}
         </Link>

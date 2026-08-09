@@ -22,7 +22,7 @@ export function Logo({
   return (
     <Link
       href="/"
-      className={`flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 ${className}`.trim()}
+      className={`flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 ${className}`.trim()}
       aria-label="TransVista Africa Home"
     >
       <Image

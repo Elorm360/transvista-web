@@ -6,16 +6,18 @@ import { cn } from "@/lib/utils";
 interface WaitlistButtonProps {
   className?: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
+  tabIndex?: number;
 }
 
-export function WaitlistButton({ className, onClick }: WaitlistButtonProps) {
+export function WaitlistButton({ className, onClick, tabIndex }: WaitlistButtonProps) {
   return (
     <Link
       href="#waitlist"
       onClick={onClick}
+      tabIndex={tabIndex}
       className={cn(
         buttonVariants({ variant: "default", size: "default" }),
-        "transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-900/15",
+        "transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-blue-900/15",
         className,
       )}
     >

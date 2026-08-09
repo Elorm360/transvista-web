@@ -177,22 +177,22 @@ export function WaitlistForm() {
       {isDuplicate && (
         <div
           aria-live="polite"
-          className="mx-auto mt-8 w-full max-w-md rounded-xl border border-amber-200 bg-amber-50 p-6"
+          className="mx-auto mt-8 w-full max-w-md rounded-xl border border-brand-orange-200 bg-brand-orange-50 p-6"
         >
           <div className="flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange-100">
               <Heart
-                className="h-7 w-7 text-amber-600"
+                className="h-7 w-7 text-brand-orange-600"
                 fill="currentColor"
                 aria-hidden="true"
               />
             </div>
 
-            <h3 className="mt-4 text-xl font-bold text-amber-900">
+            <h3 className="mt-4 text-xl font-bold text-brand-orange-900">
               {waitlistContent.duplicate.heading}
             </h3>
 
-            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-amber-800">
+            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-brand-orange-800">
               {waitlistContent.duplicate.body}
             </p>
           </div>
@@ -225,7 +225,7 @@ export function WaitlistForm() {
             className="mb-1.5 block text-sm font-medium text-slate-200"
           >
             {waitlistContent.form.fullNameLabel}
-            <span className="ml-0.5 text-blue-300" aria-hidden="true">
+            <span className="ml-0.5 text-brand-orange-300" aria-hidden="true">
               *
             </span>
           </label>
@@ -238,7 +238,7 @@ export function WaitlistForm() {
             value={form.fullName}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           />
           {errors.fullName && (
             <p className="mt-1 text-sm text-red-300">{errors.fullName}</p>
@@ -252,7 +252,7 @@ export function WaitlistForm() {
             className="mb-1.5 block text-sm font-medium text-slate-200"
           >
             {waitlistContent.form.emailLabel}
-            <span className="ml-0.5 text-blue-300" aria-hidden="true">
+            <span className="ml-0.5 text-brand-orange-300" aria-hidden="true">
               *
             </span>
           </label>
@@ -265,7 +265,7 @@ export function WaitlistForm() {
             value={form.email}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           />
           {errors.email && (
             <p className="mt-1 text-sm text-red-300">{errors.email}</p>
@@ -289,7 +289,7 @@ export function WaitlistForm() {
             value={form.phone}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder:text-slate-300 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
 
@@ -300,7 +300,7 @@ export function WaitlistForm() {
             className="mb-1.5 block text-sm font-medium text-slate-200"
           >
             {waitlistContent.form.countryLabel}
-            <span className="ml-0.5 text-blue-300" aria-hidden="true">
+            <span className="ml-0.5 text-brand-orange-300" aria-hidden="true">
               *
             </span>
           </label>
@@ -310,7 +310,7 @@ export function WaitlistForm() {
             value={form.country}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="" disabled className="text-slate-400">
               {waitlistContent.form.countryPlaceholder}
@@ -333,7 +333,7 @@ export function WaitlistForm() {
             className="mb-1.5 block text-sm font-medium text-slate-200"
           >
             {waitlistContent.form.interestLabel}
-            <span className="ml-0.5 text-blue-300" aria-hidden="true">
+            <span className="ml-0.5 text-brand-orange-300" aria-hidden="true">
               *
             </span>
           </label>
@@ -343,7 +343,7 @@ export function WaitlistForm() {
             value={form.interest}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="" disabled className="text-slate-400">
               {waitlistContent.form.interestPlaceholder}
