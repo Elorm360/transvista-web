@@ -137,24 +137,9 @@ export function HeroVisual() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
       </div>
 
-      {/* Bottom information card */}
-      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center gap-3 rounded-xl border border-white/20 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md">
-        <div className="h-9 w-9 rounded-full bg-brand-orange-100" />
-
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-slate-900">
-            Curated by local experts
-          </p>
-
-          <p className="text-xs text-slate-500">
-            Transport, travel, and trust in one place
-          </p>
-        </div>
-      </div>
-
       {/* Carousel indicators */}
       <div
-        className="absolute bottom-[92px] left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/25 px-2.5 py-1.5 backdrop-blur-sm"
+        className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/25 px-2.5 py-1.5 backdrop-blur-sm"
         aria-label="Hero image slideshow"
       >
         {heroImages.map((image, index) => (

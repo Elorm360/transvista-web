@@ -6,7 +6,6 @@ import { Experiences } from "@/components/sections/home/experiences";
 import { ExploreByExperience } from "@/components/sections/home/explore-by-experience";
 import { HowItWorks } from "@/components/sections/home/how-it-works";
 import { Ecosystem } from "@/components/sections/home/ecosystem";
-import { ImpactNumbers } from "@/components/sections/home/impact/ImpactNumbers";
 import { Waitlist } from "@/components/sections/home/waitlist";
 
 export default function HomePage() {
@@ -20,7 +19,6 @@ export default function HomePage() {
       <ExploreByExperience />
       <HowItWorks />
       <Ecosystem />
-      <ImpactNumbers />
       <Waitlist />
     </main>
   );
