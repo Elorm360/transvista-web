@@ -1,4 +1,6 @@
 import { Hero } from "@/components/sections/home/hero/Hero";
+import { DestinationGrid } from "@/components/destinations/DestinationGrid";
+import { ExperienceGrid } from "@/components/experiences/ExperienceGrid";
 import { WhyTransVista } from "@/components/sections/home/why-transvista";
 import { Experiences } from "@/components/sections/home/experiences";
 import { ExploreByExperience } from "@/components/sections/home/explore-by-experience";
@@ -10,6 +12,8 @@ export default function HomePage() {
   return (
     <main id="main-content">
       <Hero />
+      <DestinationGrid />
+      <ExperienceGrid />
       <WhyTransVista />
       <Experiences />
       <ExploreByExperience />
