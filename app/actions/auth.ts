@@ -77,7 +77,7 @@ export async function signIn(
   } = await supabase.auth.getUser();
 
   // Authenticated but not authorized → /unauthorized (never /admin)
-  if (!isAdmin(user)) {
+  if (!(await isAdmin(user))) {
     redirect("/unauthorized");
   }
 

@@ -1,23 +1,32 @@
 import { Settings } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import SectionCard from "@/components/admin/SectionCard";
+import TeamMembersTable from "@/components/admin/TeamMembersTable";
+import { getTeamMembers } from "@/lib/dashboard/getTeamMembers";
 
-export default function AdminSettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminSettingsPage() {
+  const members = await getTeamMembers();
+
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <PageHeader
         icon={Settings}
         title="Settings"
-        description="Configure your admin preferences and account settings."
+        description="Manage your TransVista admin team and account settings."
       />
 
-      <SectionCard title="Coming soon">
-        <p className="text-sm leading-7 text-slate-500">
-          Settings will be available in a future sprint. You&apos;ll be
-          able to manage notifications, team members, and email
-          configuration from here.
-        </p>
-      </SectionCard>
+      <div className="mt-6 space-y-6">
+        <SectionCard title="Team access">
+          <p className="text-sm leading-7 text-slate-500">
+            Manage the people who have access to the TransVista
+            administration system.
+          </p>
+        </SectionCard>
+
+        <TeamMembersTable members={members} />
+      </div>
     </div>
   );
 }

@@ -6,13 +6,11 @@ import AdminShell from "@/components/admin/AdminShell";
 /**
  * Admin layout (server component)
  *
- * Defense-in-depth: the proxy (`proxy.ts`) already blocks unauthenticated
- * and unauthorized requests at the edge, but this guard runs again during
- * server-side rendering so the admin chrome can never render for a
- * signed-in user without admin permission — even on direct navigation.
+ * Authentication:
+ * no session → /login
  *
- * Authentication: no session → /login
- * Authorization: session but not an admin → /unauthorized
+ * Authorization:
+ * session but not an active admin team member → /unauthorized
  */
 export default async function AdminLayout({
   children,
@@ -30,11 +28,10 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  // Signed in but not authorized → /unauthorized
-  if (!isAdmin(user)) {
+  // Signed in but not an active admin team member → /unauthorized
+  if (!(await isAdmin(user))) {
     redirect("/unauthorized");
   }
 
   return <AdminShell>{children}</AdminShell>;
 }
-

@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isAdmin } from "@/lib/auth/isAdmin";
 
 /**
  * updateSession
@@ -75,11 +74,23 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Signed in but NOT authorized + visiting a protected route →
-  // go to /unauthorized (they are authenticated, just not permitted)
+  // Signed in but NOT an active team member + visiting a protected
+  // route → /unauthorized. Lookup uses this proxy's Supabase client
+  // rather than isAdmin(), which depends on next/headers cookies().
+  let isActiveTeamMember = false;
+  if (user) {
+    const { data: teamMember } = await supabase
+      .from("admin_team_members")
+      .select("status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    isActiveTeamMember = teamMember?.status === "active";
+  }
+
   if (
     user &&
-    !isAdmin(user) &&
+    !isActiveTeamMember &&
     request.nextUrl.pathname.startsWith("/admin")
   ) {
     const url = request.nextUrl.clone();

@@ -1,58 +1,88 @@
 import type { User } from "@supabase/supabase-js";
 
-/* ──────────────────────────────────────────────────────────────
- * Authorization layer
- *
- * Separates authentication ("who are you?") from authorization
- * ("what are you allowed to do?").
- *
- * v1.0 has a single Owner. To scale into a role-based system
- * (Owner / Admin / Support / Editor), extend `roles` below without
- * changing any call site — `roleFor(user)` already returns the
- * role for a given user.
- * ────────────────────────────────────────────────────────────── */
-
 /**
- * Allowed admin roles. For v1.0 there is a single Owner.
+ * Central authorization layer for the TransVista admin system.
  *
- * To add roles later:
- *   - extend this type
- *   - add a case in `roles`
- *   - add the user's email under the new role
+ * Authentication = who is signed in?
+ * Authorization = what can that person access?
  */
-export type AdminRole = "owner";
 
-/**
- * The single source of truth for role membership.
- * Map an email address to its role.
- */
+export type AdminRole =
+  | "owner"
+  | "admin"
+  | "community_manager"
+  | "support";
+
 const roles: Record<string, AdminRole> = {
   "info@transvistaafrica.com": "owner",
 };
 
 /**
- * Return the admin role for an authenticated user, or null if the
- * user has no admin access.
- *
- * @param user - The authenticated Supabase user
- * @returns The user's admin role, or null if they are not authorized
+ * Return the role assigned to an authenticated user.
  */
-export function roleFor(user: Pick<User, "email"> | null): AdminRole | null {
+export function roleFor(
+  user: Pick<User, "email"> | null,
+): AdminRole | null {
   if (!user?.email) return null;
+
   return roles[user.email.toLowerCase()] ?? null;
 }
 
 /**
- * Check whether an authenticated user is authorized to access the
- * admin area.
- *
- * Centralize all authorization decisions here — never duplicate
- * email checks elsewhere in the application.
- *
- * @param user - The authenticated Supabase user
- * @returns true if the user is an admin, false otherwise
+ * Basic admin check.
  */
-export function isAdmin(user: Pick<User, "email"> | null): boolean {
+export function isAdmin(
+  user: Pick<User, "email"> | null,
+): boolean {
   return roleFor(user) !== null;
 }
 
+/**
+ * Check whether the user is the TransVista owner.
+ *
+ * Kept for the invitation server action until roles are read from
+ * admin_team_members.
+ */
+export function isOwner(
+  user: Pick<User, "email"> | null,
+): boolean {
+  return roleFor(user) === "owner";
+}
+
+/**
+ * Check whether a role can access a particular admin area.
+ */
+export function canAccess(
+  role: AdminRole | null,
+  area:
+    | "dashboard"
+    | "community"
+    | "analytics"
+    | "settings",
+): boolean {
+  if (!role) return false;
+
+  switch (area) {
+    case "dashboard":
+      return true;
+
+    case "community":
+      return (
+        role === "owner" ||
+        role === "admin" ||
+        role === "community_manager"
+      );
+
+    case "analytics":
+      return (
+        role === "owner" ||
+        role === "admin"
+      );
+
+    case "settings":
+      return role === "owner";
+
+    default:
+      return false;
+  }
+}

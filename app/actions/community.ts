@@ -30,7 +30,7 @@ export async function deleteMember(memberId: string) {
     throw new Error("You are not authenticated.");
   }
 
-  if (!isAdmin(user)) {
+  if (!(await isAdmin(user))) {
     console.error("[deleteMember] Unauthorized user:", user.email);
     throw new Error("You are not authorized to delete community members.");
   }
