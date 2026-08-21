@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabasePublicEnv } from "@/lib/supabase/env";
 import { isAdmin } from "@/lib/auth/isAdmin";
 
 export interface SignInState {
@@ -42,6 +43,14 @@ export async function signIn(
   if (!password) {
     return {
       error: "Please enter your password.",
+      failed: true,
+    };
+  }
+
+  if (!getSupabasePublicEnv()) {
+    return {
+      error:
+        "Sign-in is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local, then restart the dev server.",
       failed: true,
     };
   }
