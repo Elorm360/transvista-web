@@ -1,16 +1,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/auth/isAdmin";
+import { getAdminRole } from "@/lib/auth/getAdminRole";
 import AdminShell from "@/components/admin/AdminShell";
 
 /**
- * Admin layout (server component)
+ * Admin layout
  *
  * Authentication:
- * no session → /login
+ *   No session → /login
  *
  * Authorization:
- * session but not an active admin team member → /unauthorized
+ *   Session exists but no active admin-team membership → /unauthorized
+ *
+ * The user's role is read from admin_team_members rather than being
+ * hard-coded in the application.
  */
 export default async function AdminLayout({
   children,
@@ -23,15 +26,33 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Not signed in → /login
+  /*
+   * ------------------------------------------------------------
+   * 1. Authentication
+   * ------------------------------------------------------------
+   */
+
   if (!user) {
     redirect("/login");
   }
 
-  // Signed in but not an active admin team member → /unauthorized
-  if (!(await isAdmin(user))) {
+  /*
+   * ------------------------------------------------------------
+   * 2. Database-backed authorization
+   * ------------------------------------------------------------
+   */
+
+  const role = await getAdminRole(user.email);
+
+  if (!role) {
     redirect("/unauthorized");
   }
+
+  /*
+   * ------------------------------------------------------------
+   * 3. Render admin application
+   * ------------------------------------------------------------
+   */
 
   return <AdminShell>{children}</AdminShell>;
 }
