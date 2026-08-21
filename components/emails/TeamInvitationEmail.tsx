@@ -13,22 +13,30 @@ import {
 } from "@react-email/components";
 
 interface TeamInvitationEmailProps {
-  fullName: string;
-  roleLabel: string;
+  recipientName: string;
+  role: string;
   inviteUrl: string;
+}
+
+function formatRoleLabel(role: string): string {
+  return role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 /**
  * TeamInvitationEmail
  *
  * Branded invitation sent when the TransVista owner adds a team member.
- * Not wired to Resend yet — Step 2 will send this from a server action.
+ * Rendered on the server by `sendTeamInvitation` — never in the browser.
  */
 export default function TeamInvitationEmail({
-  fullName,
-  roleLabel,
+  recipientName,
+  role,
   inviteUrl,
 }: TeamInvitationEmailProps) {
+  const roleLabel = formatRoleLabel(role);
   const previewText = `You've been invited to join the TransVista team as ${roleLabel}.`;
 
   return (
@@ -92,7 +100,7 @@ export default function TeamInvitationEmail({
                 color: "#334155",
               }}
             >
-              Hello {fullName},
+              Hello {recipientName},
             </Text>
 
             <Text
