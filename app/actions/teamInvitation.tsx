@@ -5,7 +5,7 @@ import { render } from "@react-email/render";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminRole } from "@/lib/auth/getAdminRole";
-import TeamInvitationEmail from "@/components/emails/TeamInvitationEmail";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -82,25 +82,37 @@ export async function sendTeamInvitation({
     throw new Error("Team member role is required.");
   }
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
 
   /*
    * ------------------------------------------------------------
-   * 3. Create the Supabase Auth invitation
+   * 3. Create the Auth user and a one-time invite token
+   *
+   * generateLink({ type: "invite" }) creates the user and returns
+   * hashed_token. We put that token on our /auth/callback URL so
+   * the branded Resend email is the presentation layer and
+   * Supabase remains the security layer. We do not call
+   * inviteUserByEmail(), which would also send Supabase's default
+   * invite email.
    *
    * createAdminClient() uses the service-role key and must ONLY
-   * run on the server. inviteUserByEmail() is the secure token
-   * source — we do not mint our own.
+   * run on the server.
    * ------------------------------------------------------------
    */
 
   const adminSupabase = createAdminClient();
 
   const { data: invitation, error: inviteError } =
-    await adminSupabase.auth.admin.inviteUserByEmail(cleanEmail, {
-      data: { full_name: cleanName },
-      redirectTo: `${siteUrl}/auth/callback`,
+    await adminSupabase.auth.admin.generateLink({
+      type: "invite",
+      email: cleanEmail,
+      options: {
+        data: {
+          full_name: cleanName,
+          must_set_password: true,
+        },
+        redirectTo: `${siteUrl}/admin/setup`,
+      },
     });
 
   if (inviteError) {
@@ -115,9 +127,14 @@ export async function sendTeamInvitation({
   }
 
   const invitedUserId = invitation.user?.id;
+  const hashedToken = invitation.properties?.hashed_token;
 
   if (!invitedUserId) {
     throw new Error("Invitation was created but no user id was returned.");
+  }
+
+  if (!hashedToken) {
+    throw new Error("Invitation was created but no secure token was returned.");
   }
 
   /*
@@ -151,6 +168,8 @@ export async function sendTeamInvitation({
      * If the Auth user was created but the team record failed,
      * don't silently pretend the invitation succeeded.
      */
+    await adminSupabase.auth.admin.deleteUser(invitedUserId);
+
     throw new Error(
       "The account was created, but the team membership could not be saved.",
     );
@@ -162,7 +181,7 @@ export async function sendTeamInvitation({
    * ------------------------------------------------------------
    */
 
-  const inviteUrl = `${siteUrl}/admin/setup`;
+  const inviteUrl = `${siteUrl}/auth/callback?token_hash=${encodeURIComponent(hashedToken)}&type=invite&next=${encodeURIComponent("/admin/setup")}`;
 
   const emailHtml = await render(
     <TeamInvitationEmail

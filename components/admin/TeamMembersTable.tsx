@@ -10,7 +10,7 @@ import {
   X,
   Users,
 } from "lucide-react";
-import { inviteTeamMember } from "@/app/actions/team-members";
+import { sendTeamInvitation } from "@/app/actions/teamInvitation";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 
 interface TeamMembersTableProps {
@@ -63,8 +63,8 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
     setIsInviting(true);
 
     try {
-      await inviteTeamMember({
-        fullName,
+      await sendTeamInvitation({
+        name: fullName,
         email,
         role,
       });

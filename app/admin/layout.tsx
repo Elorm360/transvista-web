@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminRole } from "@/lib/auth/getAdminRole";
-import AdminShell from "@/components/admin/AdminShell";
 
 /**
  * Admin layout
@@ -12,8 +11,9 @@ import AdminShell from "@/components/admin/AdminShell";
  * Authorization:
  *   Session exists but no active admin-team membership → /unauthorized
  *
- * The user's role is read from admin_team_members rather than being
- * hard-coded in the application.
+ * First-time invited users (must_set_password) still pass this gate
+ * so they can reach /admin/setup. The console chrome is applied in
+ * `app/admin/(console)/layout.tsx`.
  */
 export default async function AdminLayout({
   children,
@@ -26,21 +26,9 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  /*
-   * ------------------------------------------------------------
-   * 1. Authentication
-   * ------------------------------------------------------------
-   */
-
   if (!user) {
     redirect("/login");
   }
-
-  /*
-   * ------------------------------------------------------------
-   * 2. Database-backed authorization
-   * ------------------------------------------------------------
-   */
 
   const role = await getAdminRole(user.email);
 
@@ -48,11 +36,5 @@ export default async function AdminLayout({
     redirect("/unauthorized");
   }
 
-  /*
-   * ------------------------------------------------------------
-   * 3. Render admin application
-   * ------------------------------------------------------------
-   */
-
-  return <AdminShell role={role}>{children}</AdminShell>;
+  return <>{children}</>;
 }
