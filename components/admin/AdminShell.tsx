@@ -13,12 +13,33 @@ import {
   LogOut,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
+import type { AdminRole } from "@/lib/auth/isAdmin";
 
 const sidebarItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Community", href: "/admin/community", icon: Users },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  {
+    label: "Dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
+    roles: ["owner", "admin", "community_manager", "support"] as AdminRole[],
+  },
+  {
+    label: "Community",
+    href: "/admin/community",
+    icon: Users,
+    roles: ["owner", "admin", "community_manager", "support"] as AdminRole[],
+  },
+  {
+    label: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart3,
+    roles: ["owner", "admin"] as AdminRole[],
+  },
+  {
+    label: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+    roles: ["owner"] as AdminRole[],
+  },
 ];
 
 /**
@@ -31,8 +52,10 @@ const sidebarItems = [
  */
 export default function AdminShell({
   children,
+  role,
 }: Readonly<{
   children: React.ReactNode;
+  role: AdminRole;
 }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,7 +94,9 @@ export default function AdminShell({
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-6" aria-label="Primary Navigation">
-          {sidebarItems.map((item) => {
+          {sidebarItems
+            .filter((item) => item.roles.includes(role))
+            .map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
