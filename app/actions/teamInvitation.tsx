@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminRole } from "@/lib/auth/getAdminRole";
 import { getSiteUrl } from "@/lib/siteUrl";
+import TeamInvitationEmail from "@/components/emails/TeamInvitationEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
