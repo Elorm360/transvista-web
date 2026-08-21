@@ -70,7 +70,8 @@ export function canAccess(
       return (
         role === "owner" ||
         role === "admin" ||
-        role === "community_manager"
+        role === "community_manager" ||
+        role === "support"
       );
 
     case "analytics":

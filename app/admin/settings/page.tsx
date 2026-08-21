@@ -3,10 +3,13 @@ import PageHeader from "@/components/admin/PageHeader";
 import SectionCard from "@/components/admin/SectionCard";
 import TeamMembersTable from "@/components/admin/TeamMembersTable";
 import { getTeamMembers } from "@/lib/dashboard/getTeamMembers";
+import { requireAdminAccess } from "@/lib/auth/requireAdminAccess";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
+  await requireAdminAccess("settings");
+
   const members = await getTeamMembers();
 
   return (
