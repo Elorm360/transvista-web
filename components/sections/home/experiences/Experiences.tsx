@@ -3,12 +3,14 @@ import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Reveal } from "@/components/motion/Reveal";
 import { ExperienceCard } from "./ExperienceCard";
-
+import { destinations } from "@/constants/data/destinations";
 import { experiencesContent } from "@/content/experiences";
 
 export function Experiences() {
+  const featured = destinations.filter((destination) => destination.featured);
+
   return (
-    <Section id="experiences">
+    <Section id="explore-ghana">
       <Container>
         <Reveal>
           <SectionHeader
@@ -20,13 +22,14 @@ export function Experiences() {
         </Reveal>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {experiencesContent.items.map((experience, i) => (
-            <Reveal key={experience.id} delay={i * 80}>
+          {featured.map((destination, i) => (
+            <Reveal key={destination.id} delay={i * 80}>
               <ExperienceCard
-                title={experience.title}
-                category={experience.category}
-                location={experience.location}
-                image={experience.image}
+                title={destination.name}
+                category={destination.category}
+                location={destination.region}
+                image={destination.image}
+                href={`/destinations/${destination.slug}`}
               />
             </Reveal>
           ))}

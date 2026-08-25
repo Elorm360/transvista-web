@@ -1,52 +1,14 @@
-export interface Experience {
-  id: string;
-  slug: string;
-  title: string;
-  category: string;
-  location: string;
-  image: string;
-}
-
 export interface ExperiencesContent {
   badge: string;
   title: string;
   description: string;
-  items: Experience[];
 }
 
-export const experiencesContent = {
-  badge: "Featured Experiences",
+export const experiencesContent: ExperiencesContent = {
+  badge: "Explore Ghana",
 
-  title: "Discover journeys worth remembering.",
+  title: "Six places to start.",
 
   description:
-    "From rich cultural landmarks to breathtaking natural wonders, explore experiences that showcase the beauty and diversity of Ghana.",
-
-  items: [
-    {
-      id: "cape-coast",
-      slug: "cape-coast-heritage",
-      title: "Cape Coast Heritage",
-      category: "History & Culture",
-      location: "Central Region",
-      image: "/images/experiences/cape-coast-heritage.jpg",
-    },
-    {
-      id: "mole",
-      slug: "mole-national-park",
-      title: "Mole National Park",
-      category: "Wildlife",
-      location: "Savannah Region",
-      image: "/images/experiences/mole-national-park.jpg",
-    },
-    {
-      id: "wli",
-      slug: "wli-waterfalls",
-      title: "Wli Waterfalls",
-      category: "Nature",
-      location: "Volta Region",
-      image: "/images/experiences/wli-waterfalls.jpg",
-    },
-  ],
-} as const;
-
+    "Open a real destination — Accra, Cape Coast, Kumasi, Volta, Mole, Kakum — then join the waitlist if you want that journey planned with trusted partners.",
+};

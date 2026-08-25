@@ -130,7 +130,7 @@ export async function joinWaitlist(data: {
   /* ── Step 2: Send welcome email (graceful failure) ── */
   let emailSent = false;
   try {
-    await sendWelcomeEmail(fullName, normalizedEmail);
+    await sendWelcomeEmail(fullName, normalizedEmail, interest);
     emailSent = true;
   } catch (emailError) {
     console.error("[joinWaitlist] Failed to send welcome email:", {

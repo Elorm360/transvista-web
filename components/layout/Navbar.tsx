@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "./Logo";
@@ -10,8 +11,10 @@ import { MobileMenu } from "./MobileMenu";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const onHome = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 48);
@@ -23,7 +26,7 @@ export function Navbar() {
   // The hero is dark, so the navbar starts as a transparent glass panel
   // with light text, then crossfades to a solid white glass bar with
   // dark text once the user scrolls past it.
-  const solid = scrolled || mobileOpen;
+  const solid = scrolled || mobileOpen || !onHome;
 
   return (
     <header

@@ -4,8 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { HeroBackground } from "./HeroBackground";
 import { HeroBadge } from "./HeroBadge";
 import { HeroContent } from "./HeroContent";
-import { HeroActions } from "./HeroActions";
-import { HeroStats } from "./HeroStats";
+import { HeroWaitlist } from "./HeroWaitlist";
 import { HeroVisual } from "./HeroVisual";
 
 export function Hero() {
@@ -17,7 +16,7 @@ export function Hero() {
       <HeroBackground />
 
       <Container className="relative">
-        <div className="grid items-center gap-12 lg:grid-cols-[48%_52%] lg:gap-10">
+        <div className="grid items-start gap-12 lg:grid-cols-[48%_52%] lg:gap-10 lg:items-center">
           <div>
             <Reveal delay={0}>
               <HeroBadge />
@@ -28,10 +27,8 @@ export function Hero() {
             </Reveal>
 
             <Reveal delay={280}>
-              <HeroActions />
+              <HeroWaitlist />
             </Reveal>
-
-            <HeroStats />
           </div>
 
           <Reveal delay={200} direction="right">

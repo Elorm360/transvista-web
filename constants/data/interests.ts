@@ -24,3 +24,9 @@ export const interests = [
   "Student",
   "Other",
 ] as const;
+
+export type Interest = (typeof interests)[number];
+
+export const partnerInterests = interests.filter(
+  (interest) => interest !== "Traveler" && interest !== "Student",
+);

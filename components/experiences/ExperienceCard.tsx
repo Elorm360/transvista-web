@@ -1,5 +1,7 @@
-import type { Experience } from "@/constants/data/experiences";
+import Image from "next/image";
 import Link from "next/link";
+import type { Experience } from "@/constants/data/experiences";
+import { PhotoPlaceholder } from "@/components/media/PhotoPlaceholder";
 
 type ExperienceCardProps = {
   experience: Experience;
@@ -10,30 +12,21 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <Link href={`/experiences/${experience.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-white to-amber-50 px-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="h-6 w-6 text-slate-400"
-                aria-hidden="true"
-              >
-                <rect x="3" y="4" width="18" height="16" rx="2" />
-                <circle cx="8.5" cy="9" r="1.5" />
-                <path d="m21 15-4.5-4.5L7 20" />
-              </svg>
-            </div>
-
-            <p className="mt-3 text-sm font-semibold text-slate-600">
-              Original photo coming soon
-            </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              TransVista experience photography
-            </p>
-          </div>
+          {experience.image ? (
+            <Image
+              src={experience.image}
+              alt={experience.imageAlt}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              quality={75}
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <PhotoPlaceholder
+              label="Photo coming soon"
+              caption="TransVista experience photography"
+            />
+          )}
 
           {experience.featured && (
             <span className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-xs font-semibold text-amber-700 shadow-sm">

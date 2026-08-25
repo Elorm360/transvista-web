@@ -16,12 +16,18 @@ export interface WhyTransVistaContent {
 export const whyTransVistaContent: WhyTransVistaContent = {
   badge: "Why TransVista",
 
-  title: "Built on trust, not just convenience.",
+  title: "One connected journey. Built on trust.",
 
   description:
-    "Anyone can list a transport provider or a tour. What makes TransVista different is how every partner, payment, and journey is vetted, transparent, and built for the way people actually travel across Ghana.",
+    "Transport, experiences, and local partners belong in the same plan. TransVista vets the people in that plan, keeps pricing clear, and designs the trip for how Ghana is actually travelled.",
 
   cards: [
+    {
+      title: "One connected journey",
+      description:
+        "Mobility, curated experiences, and verified local partners in one place — not a stack of separate bookings that do not talk to each other.",
+      icon: "Compass",
+    },
     {
       title: "Verified & Secure",
       description:
@@ -31,32 +37,8 @@ export const whyTransVistaContent: WhyTransVistaContent = {
     {
       title: "Local Expertise",
       description:
-        "Built by people who know Ghana — guides and partners rooted in the communities you'll actually visit, not a generic directory.",
+        "Built with guides and partners rooted in the communities you’ll visit, with transparent pricing and people you can actually reach.",
       icon: "Users",
-    },
-    {
-      title: "Transparent Pricing",
-      description:
-        "No hidden fees or last-minute surprises. What you see when you plan is what you pay when you travel.",
-      icon: "BadgeCheck",
-    },
-    {
-      title: "Curated, Not Crowdsourced",
-      description:
-        "Every experience is selected with care by people who've actually been there — quality over an endless, unvetted list.",
-      icon: "Compass",
-    },
-    {
-      title: "Built for Africa",
-      description:
-        "Designed for the realities of travel across Ghana and the wider region — not a global template retrofitted for local roads.",
-      icon: "Globe2",
-    },
-    {
-      title: "Real Support, Real People",
-      description:
-        "A team that's reachable when you need help — before, during, and after your trip, not a chatbot loop.",
-      icon: "MessageCircle",
     },
   ],
 };

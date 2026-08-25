@@ -13,9 +13,13 @@ import {
   Text,
 } from "@react-email/components";
 
+import { isPartnerInterest } from "@/lib/waitlist/intent";
+
 interface WelcomeEmailProps {
   /** The recipient's full name */
   fullName: string;
+  /** Waitlist interest, used to send traveler vs partner follow-up copy */
+  interest?: string;
 }
 
 /**
@@ -24,12 +28,15 @@ interface WelcomeEmailProps {
  * Sent to new community members after they join the TransVista waitlist.
  * Designed to feel like an extension of the product — same tone, branding,
  * and professionalism as the website.
- *
-* @todo — Add social links when available.
  */
 export default function WelcomeEmail({
   fullName,
-}: WelcomeEmailProps) {  const previewText = `Welcome to the TransVista Family, ${fullName}!`;
+  interest = "Traveler",
+}: WelcomeEmailProps) {
+  const partner = isPartnerInterest(interest);
+  const previewText = partner
+    ? `Welcome to the TransVista partner community, ${fullName}.`
+    : `Welcome to the TransVista Family, ${fullName}!`;
 
   return (
     <Html>
@@ -37,8 +44,7 @@ export default function WelcomeEmail({
       <Preview>{previewText}</Preview>
 
       <Body style={main}>
-<Container style={container}>
-          {/* Logo */}
+        <Container style={container}>
           <Section style={logoSection}>
             <Img
               src="https://transvistaafrica.com/images/hero/transvista-logo.png"
@@ -51,39 +57,40 @@ export default function WelcomeEmail({
 
           <Hr style={hr} />
 
-          {/* Heading */}
           <Heading style={heading}>
             Welcome to the TransVista Family!
           </Heading>
 
-          {/* Personalised greeting */}
           <Text style={paragraph}>Hello {fullName},</Text>
 
-          <Text style={paragraph}>
-            Thank you for joining the TransVista Family.
-          </Text>
-
-          <Text style={paragraph}>
-            You&apos;re now one of our earliest community members, helping us
-            build Africa&apos;s trusted digital travel ecosystem.
-          </Text>
-
-          <Text style={paragraph}>
-            We&apos;ll keep you updated with:
-          </Text>
-
-          <Text style={listItem}>
-            ✓ Product launch announcements
-          </Text>
-          <Text style={listItem}>
-            ✓ New travel experiences
-          </Text>
-          <Text style={listItem}>
-            ✓ Partnership opportunities
-          </Text>
-          <Text style={listItem}>
-            ✓ Exclusive early access
-          </Text>
+          {partner ? (
+            <>
+              <Text style={paragraph}>
+                Thank you for joining as a partner. You&apos;re on the list for
+                TransVista&apos;s travel ecosystem — transport, stays, guides,
+                and tourism businesses connected in one trusted network.
+              </Text>
+              <Text style={paragraph}>We&apos;ll email you about:</Text>
+              <Text style={listItem}>✓ When partner onboarding opens</Text>
+              <Text style={listItem}>✓ How verified providers join the platform</Text>
+              <Text style={listItem}>✓ Ecosystem and launch updates</Text>
+              <Text style={listItem}>✓ The right moment to get involved</Text>
+            </>
+          ) : (
+            <>
+              <Text style={paragraph}>
+                Thank you for joining the TransVista Family as a traveler.
+                You&apos;re one of our earliest community members as we build a
+                trusted way to plan Ghana — transport, experiences, and local
+                partners in one journey.
+              </Text>
+              <Text style={paragraph}>We&apos;ll keep you updated with:</Text>
+              <Text style={listItem}>✓ Product launch announcements</Text>
+              <Text style={listItem}>✓ New destinations and travel experiences</Text>
+              <Text style={listItem}>✓ Early access before public launch</Text>
+              <Text style={listItem}>✓ Stories from Accra, Cape Coast, Volta, Mole, and beyond</Text>
+            </>
+          )}
 
           {/* CTA Button */}
           <Section style={buttonSection}>
