@@ -6,18 +6,34 @@ import { Resend } from "resend";
  * A single shared Resend client for all transactional emails.
  * Uses the RESEND_API_KEY environment variable.
  *
- * Every email in the application should use this client.
- *
- * @example
- * ```ts
- * import { resend } from "@/lib/email/resend";
- *
- * await resend.emails.send({
- *   from: "TransVista <hello@transvistaafrica.com>",
- *   to: user.email,
- *   subject: "Welcome to TransVista",
- *   react: <WelcomeEmail />,
- * });
- * ```
+ * Instantiated lazily so a missing key produces a clear server error
+ * instead of crashing at import time.
  */
-export const resend = new Resend(process.env.RESEND_API_KEY);
+let client: Resend | null = null;
+
+export function getResend(): Resend {
+  if (client) return client;
+
+  const apiKey = process.env.RESEND_API_KEY?.trim().replace(/^["']|["']$/g, "");
+
+  if (!apiKey || apiKey === "re_123" || apiKey.length < 20) {
+    throw new Error(
+      "RESEND_API_KEY is missing or invalid. Copy the full key from https://resend.com/api-keys into .env.local (it starts with re_ and is much longer than re_123), then restart the server.",
+    );
+  }
+
+  client = new Resend(apiKey);
+  return client;
+}
+
+/**
+ * Shared Resend client. Prefer getResend() in new code.
+ */
+export const resend = {
+  get emails() {
+    return getResend().emails;
+  },
+  get domains() {
+    return getResend().domains;
+  },
+};

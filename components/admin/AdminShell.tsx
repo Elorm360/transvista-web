@@ -13,12 +13,23 @@ import {
   LogOut,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
+import {
+  canAccess,
+  formatAdminRole,
+  type AdminArea,
+  type AdminRole,
+} from "@/lib/auth/permissions";
 
-const sidebarItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Community", href: "/admin/community", icon: Users },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+const sidebarItems: {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  area: AdminArea;
+}[] = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard, area: "dashboard" },
+  { label: "Community", href: "/admin/community", icon: Users, area: "community" },
+  { label: "Analytics", href: "/admin/analytics", icon: BarChart3, area: "analytics" },
+  { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings" },
 ];
 
 /**
@@ -27,19 +38,24 @@ const sidebarItems = [
  * Client-side admin chrome — sidebar navigation, top bar, responsive
  * mobile drawer, and the sign-out action. This is rendered only after
  * the server-side guard in `app/admin/layout.tsx` has confirmed the
- * user is authenticated AND authorized.
+ * user is an active team member. Menu items are filtered by role;
+ * each page still enforces the same rule on the server.
  */
 export default function AdminShell({
+  role,
   children,
 }: Readonly<{
+  role: AdminRole;
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const visibleItems = sidebarItems.filter((item) =>
+    canAccess(role, item.area),
+  );
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      {/* ── Mobile sidebar overlay ── */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/30 lg:hidden"
@@ -48,14 +64,12 @@ export default function AdminShell({
         />
       )}
 
-      {/* ── Sidebar ── */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Admin Navigation"
       >
-        {/* Logo / Brand */}
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-6">
           <Link href="/admin" className="text-lg font-bold text-slate-900">
             TransVista Admin
@@ -69,9 +83,8 @@ export default function AdminShell({
           </button>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-6" aria-label="Primary Navigation">
-          {sidebarItems.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -93,7 +106,6 @@ export default function AdminShell({
           })}
         </nav>
 
-        {/* Footer */}
         <div className="space-y-3 border-t border-slate-200 px-6 py-4">
           <form action={signOut}>
             <button
@@ -110,9 +122,7 @@ export default function AdminShell({
         </div>
       </aside>
 
-      {/* ── Main Area ── */}
       <div className="flex flex-1 flex-col">
-        {/* Top Bar */}
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 md:px-8">
           <div className="flex items-center gap-3">
             <button
@@ -128,18 +138,16 @@ export default function AdminShell({
           </div>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-              A
+              {formatAdminRole(role).charAt(0)}
             </div>
             <span className="hidden text-sm font-medium text-slate-600 sm:inline">
-              Administrator
+              {formatAdminRole(role)}
             </span>
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
       </div>
     </div>
   );
 }
-

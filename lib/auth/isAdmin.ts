@@ -1,88 +1,54 @@
 import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import type { AdminRole } from "@/lib/auth/permissions";
+
+export type { AdminRole, AdminArea } from "@/lib/auth/permissions";
+export { canAccess, formatAdminRole } from "@/lib/auth/permissions";
 
 /**
- * Central authorization layer for the TransVista admin system.
- *
- * Authentication = who is signed in?
- * Authorization = what can that person access?
+ * Get the role assigned to an authenticated user from admin_team_members.
  */
+export async function roleFor(
+  user: Pick<User, "id"> | null,
+): Promise<AdminRole | null> {
+  if (!user?.id) return null;
 
-export type AdminRole =
-  | "owner"
-  | "admin"
-  | "community_manager"
-  | "support";
+  const supabase = await createClient();
 
-const roles: Record<string, AdminRole> = {
-  "info@transvistaafrica.com": "owner",
-};
+  const { data, error } = await supabase
+    .from("admin_team_members")
+    .select("role, status")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-/**
- * Return the role assigned to an authenticated user.
- */
-export function roleFor(
-  user: Pick<User, "email"> | null,
-): AdminRole | null {
-  if (!user?.email) return null;
+  if (error) {
+    console.error("[roleFor] Supabase error:", error);
+    return null;
+  }
 
-  return roles[user.email.toLowerCase()] ?? null;
+  if (!data || data.status !== "active") {
+    return null;
+  }
+
+  return data.role as AdminRole;
 }
 
 /**
- * Basic admin check.
+ * Check whether an authenticated user has access to the admin area.
  */
-export function isAdmin(
-  user: Pick<User, "email"> | null,
-): boolean {
-  return roleFor(user) !== null;
+export async function isAdmin(
+  user: Pick<User, "id"> | null,
+): Promise<boolean> {
+  const role = await roleFor(user);
+  return role !== null;
 }
 
 /**
  * Check whether the user is the TransVista owner.
- *
- * Kept for the invitation server action until roles are read from
- * admin_team_members.
  */
-export function isOwner(
-  user: Pick<User, "email"> | null,
-): boolean {
-  return roleFor(user) === "owner";
-}
-
-/**
- * Check whether a role can access a particular admin area.
- */
-export function canAccess(
-  role: AdminRole | null,
-  area:
-    | "dashboard"
-    | "community"
-    | "analytics"
-    | "settings",
-): boolean {
-  if (!role) return false;
-
-  switch (area) {
-    case "dashboard":
-      return true;
-
-    case "community":
-      return (
-        role === "owner" ||
-        role === "admin" ||
-        role === "community_manager"
-      );
-
-    case "analytics":
-      return (
-        role === "owner" ||
-        role === "admin"
-      );
-
-    case "settings":
-      return role === "owner";
-
-    default:
-      return false;
-  }
+export async function isOwner(
+  user: Pick<User, "id"> | null,
+): Promise<boolean> {
+  const role = await roleFor(user);
+  return role === "owner";
 }

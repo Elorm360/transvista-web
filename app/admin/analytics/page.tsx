@@ -11,11 +11,14 @@ import KpiCard from "@/components/admin/KpiCard";
 import GrowthChart from "@/components/admin/charts/GrowthChart";
 import CountryDistributionChart from "@/components/admin/charts/CountryDistributionChart";
 import InterestBreakdownChart from "@/components/admin/charts/InterestBreakdownChart";
+import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 
 // Always fetch fresh data — analytics should never be stale.
 export const dynamic = "force-dynamic";
 
 export default async function AdminAnalyticsPage() {
+  await requireAdminArea("analytics");
+
   const [growthData, countries, interests, kpis] = await Promise.all([
     getGrowthData(30),
     getCountryDistribution(5),

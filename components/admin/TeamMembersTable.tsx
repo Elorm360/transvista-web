@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Shield,
   UserRound,
@@ -9,8 +10,12 @@ import {
   Plus,
   X,
   Users,
+  Trash2,
 } from "lucide-react";
-import { inviteTeamMember } from "@/app/actions/team-members";
+import {
+  inviteTeamMember,
+  removeTeamMember,
+} from "@/app/actions/team-members";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 
 interface TeamMembersTableProps {
@@ -34,6 +39,7 @@ function formatDate(isoString: string): string {
 }
 
 export default function TeamMembersTable({ members }: TeamMembersTableProps) {
+  const router = useRouter();
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [fullName, setFullName] = useState("");
@@ -45,6 +51,9 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [isInviting, setIsInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TeamMember | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   async function handleInvite() {
     setInviteError(null);
@@ -76,6 +85,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
       setFullName("");
       setEmail("");
       setRole("community_manager");
+      router.refresh();
     } catch (error) {
       setInviteError(
         error instanceof Error
@@ -84,6 +94,27 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
       );
     } finally {
       setIsInviting(false);
+    }
+  }
+
+  async function confirmRemove() {
+    if (!deleteTarget || isRemoving) return;
+
+    setIsRemoving(true);
+    setRemoveError(null);
+
+    try {
+      await removeTeamMember(deleteTarget.id);
+      setDeleteTarget(null);
+      router.refresh();
+    } catch (error) {
+      setRemoveError(
+        error instanceof Error
+          ? error.message
+          : "Failed to remove this team member.",
+      );
+    } finally {
+      setIsRemoving(false);
     }
   }
 
@@ -278,6 +309,10 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Added
                 </th>
+
+                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
 
@@ -325,10 +360,87 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                   <td className="px-6 py-4 text-sm text-slate-500">
                     {formatDate(member.createdAt)}
                   </td>
+
+                  <td className="px-6 py-4 text-right">
+                    {member.role === "owner" ? (
+                      <span className="text-xs text-slate-400">Protected</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRemoveError(null);
+                          setDeleteTarget(member);
+                        }}
+                        aria-label={`Remove ${member.fullName}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remove
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="remove-team-member-title"
+        >
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => !isRemoving && setDeleteTarget(null)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+              <Trash2 className="h-6 w-6 text-red-600" />
+            </div>
+            <h2
+              id="remove-team-member-title"
+              className="mt-4 text-lg font-semibold text-slate-900"
+            >
+              Remove this team member?
+            </h2>
+            <p className="mt-1.5 text-sm text-slate-500">
+              <span className="font-medium text-slate-700">
+                {deleteTarget.fullName}
+              </span>{" "}
+              ({deleteTarget.email}) will lose admin access and will no longer
+              be able to sign in.
+            </p>
+
+            {removeError && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {removeError}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isRemoving}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRemove}
+                disabled={isRemoving}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {isRemoving ? "Removing…" : "Remove"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

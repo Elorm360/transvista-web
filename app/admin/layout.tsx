@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/auth/isAdmin";
+import { roleFor } from "@/lib/auth/isAdmin";
 import AdminShell from "@/components/admin/AdminShell";
 
 /**
@@ -11,6 +11,8 @@ import AdminShell from "@/components/admin/AdminShell";
  *
  * Authorization:
  * session but not an active admin team member → /unauthorized
+ *
+ * Per-area permissions are enforced on each page via requireAdminArea().
  */
 export default async function AdminLayout({
   children,
@@ -23,15 +25,15 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Not signed in → /login
   if (!user) {
     redirect("/login");
   }
 
-  // Signed in but not an active admin team member → /unauthorized
-  if (!(await isAdmin(user))) {
+  const role = await roleFor(user);
+
+  if (!role) {
     redirect("/unauthorized");
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell role={role}>{children}</AdminShell>;
 }

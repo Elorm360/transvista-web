@@ -24,6 +24,6 @@ export async function proxy(request: NextRequest) {
  * assets, images, fonts, and API routes entirely.
  */
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: ["/admin/:path*", "/login", "/invite/:path*", "/auth/callback"],
 };
 

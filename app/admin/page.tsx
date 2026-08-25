@@ -3,12 +3,15 @@ import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/StatCard";
 import RecentMembers from "@/components/admin/RecentMembers";
 import { getDashboardStats, getRecentMembers } from "@/lib/dashboard/getDashboardStats";
+import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 
 // Always fetch fresh data from Supabase — never serve a statically
 // generated snapshot of the dashboard.
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
+  await requireAdminArea("dashboard");
+
   const [stats, recentMembers] = await Promise.all([
     getDashboardStats(),
     getRecentMembers(),

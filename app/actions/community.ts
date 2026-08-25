@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/auth/isAdmin";
+import { roleFor } from "@/lib/auth/isAdmin";
+import { canAccess } from "@/lib/auth/permissions";
 
 export async function deleteMember(memberId: string) {
   console.log("[deleteMember] Starting deletion");
@@ -30,7 +31,9 @@ export async function deleteMember(memberId: string) {
     throw new Error("You are not authenticated.");
   }
 
-  if (!(await isAdmin(user))) {
+  const role = await roleFor(user);
+
+  if (!canAccess(role, "community")) {
     console.error("[deleteMember] Unauthorized user:", user.email);
     throw new Error("You are not authorized to delete community members.");
   }
