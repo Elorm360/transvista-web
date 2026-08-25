@@ -16,10 +16,11 @@ import WelcomeEmail from "@/emails/welcome";
 export async function sendWelcomeEmail(
   fullName: string,
   email: string,
+  interest?: string,
 ) {
   try {
     const html = await render(
-      <WelcomeEmail fullName={fullName} />,
+      <WelcomeEmail fullName={fullName} interest={interest} />,
     );
 
     const { data, error } = await resend.emails.send({

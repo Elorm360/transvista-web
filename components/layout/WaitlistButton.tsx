@@ -12,7 +12,7 @@ interface WaitlistButtonProps {
 export function WaitlistButton({ className, onClick, tabIndex }: WaitlistButtonProps) {
   return (
     <Link
-      href="#waitlist"
+      href="/#waitlist"
       onClick={onClick}
       tabIndex={tabIndex}
       className={cn(
