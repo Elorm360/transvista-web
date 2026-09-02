@@ -34,8 +34,7 @@ function reference(prefix: "TVR" | "TVP") {
 function invalidContact(fullName: string, email: string, phone: string) {
   if (fullName.length < 2 || fullName.length > 120) return true;
   if (!emailPattern.test(email) || email.length > 254) return true;
-  if (!phonePattern.test(phone)) return true;
-  return false;
+  return !phonePattern.test(phone);
 }
 
 export async function submitTripRequest(
@@ -48,16 +47,19 @@ export async function submitTripRequest(
   const phone = clean(input.phone, 30);
   const country = clean(input.country, 100);
   const destinations = cleanList(input.destinations);
-  const serviceTypes = cleanList(input.serviceTypes);
+  const services = cleanList(input.serviceTypes);
   const interests = cleanList(input.interests);
   const startDate = clean(input.startDate, 10);
   const endDate = clean(input.endDate, 10);
   const dateFlexibility = clean(input.dateFlexibility, 80);
+  const budgetCurrency = clean(input.budgetCurrency, 10);
+  const budgetBasis = clean(input.budgetBasis, 30);
+  const budgetRange = clean(input.budgetRange, 80);
 
   if (invalidContact(fullName, email, phone) || !country) {
     return { success: false, message: "Please check your contact details." };
   }
-  if (!destinations.length || !serviceTypes.length) {
+  if (!destinations.length || !services.length) {
     return {
       success: false,
       message: "Choose at least one destination and one planning service.",
@@ -68,6 +70,12 @@ export async function submitTripRequest(
       success: false,
       message: "Please accept the booking and payment policy.",
     };
+  }
+  if (!["GHS", "USD", "GBP", "EUR"].includes(budgetCurrency) || !budgetRange) {
+    return { success: false, message: "Please provide a valid budget range." };
+  }
+  if (!["per-person", "total-trip"].includes(budgetBasis)) {
+    return { success: false, message: "Please select how the budget applies." };
   }
   if (startDate && !datePattern.test(startDate)) {
     return { success: false, message: "Please provide a valid start date." };
@@ -85,6 +93,7 @@ export async function submitTripRequest(
   const adults = Math.min(Math.max(Number(input.adults) || 1, 1), 50);
   const children = Math.min(Math.max(Number(input.children) || 0, 0), 50);
   const requestReference = reference("TVR");
+  const acceptedAt = new Date().toISOString();
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("trip_requests").insert({
@@ -94,22 +103,22 @@ export async function submitTripRequest(
     phone,
     country,
     destinations,
-    start_date: startDate || null,
-    end_date: endDate || null,
+    services,
+    interests,
+    travel_start: startDate || null,
+    travel_end: endDate || null,
     date_flexibility: dateFlexibility || null,
     adults,
     children,
-    service_types: serviceTypes,
-    interests,
-    budget_basis: clean(input.budgetBasis, 30),
-    budget_range: clean(input.budgetRange, 80),
-    budget_currency: clean(input.budgetCurrency, 10),
+    budget_currency: budgetCurrency,
+    budget_basis: budgetBasis,
+    budget_range: budgetRange,
     accommodation_style: clean(input.accommodationStyle, 80) || null,
     transport_details: clean(input.transportDetails, 500) || null,
     notes: clean(input.notes, 1500) || null,
     status: "new",
     policy_version: bookingPolicyVersion,
-    accepted_policy: true,
+    policy_accepted_at: acceptedAt,
   });
 
   if (error) {
@@ -132,7 +141,7 @@ export async function submitTripRequest(
       adminTitle: "New custom trip request",
       details: [
         { label: "Destinations", value: destinations.join(", ") },
-        { label: "Services", value: serviceTypes.join(", ") },
+        { label: "Services", value: services.join(", ") },
         {
           label: "Travel dates",
           value: startDate
@@ -142,7 +151,7 @@ export async function submitTripRequest(
         { label: "Travellers", value: `${adults} adults, ${children} children` },
         {
           label: "Budget",
-          value: `${clean(input.budgetCurrency, 10)} ${clean(input.budgetRange, 80)} (${clean(input.budgetBasis, 30)})`,
+          value: `${budgetCurrency} ${budgetRange} (${budgetBasis})`,
         },
       ],
     });
@@ -150,11 +159,7 @@ export async function submitTripRequest(
     console.error("[submitTripRequest] Email failed:", emailError);
   }
 
-  return {
-    success: true,
-    reference: requestReference,
-    emailSent,
-  };
+  return { success: true, reference: requestReference, emailSent };
 }
 
 export async function submitPackageReservation(
@@ -171,7 +176,7 @@ export async function submitPackageReservation(
   const city = clean(input.city, 100);
   const emergencyContactName = clean(input.emergencyContactName, 120);
   const emergencyContactPhone = clean(input.emergencyContactPhone, 30);
-  const participants = Math.min(Math.max(Number(input.participants) || 1, 1), 20);
+  const travellers = Math.min(Math.max(Number(input.participants) || 1, 1), 50);
 
   if (
     invalidContact(fullName, email, phone) ||
@@ -189,6 +194,7 @@ export async function submitPackageReservation(
   }
 
   const requestReference = reference("TVP");
+  const acceptedAt = new Date().toISOString();
   const supabase = createAdminClient();
   const { error } = await supabase.from("package_reservations").insert({
     reference: requestReference,
@@ -199,21 +205,23 @@ export async function submitPackageReservation(
     email,
     phone,
     city,
-    participants,
     emergency_contact_name: emergencyContactName,
     emergency_contact_phone: emergencyContactPhone,
-    dietary_needs: clean(input.dietaryNeeds, 500) || null,
+    travellers,
+    dietary_requirements: clean(input.dietaryNeeds, 500) || null,
     notes: clean(input.notes, 1000) || null,
-    price_per_person: centralRegionPackage.pricePerPerson,
-    deposit_per_person: centralRegionPackage.depositPerPerson,
-    balance_per_person: centralRegionPackage.balancePerPerson,
     currency: centralRegionPackage.currency,
-    registration_status: "received",
-    payment_status: "not_requested",
-    media_notice_acknowledged: true,
+    price_per_person: centralRegionPackage.pricePerPerson,
+    total_price: centralRegionPackage.pricePerPerson * travellers,
+    deposit_per_person: centralRegionPackage.depositPerPerson,
+    deposit_due: centralRegionPackage.depositPerPerson * travellers,
+    balance_per_person: centralRegionPackage.balancePerPerson,
+    status: "pending-review",
+    payment_status: "not-requested",
     promotional_media_consent: Boolean(input.promotionalMediaConsent),
+    media_notice_acknowledged_at: acceptedAt,
     policy_version: bookingPolicyVersion,
-    accepted_policy: true,
+    policy_accepted_at: acceptedAt,
   });
 
   if (error) {
@@ -237,7 +245,7 @@ export async function submitPackageReservation(
       details: [
         { label: "Trip", value: centralRegionPackage.title },
         { label: "Date", value: centralRegionPackage.displayDate },
-        { label: "Participants", value: String(participants) },
+        { label: "Participants", value: String(travellers) },
         {
           label: "Payment after confirmation",
           value: `${centralRegionPackage.currencySymbol}${centralRegionPackage.depositPerPerson} deposit per person; balance due ${centralRegionPackage.balanceDeadline}`,
@@ -252,9 +260,5 @@ export async function submitPackageReservation(
     console.error("[submitPackageReservation] Email failed:", emailError);
   }
 
-  return {
-    success: true,
-    reference: requestReference,
-    emailSent,
-  };
+  return { success: true, reference: requestReference, emailSent };
 }
