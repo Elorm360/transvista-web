@@ -6,8 +6,12 @@ import { ExperienceCard } from "./ExperienceCard";
 import { destinations } from "@/constants/data/destinations";
 import { experiencesContent } from "@/content/experiences";
 
+const launchDestinationIds = new Set(["accra", "cape-coast", "volta-region"]);
+
 export function Experiences() {
-  const featured = destinations.filter((destination) => destination.featured);
+  const featured = destinations.filter((destination) =>
+    launchDestinationIds.has(destination.id),
+  );
 
   return (
     <Section id="explore-ghana">
@@ -25,7 +29,11 @@ export function Experiences() {
           {featured.map((destination, i) => (
             <Reveal key={destination.id} delay={i * 80}>
               <ExperienceCard
-                title={destination.name}
+                title={
+                  destination.id === "cape-coast"
+                    ? "Cape Coast & Elmina"
+                    : destination.name
+                }
                 category={destination.category}
                 location={destination.region}
                 image={destination.image}

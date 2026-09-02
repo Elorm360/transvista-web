@@ -9,17 +9,17 @@ export function HeroActions() {
     <div className="mt-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
-          href="#waitlist"
+          href="#plan-your-trip"
           className={cn(
             buttonVariants({ variant: "default", size: "lg" }),
             "pulse-glow w-full rounded-full sm:w-auto",
           )}
         >
-          Join Waitlist
+          Plan My Trip
         </Link>
 
         <Link
-          href="#explore-by-experience"
+          href="#explore-ghana"
           className={cn(
             buttonVariants({ variant: "outline-white", size: "lg" }),
             "w-full rounded-full transform transition-all duration-300 ease-out hover:-translate-y-0.5 sm:w-auto",

@@ -7,8 +7,8 @@ export interface ExperiencesContent {
 export const experiencesContent: ExperiencesContent = {
   badge: "Explore Ghana",
 
-  title: "Six places to start.",
+  title: "Three curated places to begin.",
 
   description:
-    "Open a real destination — Accra, Cape Coast, Kumasi, Volta, Mole, Kakum — then join the waitlist if you want that journey planned with trusted partners.",
+    "Start with Accra, Cape Coast & Elmina, or the Volta Region. Explore the character of each place, then ask TransVista to shape the journey around you.",
 };

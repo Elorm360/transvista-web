@@ -21,7 +21,7 @@ export function HowItWorks() {
           />
         </Reveal>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {howItWorksContent.steps.map((step, i) => (
             <Reveal key={step.title} delay={i * 120} className="relative">
               <HowItWorksStep
@@ -33,7 +33,7 @@ export function HowItWorks() {
 
               {i < howItWorksContent.steps.length - 1 && (
                 <ArrowRight
-                  className="absolute -right-4 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 text-brand-orange-300 lg:block"
+                  className="absolute -right-4 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 text-brand-orange-300 xl:block"
                   aria-hidden="true"
                 />
               )}

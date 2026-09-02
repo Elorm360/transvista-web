@@ -57,19 +57,19 @@ export const footerContent: FooterContent = {
   brand: {
     tagline: brand.tagline,
     mission:
-      "Building Africa's connected travel ecosystem by making travel simpler, safer, and more accessible.",
+      "Thoughtfully coordinating trusted travel experiences across Ghana.",
   },
 
   columns: [
     {
       heading: "Explore",
       links: [
-        { label: "Home", href: "/" },
         { label: "Explore Ghana", href: "/#explore-ghana" },
-        { label: "Cape Coast", href: "/destinations/cape-coast" },
-        { label: "Mole National Park", href: "/destinations/mole-national-park" },
+        { label: "Accra", href: "/destinations/accra" },
+        { label: "Cape Coast & Elmina", href: "/destinations/cape-coast" },
+        { label: "Volta Region", href: "/destinations/volta-region" },
         { label: "How It Works", href: "/#how-it-works" },
-        { label: "Join Waitlist", href: "/#waitlist" },
+        { label: "Plan My Trip", href: "/#plan-your-trip" },
       ],
     },
   ],

@@ -16,30 +16,35 @@ export interface HowItWorksContent {
 export const howItWorksContent: HowItWorksContent = {
   badge: "How It Works",
 
-  title: "Travel planning, simplified.",
+  title: "A clear path from idea to confirmed trip.",
 
   description:
-    "From discovering destinations to connecting trusted transport, accommodation, and local experiences, TransVista is designed to make every journey easier.",
+    "TransVista coordinates your request first, so you receive one clear proposal before any provider introduction.",
 
   steps: [
     {
-      title: "Discover",
+      title: "Tell us about your trip",
       description:
-        "Browse trusted destinations and curated experiences tailored to your travel interests.",
-      icon: "Compass",
+        "Share what you know—destination, dates, group, interests, or simply the kind of Ghana experience you want.",
+      icon: "MessageCircle",
     },
     {
-      title: "Plan",
+      title: "We coordinate",
       description:
-        "Organize transport, accommodation, activities, and local guidance in one connected journey.",
+        "TransVista checks the right routes, stays, experiences, and trusted providers for your request.",
       icon: "Route",
     },
     {
-      title: "Explore",
+      title: "Receive your proposal",
       description:
-        "Travel with greater confidence knowing every part of your experience is thoughtfully connected.",
-      icon: "Mountain",
+        "Within 48 hours, we respond with availability, a recommended plan, and a clear price.",
+      icon: "Compass",
+    },
+    {
+      title: "Confirm and prepare",
+      description:
+        "Pay TransVista the agreed deposit or full amount, then meet the confirmed provider and get ready to travel.",
+      icon: "ShieldCheck",
     },
   ],
 };
-

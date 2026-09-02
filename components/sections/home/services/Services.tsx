@@ -8,7 +8,7 @@ import { servicesContent } from "@/content/services";
 
 export function Services() {
   return (
-    <Section id="services">
+    <Section id="services" className="bg-white">
       <Container>
         <Reveal>
           <SectionHeader
@@ -19,7 +19,7 @@ export function Services() {
           />
         </Reveal>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {servicesContent.items.map((item, i) => (
             <Reveal key={item.title} delay={i * 100}>
               <ServiceCard

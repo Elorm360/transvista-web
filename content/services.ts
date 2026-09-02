@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Compass, Route, Users } from "lucide-react";
+import { Compass, Hotel, MessageCircle, Route } from "lucide-react";
 
 export interface ServiceItem {
   title: string;
@@ -15,31 +15,37 @@ export interface ServicesContent {
 }
 
 export const servicesContent: ServicesContent = {
-  badge: "What We Do",
+  badge: "What We Plan",
 
-  title: "Three pillars. One connected journey.",
+  title: "One request. The right level of support.",
 
   description:
-    "TransVista brings mobility, experiences, and community together — so every part of your trip across Ghana works as one connected system, not a stack of separate bookings.",
+    "Come with a clear itinerary or just a starting idea. TransVista coordinates the pieces you need and introduces trusted providers after your plan is confirmed.",
 
   items: [
     {
-      title: "Mobility",
+      title: "Experiences & Tours",
       description:
-        "Reliable transport connections that get you where you're going — from airport transfers to intercity travel, coordinated with trusted local providers.",
-      icon: Route,
-    },
-    {
-      title: "Experiences",
-      description:
-        "Curated tours, cultural landmarks, and hidden gems — hand-picked so every stop is worth the trip, not just another checkbox on an itinerary.",
+        "Curated culture, nature, food, heritage, and local experiences matched to your interests and pace.",
       icon: Compass,
     },
     {
-      title: "Connect",
+      title: "Transport & Transfers",
       description:
-        "A direct line to verified local guides, tourism businesses, and community partners who know Ghana best — trust built into every interaction.",
-      icon: Users,
+        "Airport pickup, local movement, and intercity routes coordinated with trusted transport providers.",
+      icon: Route,
+    },
+    {
+      title: "Accommodation",
+      description:
+        "Places to stay selected around your route, budget, comfort, and the kind of trip you want.",
+      icon: Hotel,
+    },
+    {
+      title: "Complete Trip Planning",
+      description:
+        "A connected itinerary combining destinations, stays, transport, and experiences in one proposal.",
+      icon: MessageCircle,
     },
   ],
 };

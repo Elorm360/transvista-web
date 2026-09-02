@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { navigation } from "@/constants/navigation";
-import { WaitlistButton } from "./WaitlistButton";
+import { PlanTripButton } from "./PlanTripButton";
 import { cn } from "@/lib/utils";
 
 interface MobileMenuProps {
@@ -8,13 +8,6 @@ interface MobileMenuProps {
   onClose: () => void;
 }
 
-/**
- * MobileMenu
- *
- * Stays mounted at all times and animates via max-height + opacity so the
- * panel slides open/closed smoothly instead of abruptly appearing —
- * pure CSS transition, no animation library.
- */
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
   return (
     <div
@@ -40,7 +33,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         ))}
 
         <div className="mt-2 px-1">
-          <WaitlistButton
+          <PlanTripButton
             className="w-full rounded-full"
             onClick={onClose}
             tabIndex={open ? 0 : -1}

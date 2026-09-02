@@ -16,12 +16,12 @@ export const seoConfig: SeoConfig = {
   name: "TransVista Africa",
 
   title:
-    "TransVista Africa | Discover Ghana Through Trusted Travel Experiences",
+    "TransVista Africa | Thoughtfully Planned Ghana Travel",
 
   shortTitle: "TransVista Africa",
 
   description:
-    "Discover trusted transport, curated experiences, and seamless travel planning across Ghana. Join the TransVista waitlist and be part of the future of African travel.",
+    "Explore curated Ghana destinations and let TransVista coordinate trusted experiences, transport, accommodation, or your complete trip.",
 
   url: "https://transvistaafrica.com",
 
@@ -32,16 +32,16 @@ export const seoConfig: SeoConfig = {
   author: "TransVista Africa Ltd",
 
   keywords: [
-    "Ghana travel",
+    "Ghana travel planning",
     "Travel Ghana",
-    "Tourism Ghana",
-    "Visit Ghana",
     "Ghana tours",
-    "African travel",
-    "Travel technology",
-    "Tour guides Ghana",
-    "Transport Ghana",
-    "Travel experiences Ghana",
+    "Visit Ghana",
+    "Accra travel",
+    "Cape Coast and Elmina",
+    "Volta Region travel",
+    "Ghana transport",
+    "Ghana accommodation",
+    "Ghana travel experiences",
   ],
 
   openGraphImage: "/images/og/transvista-og.png",

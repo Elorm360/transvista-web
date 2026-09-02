@@ -4,7 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { HeroBackground } from "./HeroBackground";
 import { HeroBadge } from "./HeroBadge";
 import { HeroContent } from "./HeroContent";
-import { HeroWaitlist } from "./HeroWaitlist";
+import { HeroActions } from "./HeroActions";
 import { HeroVisual } from "./HeroVisual";
 
 export function Hero() {
@@ -27,7 +27,7 @@ export function Hero() {
             </Reveal>
 
             <Reveal delay={280}>
-              <HeroWaitlist />
+              <HeroActions />
             </Reveal>
           </div>
 

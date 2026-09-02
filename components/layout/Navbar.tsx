@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "./Logo";
 import { NavLinks } from "./NavLinks";
-import { WaitlistButton } from "./WaitlistButton";
+import { PlanTripButton } from "./PlanTripButton";
 import { MobileMenu } from "./MobileMenu";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // The hero is dark, so the navbar starts as a transparent glass panel
-  // with light text, then crossfades to a solid white glass bar with
-  // dark text once the user scrolls past it.
   const solid = scrolled || mobileOpen || !onHome;
 
   return (
@@ -37,7 +34,6 @@ export function Navbar() {
           : "border-white/10 bg-white/[0.06]",
       )}
     >
-      {/* refined top accent edge */}
       <span
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand-orange-500 to-transparent"
@@ -56,7 +52,7 @@ export function Navbar() {
           <NavLinks className="hidden lg:flex" tone={solid ? "light" : "dark"} />
 
           <div className="hidden lg:block">
-            <WaitlistButton className="rounded-full shadow-sm shadow-brand-orange-900/10" />
+            <PlanTripButton className="rounded-full shadow-sm shadow-brand-orange-900/10" />
           </div>
 
           <button
