@@ -14,7 +14,7 @@ const steps = [
     number: "01",
     title: "Share your starting point",
     description:
-      "Tell us what you know—or ask for recommendations if the trip is still taking shape.",
+      "Choose destinations, dates, interests, travel needs, and a comfortable budget range.",
   },
   {
     number: "02",
@@ -26,7 +26,7 @@ const steps = [
     number: "03",
     title: "Confirm with confidence",
     description:
-      "Pay the agreed deposit or full amount to TransVista before we introduce your provider.",
+      "Pay the agreed deposit or full amount under our shared booking policy.",
   },
 ];
 
@@ -39,40 +39,38 @@ export function PlanTrip() {
       <Container>
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange-300">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange-300">
               Plan Your Trip
             </p>
             <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
               Bring us the plan—or just the idea.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
-              TransVista will coordinate your Ghana trip first, then introduce
-              the right trusted provider after you approve the plan. Start a
-              planning conversation today while our full web request flow is
-              being prepared.
+              Use the guided request form to tell TransVista where you want to
+              go and what you need. You do not need a finished itinerary.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/plan"
                 className={cn(
                   buttonVariants({ variant: "default", size: "lg" }),
                   "rounded-full",
                 )}
               >
-                Start planning on WhatsApp
+                Start my trip request
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
-                href="/#explore-ghana"
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={cn(
                   buttonVariants({ variant: "outline-white", size: "lg" }),
                   "rounded-full",
                 )}
               >
-                Explore destinations
+                Ask on WhatsApp
               </Link>
             </div>
           </Reveal>

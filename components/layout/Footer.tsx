@@ -157,17 +157,24 @@ export function Footer() {
         <div className="pb-8">
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             {footerContent.bottom.links.map((link) => (
-              <span
-                key={link.label}
-                className="text-sm text-slate-600"
-              >
-                {link.label}
-                {link.comingSoon && (
-                  <span className="ml-1.5 text-xs uppercase tracking-wider text-slate-600">
-                    Coming Soon
-                  </span>
-                )}
-              </span>
+              link.href && !link.comingSoon ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm text-slate-500 transition-colors hover:text-brand-orange-300"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <span key={link.label} className="text-sm text-slate-600">
+                  {link.label}
+                  {link.comingSoon && (
+                    <span className="ml-1.5 text-xs uppercase tracking-wider text-slate-600">
+                      Coming Soon
+                    </span>
+                  )}
+                </span>
+              )
             ))}
           </div>
         </div>

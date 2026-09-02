@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { WaitlistButton } from "@/components/layout/WaitlistButton";
+import { PlanTripButton } from "@/components/layout/PlanTripButton";
 import { PhotoPlaceholder } from "@/components/media/PhotoPlaceholder";
 import type { Destination } from "@/constants/data/destinations";
 import { getExperiencesByDestination } from "@/constants/data/experiences";
@@ -177,11 +177,14 @@ export function DestinationDetail({ destination }: DestinationDetailProps) {
               Want {destination.name} on your itinerary?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-300">
-              Join the waitlist and we’ll tell you when TransVista can help you
-              plan this journey with trusted transport and local partners.
+              Tell us your dates, budget, interests, and travel style. We’ll review
+              your request and respond within 48 hours.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <WaitlistButton className="rounded-full" />
+              <PlanTripButton
+                href={`/plan?destination=${encodeURIComponent(destination.name)}`}
+                className="rounded-full"
+              />
               <Link
                 href="/#explore-ghana"
                 className={cn(

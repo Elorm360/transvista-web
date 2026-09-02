@@ -9,7 +9,7 @@ export function HeroActions() {
     <div className="mt-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
-          href="#plan-your-trip"
+          href="/plan"
           className={cn(
             buttonVariants({ variant: "default", size: "lg" }),
             "pulse-glow w-full rounded-full sm:w-auto",

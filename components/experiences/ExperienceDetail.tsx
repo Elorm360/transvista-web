@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { WaitlistButton } from "@/components/layout/WaitlistButton";
+import { PlanTripButton } from "@/components/layout/PlanTripButton";
 import { PhotoPlaceholder } from "@/components/media/PhotoPlaceholder";
 import type { Experience } from "@/constants/data/experiences";
 import type { Destination } from "@/constants/data/destinations";
@@ -128,14 +128,17 @@ export function ExperienceDetail({
         <Container>
           <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-brand-blue-950 via-brand-blue-900 to-slate-950 px-8 py-12 text-center sm:px-12">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-white">
-              Join the waitlist for this kind of journey
+              Build this experience into your trip
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-slate-300">
-              TransVista is connecting experiences like this with trusted
-              transport and local partners. Be first to hear when planning opens.
+              Share your dates, budget, and preferences. TransVista will coordinate
+              the request first, then introduce the confirmed provider.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <WaitlistButton className="rounded-full" />
+              <PlanTripButton
+                href={`/plan?experience=${encodeURIComponent(experience.name)}`}
+                className="rounded-full"
+              />
               {destination && (
                 <Link
                   href={`/destinations/${destination.slug}`}

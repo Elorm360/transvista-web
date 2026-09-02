@@ -5,18 +5,20 @@ import { cn } from "@/lib/utils";
 
 interface PlanTripButtonProps {
   className?: string;
+  href?: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   tabIndex?: number;
 }
 
 export function PlanTripButton({
   className,
+  href = "/plan",
   onClick,
   tabIndex,
 }: PlanTripButtonProps) {
   return (
     <Link
-      href="/#plan-your-trip"
+      href={href}
       onClick={onClick}
       tabIndex={tabIndex}
       className={cn(

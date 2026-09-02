@@ -13,6 +13,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    {
+      url: `${seoConfig.url}/plan`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${seoConfig.url}/trips/central-region-heritage-adventure-2026`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${seoConfig.url}/policies/payment-booking-refunds`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
     ...destinations.map((destination) => ({
       url: `${seoConfig.url}/destinations/${destination.slug}`,
       lastModified,

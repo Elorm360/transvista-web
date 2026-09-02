@@ -69,7 +69,8 @@ export const footerContent: FooterContent = {
         { label: "Cape Coast & Elmina", href: "/destinations/cape-coast" },
         { label: "Volta Region", href: "/destinations/volta-region" },
         { label: "How It Works", href: "/#how-it-works" },
-        { label: "Plan My Trip", href: "/#plan-your-trip" },
+        { label: "Upcoming Group Trip", href: "/trips/central-region-heritage-adventure-2026" },
+        { label: "Plan My Trip", href: "/plan" },
       ],
     },
   ],
@@ -95,6 +96,10 @@ export const footerContent: FooterContent = {
     copyright: `© ${new Date().getFullYear()} TransVista Africa Ltd. All rights reserved.`,
     builtWith: "Built with ❤️ in Ghana.",
     links: [
+      {
+        label: "Payment, Booking & Refund Policy",
+        href: "/policies/payment-booking-refunds",
+      },
       {
         label: "Privacy Policy",
         comingSoon: true,

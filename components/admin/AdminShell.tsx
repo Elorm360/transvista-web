@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  ClipboardList,
   BarChart3,
   Settings,
   Menu,
@@ -28,6 +29,7 @@ const sidebarItems: {
 }[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard, area: "dashboard" },
   { label: "Community", href: "/admin/community", icon: Users, area: "community" },
+  { label: "Requests", href: "/admin/requests", icon: ClipboardList, area: "requests" },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3, area: "analytics" },
   { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings" },
 ];
