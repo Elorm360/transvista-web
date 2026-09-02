@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export type RequestDetail = {
   label: string;
@@ -24,7 +24,7 @@ function valueOrDash(value: string | null | undefined) {
 }
 
 export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const [customResult, packageResult] = await Promise.all([
     supabase
