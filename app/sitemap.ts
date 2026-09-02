@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { seoConfig } from "@/constants/config/seo";
 import { destinations } from "@/constants/data/destinations";
 import { experiences } from "@/constants/data/experiences";
+import { tripPackages } from "@/constants/data/packages";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -24,6 +25,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...tripPackages.map((tripPackage) => ({
+      url: `${seoConfig.url}/packages/${tripPackage.slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
     })),
   ];
 }
