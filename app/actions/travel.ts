@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { sendRequestEmails } from "@/lib/email/sendRequestEmails";
 import {
   bookingPolicyVersion,
@@ -94,7 +94,7 @@ export async function submitTripRequest(
   const children = Math.min(Math.max(Number(input.children) || 0, 0), 50);
   const requestReference = reference("TVR");
   const acceptedAt = new Date().toISOString();
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("trip_requests").insert({
     reference: requestReference,
@@ -116,7 +116,6 @@ export async function submitTripRequest(
     accommodation_style: clean(input.accommodationStyle, 80) || null,
     transport_details: clean(input.transportDetails, 500) || null,
     notes: clean(input.notes, 1500) || null,
-    status: "new",
     policy_version: bookingPolicyVersion,
     policy_accepted_at: acceptedAt,
   });
@@ -195,7 +194,7 @@ export async function submitPackageReservation(
 
   const requestReference = reference("TVP");
   const acceptedAt = new Date().toISOString();
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("package_reservations").insert({
     reference: requestReference,
     package_slug: centralRegionPackage.slug,
@@ -216,8 +215,6 @@ export async function submitPackageReservation(
     deposit_per_person: centralRegionPackage.depositPerPerson,
     deposit_due: centralRegionPackage.depositPerPerson * travellers,
     balance_per_person: centralRegionPackage.balancePerPerson,
-    status: "pending-review",
-    payment_status: "not-requested",
     promotional_media_consent: Boolean(input.promotionalMediaConsent),
     media_notice_acknowledged_at: acceptedAt,
     policy_version: bookingPolicyVersion,
