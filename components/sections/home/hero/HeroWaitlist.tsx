@@ -22,6 +22,15 @@ export function HeroWaitlist() {
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
+          href="/packages/volta-highlands-escape"
+          className={cn(
+            buttonVariants({ variant: "default", size: "lg" }),
+            "w-full rounded-full sm:w-auto",
+          )}
+        >
+          Plan a Volta trip
+        </Link>
+        <Link
           href="/#explore-ghana"
           className={cn(
             buttonVariants({ variant: "outline-white", size: "lg" }),

@@ -65,6 +65,7 @@ export const footerContent: FooterContent = {
       heading: "Explore",
       links: [
         { label: "Home", href: "/" },
+        { label: "Volta trip package", href: "/packages/volta-highlands-escape" },
         { label: "Explore Ghana", href: "/#explore-ghana" },
         { label: "Cape Coast", href: "/destinations/cape-coast" },
         { label: "Mole National Park", href: "/destinations/mole-national-park" },

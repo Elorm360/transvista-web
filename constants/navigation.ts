@@ -1,15 +1,15 @@
 export const navigation = [
   {
+    label: "Trip Packages",
+    href: "/#trip-packages",
+  },
+  {
     label: "Discover",
     href: "/#discover",
   },
   {
     label: "Why TransVista",
     href: "/#why-transvista",
-  },
-  {
-    label: "Explore Ghana",
-    href: "/#explore-ghana",
   },
   {
     label: "How It Works",
