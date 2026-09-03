@@ -9,27 +9,30 @@ type TestimonialCardProps = {
 
 export function TestimonialCard({ story, compact = false }: TestimonialCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-30px_rgba(26,58,156,0.3)]">
-      <div className={compact ? "relative aspect-[5/4] overflow-hidden" : "relative aspect-[4/3] overflow-hidden"}>
-        <Image
-          src={story.image}
-          alt={story.imageAlt}
-          fill
-          sizes={compact ? "(max-width: 768px) 85vw, 33vw" : "(max-width: 768px) 100vw, 33vw"}
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-          <p className="font-display text-xl font-semibold leading-tight">{story.name}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-white/80">
-            <MapPin aria-hidden="true" className="h-3.5 w-3.5" />
+    <article className="group flex h-full flex-col rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-30px_rgba(26,58,156,0.3)] sm:p-6">
+      <header className="flex items-center gap-4">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full ring-4 ring-brand-orange-50 sm:h-[72px] sm:w-[72px]">
+          <Image
+            src={story.image}
+            alt={story.imageAlt}
+            fill
+            sizes="72px"
+            className="object-cover object-top transition duration-300 group-hover:scale-105"
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="font-display text-lg font-semibold leading-tight text-slate-900">
+            {story.name}
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+            <MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-brand-orange-500" />
             {story.location}
           </p>
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <Quote aria-hidden="true" className="h-7 w-7 text-brand-orange-500" />
+      <div className="mt-5 flex flex-1 flex-col">
+        <Quote aria-hidden="true" className="h-6 w-6 text-brand-orange-500" />
         <blockquote className="mt-3 flex-1 text-base leading-7 text-slate-700">
           “{compact ? story.shortQuote : story.quote}”
         </blockquote>
