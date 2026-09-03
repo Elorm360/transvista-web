@@ -6,9 +6,33 @@ import { Reveal } from "@/components/motion/Reveal";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { travellerTestimonials } from "@/content/testimonials";
 
+const pageTitle = "Traveller Stories | TransVista Africa";
+const pageDescription =
+  "Read verified stories from travellers who explored Ghana with TransVista Africa.";
+
 export const metadata: Metadata = {
   title: "Traveller Stories",
-  description: "Read verified stories from travellers who explored Ghana with TransVista Africa.",
+  description: pageDescription,
+  openGraph: {
+    type: "website",
+    url: "/stories",
+    title: pageTitle,
+    description: pageDescription,
+    images: [
+      {
+        url: "/images/og/transvista-og.png",
+        width: 1200,
+        height: 630,
+        alt: "TransVista Africa traveller stories",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: pageTitle,
+    description: pageDescription,
+    images: ["/images/og/transvista-og.png"],
+  },
 };
 
 export default function TravellerStoriesPage() {
