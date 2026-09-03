@@ -20,12 +20,29 @@ export function Testimonials() {
           />
         </Reveal>
 
-        <div className="-mx-6 mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-5 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
-          {featuredTestimonials.map((story, index) => (
-            <Reveal key={story.slug} delay={index * 80} className="w-[84vw] shrink-0 snap-center md:w-auto">
-              <TestimonialCard story={story} compact />
-            </Reveal>
-          ))}
+        <div className="relative -mx-6 mt-12 overflow-hidden px-6 md:mx-0 md:px-0">
+          <div
+            className="marquee-track flex w-max focus:outline-none focus:[animation-play-state:paused]"
+            tabIndex={0}
+            aria-label="Moving traveller testimonials. Focus or hover to pause."
+          >
+            {["primary", "duplicate"].map((group) => (
+              <div
+                key={group}
+                className="flex shrink-0 gap-5 pr-5"
+                aria-hidden={group === "duplicate" ? true : undefined}
+              >
+                {featuredTestimonials.map((story) => (
+                  <div key={`${group}-${story.slug}`} className="w-[82vw] max-w-sm shrink-0 md:w-[370px]">
+                    <TestimonialCard story={story} compact />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-slate-50/95 to-transparent md:w-14" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-slate-50/95 to-transparent md:w-14" />
         </div>
 
         <Reveal delay={120}>
