@@ -15,4 +15,8 @@ export const navigation = [
     label: "Why TransVista",
     href: "/#why-transvista",
   },
+  {
+    label: "Stories",
+    href: "/stories",
+  },
 ] as const;

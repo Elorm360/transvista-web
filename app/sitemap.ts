@@ -20,6 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${seoConfig.url}/stories`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${seoConfig.url}/trips/central-region-heritage-adventure-2026`,
       lastModified,
       changeFrequency: "weekly",

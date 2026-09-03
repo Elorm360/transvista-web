@@ -5,6 +5,7 @@ import { FeaturedTrip } from "@/components/sections/home/featured-trip/FeaturedT
 import { Services } from "@/components/sections/home/services/Services";
 import { HowItWorks } from "@/components/sections/home/how-it-works";
 import { WhyTransVista } from "@/components/sections/home/why-transvista";
+import { Testimonials } from "@/components/sections/home/testimonials";
 import { PlanTrip } from "@/components/sections/home/plan-trip/PlanTrip";
 import { Waitlist } from "@/components/sections/home/waitlist";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
       <Services />
       <HowItWorks />
       <WhyTransVista />
+      <Testimonials />
       <PlanTrip />
       <Waitlist />
     </main>
