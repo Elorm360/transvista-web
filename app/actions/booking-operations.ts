@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendBookingUpdateEmail } from "@/lib/email/sendBookingUpdateEmail";
+import { sendPaymentRequestEmail } from "@/lib/email/sendPaymentRequestEmail";
 
 export type BookingOperationState = {
   success: boolean;
@@ -35,6 +36,7 @@ const packageStatuses = [
 
 const paymentStatuses = [
   "not-requested",
+  "payment-requested",
   "deposit-requested",
   "deposit-paid",
   "paid",
@@ -51,6 +53,7 @@ const paymentMethods = [
 
 const priorities = ["low", "normal", "high", "urgent"] as const;
 const currencies = ["GHS", "USD", "GBP", "EUR"] as const;
+const paymentRequestTypes = ["deposit", "balance", "full", "installment"] as const;
 
 function textValue(formData: FormData, key: string, max = 200) {
   return String(formData.get(key) ?? "").trim().slice(0, max);
@@ -313,6 +316,181 @@ export async function updateBookingOperation(
     return {
       success: false,
       message: error instanceof Error ? error.message : "The booking could not be updated.",
+    };
+  }
+}
+
+export async function sendBookingPaymentRequest(
+  _previousState: BookingOperationState,
+  formData: FormData,
+): Promise<BookingOperationState> {
+  try {
+    const kind = textValue(formData, "requestKind", 20);
+    const requestId = Number(textValue(formData, "requestId", 20));
+    const paymentType = textValue(formData, "paymentRequestType", 30);
+    const currency = textValue(formData, "paymentCurrency", 10);
+    const dueDate = textValue(formData, "paymentDueDate", 20);
+    const itinerary = textValue(formData, "confirmedItinerary", 8000);
+    const message = textValue(formData, "paymentMessage", 1500);
+    const amountDue = optionalAmount(formData, "paymentRequestAmount");
+
+    if (!Number.isInteger(requestId) || requestId < 1) {
+      return { success: false, message: "This request could not be identified." };
+    }
+    if (kind !== "custom" && kind !== "package") {
+      return { success: false, message: "This request type is not supported." };
+    }
+    if (!(paymentRequestTypes as readonly string[]).includes(paymentType)) {
+      return { success: false, message: "Choose a valid payment request type." };
+    }
+    if (!(currencies as readonly string[]).includes(currency)) {
+      return { success: false, message: "Choose a valid payment currency." };
+    }
+    if (!amountDue || amountDue <= 0) {
+      return { success: false, message: "Enter the amount the traveller should pay." };
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+      return { success: false, message: "Choose the payment deadline." };
+    }
+    const dueTime = Date.parse(dueDate + "T23:59:59+00:00");
+    if (!Number.isFinite(dueTime) || dueTime < Date.now() - 86_400_000) {
+      return { success: false, message: "The payment deadline cannot be in the past." };
+    }
+    if (itinerary.length < 10) {
+      return { success: false, message: "Add the confirmed itinerary before sending." };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, message: "Your session has expired. Please sign in again." };
+    }
+
+    const { data: member, error: memberError } = await supabase
+      .from("admin_team_members")
+      .select("id, role, status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (
+      memberError ||
+      !member ||
+      member.status !== "active" ||
+      !["owner", "admin", "support"].includes(member.role)
+    ) {
+      return { success: false, message: "You do not have permission to send payment requests." };
+    }
+
+    const table = kind === "custom" ? "trip_requests" : "package_reservations";
+    const { data: current, error: lookupError } = await supabase
+      .from(table)
+      .select("id, reference, full_name, email, status, quoted_amount, quote_currency, amount_paid")
+      .eq("id", requestId)
+      .maybeSingle();
+    if (lookupError || !current) {
+      console.error("[sendBookingPaymentRequest] Request lookup failed:", lookupError);
+      return { success: false, message: "This booking could not be loaded." };
+    }
+
+    const quotedAmount = Number(current.quoted_amount ?? 0);
+    const amountPaid = Number(current.amount_paid ?? 0);
+    if (!Number.isFinite(quotedAmount) || quotedAmount <= 0) {
+      return { success: false, message: "Save a valid quoted amount before sending payment." };
+    }
+    if (amountDue > Math.max(0, quotedAmount - amountPaid)) {
+      return {
+        success: false,
+        message: "The requested payment cannot exceed the outstanding balance.",
+      };
+    }
+
+    const summary = textValue(formData, "bookingSummary", 500);
+    const emailSent = await sendPaymentRequestEmail({
+      fullName: current.full_name,
+      email: current.email,
+      reference: current.reference,
+      bookingSummary: summary,
+      travellers: Number(textValue(formData, "travellers", 10)) || 1,
+      currency,
+      quotedAmount,
+      amountPaid,
+      amountDue,
+      paymentType,
+      dueDate,
+      itinerary,
+      message: message || undefined,
+    });
+    if (!emailSent) {
+      return {
+        success: false,
+        message: "The payment request email could not be delivered. No booking status was changed.",
+      };
+    }
+
+    const now = new Date().toISOString();
+    const paymentStatus =
+      paymentType === "deposit" ? "deposit-requested" : "payment-requested";
+    const { error: updateError } = await supabase
+      .from(table)
+      .update({
+        payment_status: paymentStatus,
+        payment_due_at: dueDate,
+        payment_request_sent_at: now,
+        payment_request_amount: amountDue,
+        payment_request_type: paymentType,
+        payment_reference: current.reference,
+        confirmed_itinerary: itinerary,
+        updated_by: member.id,
+        updated_at: now,
+      })
+      .eq("id", requestId);
+    if (updateError) {
+      console.error("[sendBookingPaymentRequest] Booking update failed:", updateError);
+      return {
+        success: true,
+        message: "Email sent, but its dashboard record could not be updated.",
+        completedAt: now,
+      };
+    }
+
+    const { error: activityError } = await supabase
+      .from("request_activity")
+      .insert({
+        request_kind: kind,
+        request_id: requestId,
+        reference: current.reference,
+        activity_type: "payment",
+        summary:
+          "Payment request emailed: " +
+          currency +
+          " " +
+          amountDue.toFixed(2) +
+          " due " +
+          dueDate +
+          ". Invoice, confirmed itinerary and payment policy attached.",
+        from_status: current.status,
+        to_status: current.status,
+        author_member_id: member.id,
+      });
+    if (activityError) {
+      console.error("[sendBookingPaymentRequest] Activity insert failed:", activityError);
+    }
+
+    revalidatePath("/admin/requests");
+    return {
+      success: true,
+      message: "Payment request and all three PDF documents were emailed successfully.",
+      completedAt: now,
+    };
+  } catch (error) {
+    console.error("[sendBookingPaymentRequest] Unexpected error:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "The payment request could not be sent.",
     };
   }
 }

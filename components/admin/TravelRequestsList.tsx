@@ -12,17 +12,20 @@ import {
   CircleDollarSign,
   Download,
   Eye,
+  FileText,
   Inbox,
   Mail,
   MessageSquareText,
   Phone,
   Save,
   Search,
+  Send,
   UserRoundCheck,
   Users,
   X,
 } from "lucide-react";
 import {
+  sendBookingPaymentRequest,
   updateBookingOperation,
   type BookingOperationState,
 } from "@/app/actions/booking-operations";
@@ -56,6 +59,7 @@ const packageStatuses = [
 
 const paymentStatuses = [
   "not-requested",
+  "payment-requested",
   "deposit-requested",
   "deposit-paid",
   "paid",
@@ -86,6 +90,16 @@ function formatDateTime(value: string) {
 function datetimeInputValue(value: string | null) {
   if (!value) return "";
   return new Date(value).toISOString().slice(0, 16);
+}
+
+function defaultPaymentDeadline(tripDate: string | null) {
+  const base = tripDate ? new Date(tripDate + "T12:00:00Z") : new Date();
+  if (tripDate) base.setUTCDate(base.getUTCDate() - 14);
+  else base.setUTCDate(base.getUTCDate() + 7);
+  const tomorrow = new Date();
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  if (base < tomorrow) return tomorrow.toISOString().slice(0, 10);
+  return base.toISOString().slice(0, 10);
 }
 
 function label(value: string) {
@@ -516,6 +530,17 @@ function RequestDrawer({
             <BookingOperationsForm request={request} operators={operators} />
           </section>
 
+          <section className="rounded-2xl border border-orange-200 bg-white p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <FileText className="h-5 w-5 text-orange-600" /> Payment request
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              Email branded invoice and itinerary PDFs with the payment policy
+              and official Mobile Money details.
+            </p>
+            <PaymentRequestForm request={request} />
+          </section>
+
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="text-base font-bold text-slate-900">Traveller request</h3>
             <dl className="mt-4 divide-y divide-slate-100 rounded-xl border border-slate-200">
@@ -775,6 +800,156 @@ function BookingOperationsForm({
         <Save className="h-4 w-4" />
         {pending ? "Saving changes…" : "Save booking operations"}
       </button>
+    </form>
+  );
+}
+
+function PaymentRequestForm({ request }: { request: TravelRequestRecord }) {
+  const router = useRouter();
+  const initialState: BookingOperationState = { success: false, message: "" };
+  const [state, formAction, pending] = useActionState(
+    sendBookingPaymentRequest,
+    initialState,
+  );
+  const outstanding = Math.max(
+    0,
+    (request.quotedAmount ?? 0) - request.amountPaid,
+  );
+  const defaultDeposit = request.depositAmount ?? outstanding * 0.5;
+
+  useEffect(() => {
+    if (state.success && state.completedAt) router.refresh();
+  }, [router, state.completedAt, state.success]);
+
+  return (
+    <form action={formAction} className="mt-5 space-y-5">
+      <input type="hidden" name="requestKind" value={request.source} />
+      <input type="hidden" name="requestId" value={request.sourceId} />
+      <input type="hidden" name="bookingSummary" value={request.summary} />
+      <input type="hidden" name="travellers" value={request.travellers} />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Payment requested">
+          <select
+            name="paymentRequestType"
+            defaultValue={defaultDeposit < outstanding ? "deposit" : "full"}
+            className={inputClass}
+          >
+            <option value="deposit">Deposit</option>
+            <option value="balance">Outstanding balance</option>
+            <option value="full">Full payment</option>
+            <option value="installment">Installment</option>
+          </select>
+        </Field>
+        <Field label="Currency">
+          <select
+            name="paymentCurrency"
+            defaultValue={request.quoteCurrency ?? "GHS"}
+            className={inputClass}
+          >
+            <option value="GHS">GHS · Ghana cedi</option>
+            <option value="USD">USD · US dollar</option>
+            <option value="GBP">GBP · Pound sterling</option>
+            <option value="EUR">EUR · Euro</option>
+          </select>
+        </Field>
+        <Field label="Amount due">
+          <input
+            type="number"
+            min="0.01"
+            max={outstanding || undefined}
+            step="0.01"
+            name="paymentRequestAmount"
+            defaultValue={
+              request.paymentRequestAmount ??
+              Math.min(defaultDeposit, outstanding || defaultDeposit)
+            }
+            required
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Payment deadline">
+          <input
+            type="date"
+            name="paymentDueDate"
+            defaultValue={
+              request.paymentDueAt ?? defaultPaymentDeadline(request.tripDate)
+            }
+            required
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <Field label="Confirmed itinerary">
+        <textarea
+          name="confirmedItinerary"
+          rows={7}
+          minLength={10}
+          maxLength={8000}
+          defaultValue={request.confirmedItinerary ?? request.summary}
+          placeholder="Add the confirmed day-by-day or journey itinerary that should appear in the attached PDF."
+          required
+          className={inputClass + " h-auto py-3"}
+        />
+      </Field>
+
+      <Field label="Optional message to traveller">
+        <textarea
+          name="paymentMessage"
+          rows={3}
+          maxLength={1500}
+          placeholder="Add any booking-specific payment or preparation note."
+          className={inputClass + " h-auto py-3"}
+        />
+      </Field>
+
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
+        <p className="font-bold">Payment channels included</p>
+        <p className="mt-1">
+          MTN MoMo 0248442916 and Telecel Cash 0506191365, both registered
+          to TRANSVISTA AFRICA LTD.
+        </p>
+        <p className="mt-2 text-xs text-blue-800">
+          Bank transfer is withheld until verified bank-account details are
+          configured. The booking reference is used as the payment reference.
+        </p>
+      </div>
+
+      {request.paymentRequestSentAt && (
+        <p className="text-xs font-semibold text-slate-500">
+          Last payment request sent {formatDateTime(request.paymentRequestSentAt)}
+          {request.paymentDueAt ? " · due " + formatDate(request.paymentDueAt) : ""}
+        </p>
+      )}
+
+      {state.message && (
+        <p
+          aria-live="polite"
+          className={
+            "rounded-xl px-4 py-3 text-sm font-semibold " +
+            (state.success
+              ? "bg-emerald-50 text-emerald-800"
+              : "bg-rose-50 text-rose-800")
+          }
+        >
+          {state.message}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={pending || outstanding <= 0}
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 text-sm font-bold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <Send className="h-4 w-4" />
+        {pending ? "Creating documents and sending…" : "Send payment request"}
+      </button>
+      {outstanding <= 0 && (
+        <p className="text-center text-xs font-semibold text-emerald-700">
+          No outstanding balance remains on this booking.
+        </p>
+      )}
     </form>
   );
 }
