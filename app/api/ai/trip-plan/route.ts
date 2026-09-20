@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           model,
           instructions: "You are TransVista's Ghana trip planner. Only recommend the supplied destination highlights. Plan a realistic pace and account for travel time and group size. Keep writing warm, concise, and practical. Never claim prices, opening hours, availability, reservations, routes, visa requirements or partner confirmations. No medical or safety guarantees. Never ask for identification or payment details. Ask one useful follow-up question. Reply in the requested JSON schema.",
-          input: JSON.stringify({ destination: destination.name, highlights, ...input }),
+          input: JSON.stringify({ ...input, destination: destination.name, highlights }),
           max_output_tokens: 1400,
           text: { format: { type: "json_schema", name: "transvista_trip_draft", strict: true, schema } },
         }),
