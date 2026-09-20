@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Clock3, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { TripRequestForm } from "@/components/trip-planning/TripRequestForm";
+import { TripPlanningExperience } from "@/components/trip-planning/TripPlanningExperience";
 
 export const metadata: Metadata = {
   title: "Plan Your Ghana Trip | TransVista Africa",
@@ -13,7 +13,7 @@ type PlanPageProps = {
   searchParams: Promise<{ destination?: string | string[] }>;
 };
 
-const allowedDestinations = new Set(["accra", "cape-coast", "volta-region"]);
+const allowedDestinations = new Set(["accra", "cape-coast", "volta-region", "kumasi"]);
 
 export default async function PlanPage({ searchParams }: PlanPageProps) {
   const params = await searchParams;
@@ -56,7 +56,7 @@ export default async function PlanPage({ searchParams }: PlanPageProps) {
       <section className="py-12 lg:py-16">
         <Container>
           <div className="mx-auto max-w-4xl">
-            <TripRequestForm initialDestination={initialDestination} />
+            <TripPlanningExperience initialDestination={initialDestination} />
           </div>
         </Container>
       </section>
