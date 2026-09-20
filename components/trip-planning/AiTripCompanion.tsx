@@ -63,6 +63,7 @@ export function AiTripCompanion({ onApply }: { onApply: (draft: AiDraft) => void
       <p className="text-sm font-semibold uppercase tracking-widest text-brand-orange-700">Trip companion</p>
       <h2 id="ai-title" className="mt-2 font-display text-2xl font-semibold text-slate-900">Start with a few ideas</h2>
       <p className="mt-2 text-slate-600">Get a draft, adjust it, then send it with the request form below. You can always skip this step.</p>
+      <p className="mt-2 text-sm text-slate-600">Your trip ideas are processed by an AI provider to make the draft. Do not enter identification or payment details.</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         <label className="text-sm font-semibold text-slate-800">Destination
           <select value={destination} onChange={(e) => setDestination(e.target.value)} className="mt-2 w-full rounded-lg border p-3">
