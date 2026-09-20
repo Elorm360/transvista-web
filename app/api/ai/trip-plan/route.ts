@@ -52,7 +52,11 @@ export async function POST(request: Request) {
   }
   if (Number(request.headers.get("content-length") ?? 0) > 4096) return json({ error: "Request too long." }, 413);
   let raw: unknown;
-  try { raw = await request.json(); } catch { return json({ error: "Invalid request." }, 400); }
+  try {
+    const body = await request.text();
+    if (body.length > 4096) return json({ error: "Request too long." }, 413);
+    raw = JSON.parse(body);
+  } catch { return json({ error: "Invalid request." }, 400); }
   const input = parseInput(raw);
   if (!input) return json({ error: "Choose a destination and enter valid trip details." }, 400);
 
@@ -98,7 +102,7 @@ export async function POST(request: Request) {
           model,
           instructions: "You are TransVista's Ghana trip planner. Only recommend the supplied destination highlights. Plan a realistic pace and account for travel time and group size. Keep writing warm, concise, and practical. Never claim prices, opening hours, availability, reservations, routes, visa requirements or partner confirmations. No medical or safety guarantees. Never ask for identification or payment details. Ask one useful follow-up question. Reply in the requested JSON schema.",
           input: JSON.stringify({ destination: destination.name, highlights, ...input }),
-          max_output_tokens: 700,
+          max_output_tokens: 1400,
           text: { format: { type: "json_schema", name: "transvista_trip_draft", strict: true, schema } },
         }),
       });
