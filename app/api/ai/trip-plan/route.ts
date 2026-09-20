@@ -29,8 +29,8 @@ function parseInput(raw: unknown): Input | null {
   if (!raw || typeof raw !== "object") return null;
   const x = raw as Record<string, unknown>;
   if (typeof x.destination !== "string" || !curated.includes(x.destination) ||
-      !Number.isInteger(x.days) || Number(x.days) < 1 || Number(x.days) > 7 ||
-      !Number.isInteger(x.travellers) || Number(x.travellers) < 1 || Number(x.travellers) > 20 ||
+      typeof x.days !== "number" || !Number.isInteger(x.days) || x.days < 1 || x.days > 7 ||
+      typeof x.travellers !== "number" || !Number.isInteger(x.travellers) || x.travellers < 1 || x.travellers > 20 ||
       !Array.isArray(x.interests) || x.interests.length > 6 ||
       !x.interests.every((v: unknown) => typeof v === "string" && v.length <= 60) ||
       typeof x.budget !== "string" || x.budget.length > 70 ||
