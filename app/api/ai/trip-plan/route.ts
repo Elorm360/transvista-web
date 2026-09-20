@@ -6,15 +6,8 @@ import { destinations } from "@/constants/data/destinations";
 export const runtime = "nodejs";
 
 const curated = ["accra", "cape-coast", "kumasi", "volta-region"];
-const responseHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type",
-  "Cache-Control": "no-store",
-};
+const responseHeaders = { "Cache-Control": "no-store" };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: responseHeaders });
-
-export function OPTIONS() { return new Response(null, { status: 204, headers: responseHeaders }); }
 
 type Input = {
   destination: string;
