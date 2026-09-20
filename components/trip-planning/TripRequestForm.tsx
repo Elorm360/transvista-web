@@ -15,6 +15,7 @@ const destinations = [
   ["accra", "Accra"],
   ["cape-coast", "Cape Coast & Elmina"],
   ["volta-region", "Volta Region"],
+  ["kumasi", "Kumasi"],
   ["not-sure", "I need recommendations"],
 ] as const;
 const services = [
@@ -34,10 +35,14 @@ const interests = [
 
 type TripRequestFormProps = {
   initialDestination?: string;
+  initialAiNotes?: string;
+  initialAiServices?: string[];
 };
 
 export function TripRequestForm({
   initialDestination = "",
+  initialAiNotes = "",
+  initialAiServices = [],
 }: TripRequestFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{
@@ -197,6 +202,7 @@ export function TripRequestForm({
                 name="serviceTypes"
                 value={value}
                 label={label}
+                defaultChecked={initialAiServices.includes(value) || (value === "complete-trip-planning" && initialAiServices.some((s) => ["meals", "photography"].includes(s))) || (value === "transport-and-transfers" && initialAiServices.includes("transport")) || (value === "experiences-and-tours" && initialAiServices.includes("guide")) || (value === "accommodation" && initialAiServices.includes("accommodation"))}
               />
             ))}
           </div>
@@ -306,6 +312,7 @@ export function TripRequestForm({
         <Field label="Anything else we should know?">
           <textarea
             name="notes"
+            defaultValue={initialAiNotes.slice(0, 1500)}
             className={areaClass}
             placeholder="Celebrations, accessibility needs, dietary needs, must-see places…"
           />
