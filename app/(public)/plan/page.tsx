@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Clock3, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { TripRequestForm } from "@/components/trip-planning/TripRequestForm";
+import { ghanaTourismRegions } from "@/constants/data/ghana-tourism-regions";
 
 export const metadata: Metadata = {
   title: "Plan Your Ghana Trip | TransVista Africa",
@@ -13,7 +14,12 @@ type PlanPageProps = {
   searchParams: Promise<{ destination?: string | string[] }>;
 };
 
-const allowedDestinations = new Set(["accra", "cape-coast", "volta-region"]);
+const allowedDestinations = new Set([
+  ...ghanaTourismRegions.map((region) => region.slug),
+  "accra",
+  "cape-coast",
+  "volta-region",
+]);
 
 export default async function PlanPage({ searchParams }: PlanPageProps) {
   const params = await searchParams;

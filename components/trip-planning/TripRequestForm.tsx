@@ -6,17 +6,16 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitTripRequest } from "@/app/actions/travel";
 import type { TripRequestInput } from "@/lib/travel/types";
+import {
+  getGhanaTourismRegion,
+  ghanaTourismRegions,
+  regionSlugForInitialDestination,
+} from "@/constants/data/ghana-tourism-regions";
 
 const fieldClass =
   "mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200";
 const areaClass =
   "mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200";
-const destinations = [
-  ["accra", "Accra"],
-  ["cape-coast", "Cape Coast & Elmina"],
-  ["volta-region", "Volta Region"],
-  ["not-sure", "I need recommendations"],
-] as const;
 const services = [
   ["experiences-and-tours", "Experiences & tours"],
   ["transport-and-transfers", "Transport & transfers"],
@@ -39,7 +38,11 @@ type TripRequestFormProps = {
 export function TripRequestForm({
   initialDestination = "",
 }: TripRequestFormProps) {
+  const initialRegionSlug = regionSlugForInitialDestination(initialDestination);
+  const [selectedRegionSlug, setSelectedRegionSlug] =
+    useState(initialRegionSlug);
   const [submitting, setSubmitting] = useState(false);
+  const selectedRegion = getGhanaTourismRegion(selectedRegionSlug);
   const [result, setResult] = useState<{
     success: boolean;
     reference?: string;
@@ -56,7 +59,11 @@ export function TripRequestForm({
       email: String(form.get("email") || ""),
       phone: String(form.get("phone") || ""),
       country: String(form.get("country") || ""),
-      destinations: form.getAll("destinations").map(String),
+      destinations: form
+        .getAll("destinations")
+        .map(String)
+        .map((destination) => destination.trim())
+        .filter(Boolean),
       startDate: String(form.get("startDate") || ""),
       endDate: String(form.get("endDate") || ""),
       dateFlexibility: String(form.get("dateFlexibility") || ""),
@@ -130,17 +137,88 @@ export function TripRequestForm({
           <legend className="text-base font-semibold text-slate-900">
             Where would you like to go?
           </legend>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {destinations.map(([value, label]) => (
-              <CheckboxCard
-                key={value}
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Choose a region to explore its tourist destinations.
+          </p>
+          <label className="mt-4 block text-sm font-semibold text-slate-800">
+            Region
+            <select
+              value={selectedRegionSlug}
+              onChange={(event) => setSelectedRegionSlug(event.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Select a region</option>
+              {ghanaTourismRegions.map((region) => (
+                <option key={region.slug} value={region.slug}>
+                  {region.name}
+                </option>
+              ))}
+              <option value="not-sure">I need help choosing a region</option>
+            </select>
+          </label>
+
+          {selectedRegion ? (
+            <div className="mt-6" key={selectedRegion.slug}>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="font-display text-lg font-semibold text-slate-900">
+                    Places to explore in {selectedRegion.name}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Choose one or more. TransVista will confirm access,
+                    availability, and the final itinerary after reviewing your
+                    request.
+                  </p>
+                </div>
+                <span className="mt-2 w-fit rounded-full bg-brand-blue-50 px-3 py-1 text-xs font-semibold text-brand-blue-800 sm:mt-0">
+                  {selectedRegion.destinations.length} suggestions
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {selectedRegion.destinations.map((destination) => (
+                  <CheckboxCard
+                    key={destination}
+                    name="destinations"
+                    value={`${selectedRegion.name} — ${destination}`}
+                    label={destination}
+                  />
+                ))}
+                <CheckboxCard
+                  name="destinations"
+                  value={`${selectedRegion.name} — I need recommendations`}
+                  label="I need recommendations in this region"
+                  defaultChecked={
+                    Boolean(initialDestination) &&
+                    selectedRegion.slug === initialRegionSlug
+                  }
+                />
+              </div>
+
+              <label className="mt-5 block text-sm font-semibold text-slate-800">
+                Another place or town in {selectedRegion.name} (optional)
+                <input
+                  name="destinations"
+                  className={fieldClass}
+                  placeholder="Enter a place that is not listed"
+                />
+              </label>
+            </div>
+          ) : selectedRegionSlug === "not-sure" ? (
+            <div className="mt-5 rounded-2xl border border-brand-blue-200 bg-brand-blue-50 p-4 text-sm leading-6 text-slate-700">
+              Tell us your interests later in the form and TransVista will
+              recommend suitable regions and destinations.
+              <input
+                type="hidden"
                 name="destinations"
-                value={value}
-                label={label}
-                defaultChecked={initialDestination === value}
+                value="I need recommendations across Ghana"
               />
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+              Select a region to see destination suggestions.
+            </div>
+          )}
         </fieldset>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Preferred start date">
