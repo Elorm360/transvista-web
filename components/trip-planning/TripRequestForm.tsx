@@ -38,9 +38,9 @@ type TripRequestFormProps = {
 export function TripRequestForm({
   initialDestination = "",
 }: TripRequestFormProps) {
-  const [selectedRegionSlug, setSelectedRegionSlug] = useState(() =>
-    regionSlugForInitialDestination(initialDestination),
-  );
+  const initialRegionSlug = regionSlugForInitialDestination(initialDestination);
+  const [selectedRegionSlug, setSelectedRegionSlug] =
+    useState(initialRegionSlug);
   const [submitting, setSubmitting] = useState(false);
   const selectedRegion = getGhanaTourismRegion(selectedRegionSlug);
   const [result, setResult] = useState<{
@@ -188,7 +188,10 @@ export function TripRequestForm({
                   name="destinations"
                   value={`${selectedRegion.name} — I need recommendations`}
                   label="I need recommendations in this region"
-                  defaultChecked={Boolean(initialDestination)}
+                  defaultChecked={
+                    Boolean(initialDestination) &&
+                    selectedRegion.slug === initialRegionSlug
+                  }
                 />
               </div>
 
