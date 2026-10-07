@@ -494,3 +494,99 @@ export async function sendBookingPaymentRequest(
     };
   }
 }
+
+
+export async function setRequestArchiveState(
+  _previousState: BookingOperationState,
+  formData: FormData,
+): Promise<BookingOperationState> {
+  try {
+    const kind = textValue(formData, "requestKind", 20);
+    const requestId = Number(textValue(formData, "requestId", 20));
+    const operation = textValue(formData, "archiveOperation", 20);
+    const reason = textValue(formData, "archiveReason", 500);
+
+    if ((kind !== "custom" && kind !== "package") || !Number.isInteger(requestId) || requestId < 1) {
+      return { success: false, message: "This request could not be identified." };
+    }
+    if (operation !== "archive" && operation !== "restore") {
+      return { success: false, message: "Choose a valid archive action." };
+    }
+    if (operation === "archive" && reason.length < 3) {
+      return { success: false, message: "Add a short reason for archiving this request." };
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("set_request_archive", {
+      p_kind: kind,
+      p_request_id: requestId,
+      p_archived: operation === "archive",
+      p_reason: operation === "archive" ? reason : null,
+    });
+
+    if (error) {
+      console.error("[setRequestArchiveState]", error);
+      return { success: false, message: error.message || "The request could not be updated." };
+    }
+
+    const completedAt = new Date().toISOString();
+    revalidatePath("/admin/requests");
+    return {
+      success: true,
+      message: operation === "archive"
+        ? "Request archived and removed from the active queue."
+        : "Request restored to the active queue.",
+      completedAt,
+    };
+  } catch (error) {
+    console.error("[setRequestArchiveState] Unexpected error:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "The request could not be updated.",
+    };
+  }
+}
+
+export async function permanentlyDeleteRequest(
+  _previousState: BookingOperationState,
+  formData: FormData,
+): Promise<BookingOperationState> {
+  try {
+    const kind = textValue(formData, "requestKind", 20);
+    const requestId = Number(textValue(formData, "requestId", 20));
+    const confirmationReference = textValue(formData, "confirmationReference", 120);
+
+    if ((kind !== "custom" && kind !== "package") || !Number.isInteger(requestId) || requestId < 1) {
+      return { success: false, message: "This request could not be identified." };
+    }
+    if (!confirmationReference) {
+      return { success: false, message: "Type the booking reference to confirm permanent deletion." };
+    }
+
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("delete_archived_request", {
+      p_kind: kind,
+      p_request_id: requestId,
+      p_confirmation_reference: confirmationReference,
+    });
+
+    if (error) {
+      console.error("[permanentlyDeleteRequest]", error);
+      return { success: false, message: error.message || "The request could not be deleted." };
+    }
+
+    const completedAt = new Date().toISOString();
+    revalidatePath("/admin/requests");
+    return {
+      success: true,
+      message: "Request permanently deleted. Its deletion audit entry was retained.",
+      completedAt,
+    };
+  } catch (error) {
+    console.error("[permanentlyDeleteRequest] Unexpected error:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "The request could not be deleted.",
+    };
+  }
+}
