@@ -8,6 +8,9 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
+  Archive,
+  ArchiveRestore,
   CalendarClock,
   CircleDollarSign,
   Download,
@@ -20,12 +23,15 @@ import {
   Save,
   Search,
   Send,
+  Trash2,
   UserRoundCheck,
   Users,
   X,
 } from "lucide-react";
 import {
+  permanentlyDeleteRequest,
   sendBookingPaymentRequest,
+  setRequestArchiveState,
   updateBookingOperation,
   type BookingOperationState,
 } from "@/app/actions/booking-operations";
@@ -136,15 +142,18 @@ function priorityClass(priority: string) {
 export default function TravelRequestsList({
   requests,
   operators,
+  adminRole,
 }: {
   requests: TravelRequestRecord[];
   operators: RequestOperator[];
+  adminRole: string;
 }) {
   const [selected, setSelected] = useState<TravelRequestRecord | null>(null);
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [visibilityFilter, setVisibilityFilter] = useState("active");
 
   const filteredRequests = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -165,20 +174,43 @@ export default function TravelRequestsList({
         statusFilter === "all" || request.status === statusFilter;
       const matchesPriority =
         priorityFilter === "all" || request.priority === priorityFilter;
-      return matchesQuery && matchesKind && matchesStatus && matchesPriority;
+      const matchesVisibility =
+        visibilityFilter === "all" ||
+        (visibilityFilter === "archived"
+          ? Boolean(request.archivedAt)
+          : !request.archivedAt);
+      return (
+        matchesQuery &&
+        matchesKind &&
+        matchesStatus &&
+        matchesPriority &&
+        matchesVisibility
+      );
     });
-  }, [kindFilter, priorityFilter, query, requests, statusFilter]);
+  }, [
+    kindFilter,
+    priorityFilter,
+    query,
+    requests,
+    statusFilter,
+    visibilityFilter,
+  ]);
+
+  const activeRequests = useMemo(
+    () => requests.filter((request) => !request.archivedAt),
+    [requests],
+  );
 
   const needsAttention = useMemo(
     () =>
-      requests.filter((request) =>
+      activeRequests.filter((request) =>
         ["new", "pending-review"].includes(request.status),
       ).length,
-    [requests],
+    [activeRequests],
   );
   const activeCount = useMemo(
     () =>
-      requests.filter((request) =>
+      activeRequests.filter((request) =>
         [
           "confirmed",
           "confirmed-awaiting-deposit",
@@ -187,14 +219,14 @@ export default function TravelRequestsList({
           "in-progress",
         ].includes(request.status),
       ).length,
-    [requests],
+    [activeRequests],
   );
   const amountCollected = useMemo(
     () =>
-      requests
+      activeRequests
         .filter((request) => !request.quoteCurrency || request.quoteCurrency === "GHS")
         .reduce((total, request) => total + request.amountPaid, 0),
-    [requests],
+    [activeRequests],
   );
 
   useEffect(() => {
@@ -262,7 +294,7 @@ export default function TravelRequestsList({
   return (
     <>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={Inbox} label="All requests" value={String(requests.length)} />
+        <Metric icon={Inbox} label="Active requests" value={String(activeRequests.length)} />
         <Metric
           icon={CalendarClock}
           label="Needs attention"
@@ -283,7 +315,7 @@ export default function TravelRequestsList({
         />
       </div>
 
-      <div className="mb-5 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[minmax(240px,1fr)_repeat(3,minmax(150px,auto))_auto]">
+      <div className="mb-5 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[minmax(240px,1fr)_repeat(4,minmax(145px,auto))_auto]">
         <label className="relative">
           <span className="sr-only">Search requests</span>
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -325,6 +357,16 @@ export default function TravelRequestsList({
             ["high", "High"],
             ["normal", "Normal"],
             ["low", "Low"],
+          ]}
+        />
+        <FilterSelect
+          label="Queue"
+          value={visibilityFilter}
+          onChange={setVisibilityFilter}
+          options={[
+            ["active", "Active queue"],
+            ["archived", "Archived"],
+            ["all", "Active and archived"],
           ]}
         />
         <button
@@ -380,6 +422,11 @@ export default function TravelRequestsList({
                   <tr key={request.id} className="align-top hover:bg-slate-50/70">
                     <td className="px-4 py-4 text-sm font-semibold text-blue-700">
                       {request.reference}
+                      {request.archivedAt && (
+                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                          Archived
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <p className="text-sm font-semibold text-slate-900">
@@ -447,6 +494,7 @@ export default function TravelRequestsList({
           key={selected.id}
           request={selected}
           operators={operators}
+          adminRole={adminRole}
           onClose={() => setSelected(null)}
         />
       )}
@@ -457,10 +505,12 @@ export default function TravelRequestsList({
 function RequestDrawer({
   request,
   operators,
+  adminRole,
   onClose,
 }: {
   request: TravelRequestRecord;
   operators: RequestOperator[];
+  adminRole: string;
   onClose: () => void;
 }) {
   return (
@@ -520,6 +570,14 @@ function RequestDrawer({
             </a>
           </div>
 
+          <RequestRetentionPanel
+            request={request}
+            adminRole={adminRole}
+            onClose={onClose}
+          />
+
+          {!request.archivedAt && (
+            <>
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
               <Save className="h-5 w-5 text-blue-600" /> Booking operations
@@ -540,6 +598,8 @@ function RequestDrawer({
             </p>
             <PaymentRequestForm request={request} />
           </section>
+            </>
+          )}
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="text-base font-bold text-slate-900">Traveller request</h3>
@@ -591,6 +651,172 @@ function RequestDrawer({
         </div>
       </div>
     </div>
+  );
+}
+
+function RequestRetentionPanel({
+  request,
+  adminRole,
+  onClose,
+}: {
+  request: TravelRequestRecord;
+  adminRole: string;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const initialState: BookingOperationState = { success: false, message: "" };
+  const [archiveState, archiveAction, archivePending] = useActionState(
+    setRequestArchiveState,
+    initialState,
+  );
+  const [deleteState, deleteAction, deletePending] = useActionState(
+    permanentlyDeleteRequest,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (!archiveState.success || !archiveState.completedAt) return;
+    router.refresh();
+    onClose();
+  }, [archiveState.completedAt, archiveState.success, onClose, router]);
+
+  useEffect(() => {
+    if (!deleteState.success || !deleteState.completedAt) return;
+    router.refresh();
+    onClose();
+  }, [deleteState.completedAt, deleteState.success, onClose, router]);
+
+  return (
+    <section className={
+      "rounded-2xl border bg-white p-5 " +
+      (request.archivedAt ? "border-slate-300" : "border-blue-200")
+    }>
+      <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
+        {request.archivedAt ? (
+          <ArchiveRestore className="h-5 w-5 text-blue-600" />
+        ) : (
+          <Archive className="h-5 w-5 text-blue-600" />
+        )}
+        Request cleanup
+      </h3>
+
+      {request.archivedAt ? (
+        <div className="mt-4 space-y-5">
+          <div className="rounded-xl bg-slate-100 p-4 text-sm text-slate-700">
+            <p className="font-bold text-slate-900">
+              Archived {formatDateTime(request.archivedAt)}
+            </p>
+            {request.archiveReason && (
+              <p className="mt-1 leading-6">{request.archiveReason}</p>
+            )}
+          </div>
+
+          <form action={archiveAction}>
+            <input type="hidden" name="requestKind" value={request.source} />
+            <input type="hidden" name="requestId" value={request.sourceId} />
+            <input type="hidden" name="archiveOperation" value="restore" />
+            <button
+              type="submit"
+              disabled={archivePending}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60"
+            >
+              <ArchiveRestore className="h-4 w-4" />
+              {archivePending ? "Restoring…" : "Restore to active queue"}
+            </button>
+          </form>
+
+          {adminRole === "owner" && (
+            <form action={deleteAction} className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" />
+                <div>
+                  <p className="text-sm font-bold text-rose-950">Permanent deletion</p>
+                  <p className="mt-1 text-xs leading-5 text-rose-800">
+                    Owner only. This is limited to archived requests with no payment
+                    or transport assignment. The deletion audit entry is retained.
+                  </p>
+                </div>
+              </div>
+              <label className="mt-4 block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-rose-800">
+                  Type {request.reference} to confirm
+                </span>
+                <input
+                  name="confirmationReference"
+                  required
+                  autoComplete="off"
+                  className={inputClass}
+                />
+              </label>
+              <input type="hidden" name="requestKind" value={request.source} />
+              <input type="hidden" name="requestId" value={request.sourceId} />
+              {deleteState.message && (
+                <p
+                  aria-live="polite"
+                  className={
+                    "mt-3 rounded-xl px-3 py-2 text-sm font-semibold " +
+                    (deleteState.success
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-rose-100 text-rose-900")
+                  }
+                >
+                  {deleteState.message}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={deletePending}
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-rose-700 px-5 text-sm font-bold text-white transition hover:bg-rose-800 disabled:cursor-wait disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4" />
+                {deletePending ? "Deleting permanently…" : "Permanently delete request"}
+              </button>
+            </form>
+          )}
+        </div>
+      ) : (
+        <form action={archiveAction} className="mt-4 space-y-4">
+          <p className="text-sm leading-6 text-slate-600">
+            Archive removes this request from the active queue without losing its
+            history. It can be restored later.
+          </p>
+          <Field label="Archive reason">
+            <input
+              name="archiveReason"
+              minLength={3}
+              maxLength={500}
+              required
+              placeholder="For example: test submission or duplicate request"
+              className={inputClass}
+            />
+          </Field>
+          <input type="hidden" name="requestKind" value={request.source} />
+          <input type="hidden" name="requestId" value={request.sourceId} />
+          <input type="hidden" name="archiveOperation" value="archive" />
+          {archiveState.message && (
+            <p
+              aria-live="polite"
+              className={
+                "rounded-xl px-3 py-2 text-sm font-semibold " +
+                (archiveState.success
+                  ? "bg-emerald-50 text-emerald-800"
+                  : "bg-rose-50 text-rose-800")
+              }
+            >
+              {archiveState.message}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={archivePending}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 text-sm font-bold text-slate-800 transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+          >
+            <Archive className="h-4 w-4" />
+            {archivePending ? "Archiving…" : "Archive request"}
+          </button>
+        </form>
+      )}
+    </section>
   );
 }
 
