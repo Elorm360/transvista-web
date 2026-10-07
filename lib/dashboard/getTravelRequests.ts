@@ -51,6 +51,8 @@ export type TravelRequestRecord = {
   tripDate: string | null;
   createdAt: string;
   updatedAt: string;
+  archivedAt: string | null;
+  archiveReason: string | null;
   details: RequestDetail[];
   activity: RequestActivityRecord[];
 };
@@ -92,11 +94,11 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
     await Promise.all([
       supabase
         .from("trip_requests")
-        .select("id, reference, full_name, email, phone, country, destinations, services, interests, travel_start, travel_end, date_flexibility, adults, children, budget_currency, budget_basis, budget_range, accommodation_style, transport_details, notes, status, policy_version, policy_accepted_at, assigned_to, priority, follow_up_at, quoted_amount, quote_currency, deposit_amount, amount_paid, payment_status, payment_method, payment_verified_at, payment_due_at, payment_request_sent_at, payment_request_amount, payment_request_type, confirmed_itinerary, created_at, updated_at")
+        .select("id, reference, full_name, email, phone, country, destinations, services, interests, travel_start, travel_end, date_flexibility, adults, children, budget_currency, budget_basis, budget_range, accommodation_style, transport_details, notes, status, policy_version, policy_accepted_at, assigned_to, priority, follow_up_at, quoted_amount, quote_currency, deposit_amount, amount_paid, payment_status, payment_method, payment_verified_at, payment_due_at, payment_request_sent_at, payment_request_amount, payment_request_type, confirmed_itinerary, archived_at, archive_reason, created_at, updated_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("package_reservations")
-        .select("id, reference, package_title, package_date, full_name, email, phone, city, emergency_contact_name, emergency_contact_phone, travellers, dietary_requirements, accessibility_requirements, notes, currency, price_per_person, total_price, deposit_per_person, deposit_due, balance_per_person, status, payment_status, promotional_media_consent, policy_version, policy_accepted_at, assigned_to, priority, follow_up_at, quoted_amount, quote_currency, deposit_amount, amount_paid, payment_method, payment_verified_at, payment_due_at, payment_request_sent_at, payment_request_amount, payment_request_type, confirmed_itinerary, created_at, updated_at")
+        .select("id, reference, package_title, package_date, full_name, email, phone, city, emergency_contact_name, emergency_contact_phone, travellers, dietary_requirements, accessibility_requirements, notes, currency, price_per_person, total_price, deposit_per_person, deposit_due, balance_per_person, status, payment_status, promotional_media_consent, policy_version, policy_accepted_at, assigned_to, priority, follow_up_at, quoted_amount, quote_currency, deposit_amount, amount_paid, payment_method, payment_verified_at, payment_due_at, payment_request_sent_at, payment_request_amount, payment_request_type, confirmed_itinerary, archived_at, archive_reason, created_at, updated_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("request_activity")
@@ -176,6 +178,8 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
       tripDate: row.travel_start,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      archivedAt: row.archived_at,
+      archiveReason: row.archive_reason,
       activity: activity.get(activityKey("custom", sourceId)) ?? [],
       details: [
         { label: "Country", value: valueOrDash(row.country) },
@@ -239,6 +243,8 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
       tripDate: row.package_date,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      archivedAt: row.archived_at,
+      archiveReason: row.archive_reason,
       activity: activity.get(activityKey("package", sourceId)) ?? [],
       details: [
         { label: "Trip date", value: valueOrDash(row.package_date) },
