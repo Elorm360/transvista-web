@@ -10,7 +10,7 @@ import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 export const dynamic = "force-dynamic";
 
 export default async function AdminRequestsPage() {
-  await requireAdminArea("requests");
+  const { role } = await requireAdminArea("requests");
   const [requests, operators] = await Promise.all([
     getTravelRequests(),
     getRequestOperators(),
@@ -23,7 +23,7 @@ export default async function AdminRequestsPage() {
         title="Booking Operations"
         description="Manage requests, assignments, quotes, payments, follow-ups and traveller communication."
       />
-      <TravelRequestsList requests={requests} operators={operators} />
+      <TravelRequestsList requests={requests} operators={operators} adminRole={role} />
     </div>
   );
 }
