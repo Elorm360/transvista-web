@@ -34,6 +34,14 @@ export interface FooterContent {
     email: string;
     emailHref: string;
     location: string;
+    whatsappHref: string;
+  };
+  community: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    href: string;
+    cta: string;
   };
   socials: SocialLink[];
   bottom: {
@@ -81,6 +89,17 @@ export const footerContent: FooterContent = {
     email: "info@transvistaafrica.com",
     emailHref: "mailto:info@transvistaafrica.com",
     location: "Accra, Ghana",
+    whatsappHref:
+      "https://wa.me/233248442916?text=Hi%20TransVista%20Africa%2C%20I%20would%20like%20help%20planning%20my%20trip.",
+  },
+
+  community: {
+    eyebrow: "Travel updates on WhatsApp",
+    title: "Join the TransVista community",
+    description:
+      "Get new group-trip announcements, Ghana travel inspiration and useful planning updates directly from our official channel.",
+    href: "https://whatsapp.com/channel/0029VbBchTr0G0XluVpGfy2q",
+    cta: "Follow our WhatsApp Channel",
   },
 
   socials: socialPlatforms.map(({ label, key }) => {
