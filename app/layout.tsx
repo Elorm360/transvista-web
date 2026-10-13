@@ -42,6 +42,10 @@ export const metadata: Metadata = {
 
   applicationName: seoConfig.shortTitle,
 
+  alternates: {
+    canonical: "/",
+  },
+
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png",
@@ -68,7 +72,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: seoConfig.title,
     description: seoConfig.description,
-    creator: seoConfig.twitterHandle,
     images: [seoConfig.openGraphImage],
   },
 };

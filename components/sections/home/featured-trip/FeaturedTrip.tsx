@@ -27,7 +27,7 @@ export function FeaturedTrip() {
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                <span className="absolute left-6 top-6 rounded-full bg-brand-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+                <span className="absolute left-6 top-6 rounded-full bg-brand-orange-700 px-4 py-2 text-sm font-semibold text-white shadow-lg">
                   Upcoming group trip
                 </span>
               </div>
@@ -46,30 +46,30 @@ export function FeaturedTrip() {
                 </p>
 
                 <dl className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <div className="flex gap-3">
-                    <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-700" />
-                    <div>
-                      <dt className="text-sm font-semibold text-slate-900">Date</dt>
-                      <dd className="mt-1 text-sm text-slate-600">{trip.displayDate}</dd>
-                    </div>
+                  <div>
+                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
+                      <CalendarDays className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
+                      Date
+                    </dt>
+                    <dd className="mt-1 pl-8 text-sm text-slate-600">{trip.displayDate}</dd>
                   </div>
-                  <div className="flex gap-3">
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-700" />
-                    <div>
-                      <dt className="text-sm font-semibold text-slate-900">Pickup</dt>
-                      <dd className="mt-1 text-sm text-slate-600">
+                  <div>
+                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
+                      <MapPin className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
+                      Pickup
+                    </dt>
+                    <dd className="mt-1 pl-8 text-sm text-slate-600">
                         {trip.pickupLocation}, {trip.departureTime}
                       </dd>
-                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <Camera className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-700" />
-                    <div>
-                      <dt className="text-sm font-semibold text-slate-900">Included</dt>
-                      <dd className="mt-1 text-sm text-slate-600">
+                  <div>
+                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
+                      <Camera className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
+                      Included
+                    </dt>
+                    <dd className="mt-1 pl-8 text-sm text-slate-600">
                         Meals, photos, video, transport
                       </dd>
-                    </div>
                   </div>
                   <div>
                     <dt className="text-sm font-semibold text-slate-900">Price</dt>

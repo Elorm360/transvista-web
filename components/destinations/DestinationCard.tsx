@@ -30,7 +30,7 @@ export function DestinationCard({ destination }: DestinationCardProps) {
         </div>
 
         <div className="p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-orange-700">
             {destination.region}
           </p>
 

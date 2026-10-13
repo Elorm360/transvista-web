@@ -5,9 +5,11 @@ import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { whatsappLink } from "@/lib/whatsapp";
 
-const whatsappHref =
-  "https://wa.me/233506987204?text=Hi%20TransVista%20Africa!%20I%27d%20like%20help%20planning%20a%20trip%20to%20Ghana.";
+const whatsappHref = whatsappLink(
+  "Hi TransVista Africa! I'd like help planning a trip to Ghana.",
+);
 
 const steps = [
   {

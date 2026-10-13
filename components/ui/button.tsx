@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
 variant: {
         default:
-          "bg-gradient-to-b from-brand-orange-500 to-brand-orange-700 text-white shadow-[0_12px_30px_-10px_rgba(244,123,32,0.65)] hover:from-brand-orange-500 hover:to-brand-orange-800 hover:shadow-[0_16px_38px_-10px_rgba(244,123,32,0.75)] hover:scale-[1.02]",
+          "bg-gradient-to-b from-brand-orange-700 to-brand-orange-800 text-white shadow-[0_12px_30px_-10px_rgba(244,123,32,0.65)] hover:from-brand-orange-800 hover:to-brand-orange-900 hover:shadow-[0_16px_38px_-10px_rgba(244,123,32,0.75)] hover:scale-[1.02]",
 
         secondary:
           "bg-gradient-to-b from-brand-blue-700 to-brand-blue-950 text-white shadow-[0_12px_30px_-12px_rgba(26,58,156,0.6)] hover:from-brand-blue-700 hover:to-brand-blue-950 hover:scale-[1.02]",

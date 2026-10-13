@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { notFound } from "next/navigation";
 import { ExperienceDetail } from "@/components/experiences/ExperienceDetail";
 import {
@@ -27,10 +28,13 @@ export async function generateMetadata({
     return { title: "Experience" };
   }
 
-  return {
+  return pageMetadata({
     title: experience.name,
     description: experience.description,
-  };
+    path: `/experiences/${experience.slug}`,
+    image: experience.image,
+    imageAlt: experience.imageAlt,
+  });
 }
 
 export default async function ExperiencePage({

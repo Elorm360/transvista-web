@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { cloneElement, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,9 @@ import {
 } from "@/constants/data/ghana-tourism-regions";
 
 const fieldClass =
-  "mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200";
+  "mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200 aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-red-200";
 const areaClass =
-  "mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200";
+  "mt-2 min-h-28 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-200 aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-red-200";
 const services = [
   ["experiences-and-tours", "Experiences & tours"],
   ["transport-and-transfers", "Transport & transfers"],
@@ -42,6 +42,9 @@ export function TripRequestForm({
   const [selectedRegionSlug, setSelectedRegionSlug] =
     useState(initialRegionSlug);
   const [submitting, setSubmitting] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const today = todayIso();
   const selectedRegion = getGhanaTourismRegion(selectedRegionSlug);
   const [result, setResult] = useState<{
     success: boolean;
@@ -81,11 +84,17 @@ export function TripRequestForm({
       website: String(form.get("website") || ""),
     };
 
-    if (!input.destinations.length || !input.serviceTypes.length) {
+    const nextErrors = validate(input, today);
+    setErrors(nextErrors);
+    const firstInvalid = Object.keys(nextErrors)[0];
+    if (firstInvalid) {
       setResult({
         success: false,
-        message: "Choose at least one destination and one planning service.",
+        message: "Please check the highlighted fields and try again.",
       });
+      document
+        .getElementById(`field-${firstInvalid}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -140,9 +149,14 @@ export function TripRequestForm({
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Choose a region to explore its tourist destinations.
           </p>
-          <label className="mt-4 block text-sm font-semibold text-slate-800">
-            Region
+          <label
+            id="field-destinations"
+            className="mt-4 block text-sm font-semibold text-slate-800"
+          >
+            Region <span className="text-red-700" aria-hidden="true">*</span>
             <select
+              aria-invalid={Boolean(errors.destinations)}
+              aria-describedby="error-destinations"
               value={selectedRegionSlug}
               onChange={(event) => setSelectedRegionSlug(event.target.value)}
               className={fieldClass}
@@ -219,13 +233,26 @@ export function TripRequestForm({
               Select a region to see destination suggestions.
             </div>
           )}
+          <FieldError id="destinations" message={errors.destinations} />
         </fieldset>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Preferred start date">
-            <input name="startDate" type="date" className={fieldClass} />
+          <Field label="Preferred start date" name="startDate" error={errors.startDate}>
+            <input
+              name="startDate"
+              type="date"
+              min={today}
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+              className={fieldClass}
+            />
           </Field>
-          <Field label="Preferred end date">
-            <input name="endDate" type="date" className={fieldClass} />
+          <Field label="Preferred end date" name="endDate" error={errors.endDate}>
+            <input
+              name="endDate"
+              type="date"
+              min={startDate || today}
+              className={fieldClass}
+            />
           </Field>
         </div>
         <Field label="If your dates are flexible">
@@ -264,9 +291,10 @@ export function TripRequestForm({
       </FormSection>
 
       <FormSection number="3" title="What should we plan?">
-        <fieldset>
+        <fieldset id="field-serviceTypes" aria-describedby="error-serviceTypes">
           <legend className="text-base font-semibold text-slate-900">
-            Choose the support you need
+            Choose the support you need{" "}
+            <span className="text-red-700" aria-hidden="true">*</span>
           </legend>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {services.map(([value, label]) => (
@@ -278,6 +306,7 @@ export function TripRequestForm({
               />
             ))}
           </div>
+          <FieldError id="serviceTypes" message={errors.serviceTypes} />
         </fieldset>
         <fieldset>
           <legend className="text-base font-semibold text-slate-900">
@@ -330,7 +359,7 @@ export function TripRequestForm({
               <option value="per-person">Each traveller</option>
             </select>
           </Field>
-          <Field label="Budget range">
+          <Field label="Budget range" name="budgetRange" error={errors.budgetRange} required>
             <select name="budgetRange" required className={fieldClass}>
               <option value="">Select a range</option>
               <option value="under-1000">Under 1,000</option>
@@ -346,7 +375,7 @@ export function TripRequestForm({
 
       <FormSection number="5" title="How should we reach you?">
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Full name">
+          <Field label="Full name" name="fullName" error={errors.fullName} required>
             <input
               name="fullName"
               autoComplete="name"
@@ -354,7 +383,7 @@ export function TripRequestForm({
               className={fieldClass}
             />
           </Field>
-          <Field label="Email address">
+          <Field label="Email address" name="email" error={errors.email} required>
             <input
               name="email"
               type="email"
@@ -363,7 +392,7 @@ export function TripRequestForm({
               className={fieldClass}
             />
           </Field>
-          <Field label="WhatsApp or phone number">
+          <Field label="WhatsApp or phone number" name="phone" error={errors.phone} required>
             <input
               name="phone"
               type="tel"
@@ -372,7 +401,7 @@ export function TripRequestForm({
               className={fieldClass}
             />
           </Field>
-          <Field label="Country of residence">
+          <Field label="Country of residence" name="country" error={errors.country} required>
             <input
               name="country"
               autoComplete="country-name"
@@ -388,8 +417,13 @@ export function TripRequestForm({
             placeholder="Celebrations, accessibility needs, dietary needs, must-see places…"
           />
         </Field>
-        <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+        <label
+          id="field-acceptedPolicy"
+          className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+        >
           <input
+            aria-invalid={Boolean(errors.acceptedPolicy)}
+            aria-describedby="error-acceptedPolicy"
             name="acceptedPolicy"
             type="checkbox"
             required
@@ -405,8 +439,18 @@ export function TripRequestForm({
               Payment, Booking & Refund Policy
             </Link>
             . I understand that this is a request, not a confirmed booking.
+            See how we handle your data in our{" "}
+            <Link
+              href="/privacy"
+              target="_blank"
+              className="font-semibold text-brand-blue-800 underline"
+            >
+              Privacy Policy
+            </Link>
+            .
           </span>
         </label>
+        <FieldError id="acceptedPolicy" message={errors.acceptedPolicy} />
       </FormSection>
 
       {result && !result.success && (
@@ -454,18 +498,92 @@ function FormSection({
   );
 }
 
+type FieldName =
+  | "destinations"
+  | "startDate"
+  | "endDate"
+  | "serviceTypes"
+  | "budgetRange"
+  | "fullName"
+  | "email"
+  | "phone"
+  | "country"
+  | "acceptedPolicy";
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+function todayIso() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
+function validate(input: TripRequestInput, today: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!input.destinations.length)
+    errors.destinations = "Choose a region, or “I need help choosing a region”.";
+  if (input.startDate && input.startDate < today)
+    errors.startDate = "Start date can’t be in the past.";
+  if (input.startDate && input.endDate && input.endDate < input.startDate)
+    errors.endDate = "End date must be on or after the start date.";
+  if (!input.serviceTypes.length)
+    errors.serviceTypes = "Choose at least one type of support.";
+  if (!input.budgetRange) errors.budgetRange = "Select a budget range.";
+  if (!input.fullName.trim()) errors.fullName = "Please enter your full name.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim()))
+    errors.email = "Please enter a valid email address.";
+  if (input.phone.replace(/\D/g, "").length < 9)
+    errors.phone = "Please enter a phone or WhatsApp number we can reach.";
+  if (!input.country.trim()) errors.country = "Please enter your country.";
+  if (!input.acceptedPolicy)
+    errors.acceptedPolicy = "Please accept the policy to send your request.";
+  return errors;
+}
+
+function FieldError({ id, message }: { id: FieldName; message?: string }) {
+  return (
+    <p
+      id={`error-${id}`}
+      className={message ? "mt-2 text-sm font-medium text-red-700" : "sr-only"}
+      aria-live="polite"
+    >
+      {message}
+    </p>
+  );
+}
+
 function Field({
   label,
+  name,
+  error,
+  required = false,
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  name?: FieldName;
+  error?: string;
+  required?: boolean;
+  children: React.ReactElement<React.InputHTMLAttributes<HTMLInputElement>>;
 }) {
+  const control = name
+    ? cloneElement(children, {
+        "aria-invalid": Boolean(error),
+        "aria-describedby": `error-${name}`,
+      })
+    : children;
+
   return (
-    <label className="block text-sm font-semibold text-slate-800">
-      {label}
-      {children}
-    </label>
+    <div id={name ? `field-${name}` : undefined}>
+      <label className="block text-sm font-semibold text-slate-800">
+        {label}
+        {required && (
+          <span className="text-red-700" aria-hidden="true">
+            {" "}*
+          </span>
+        )}
+        {control}
+      </label>
+      {name && <FieldError id={name} message={error} />}
+    </div>
   );
 }
 

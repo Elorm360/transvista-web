@@ -8,7 +8,15 @@ export const brand = {
   description:
     "Discover Ghana with trusted transport, curated experiences and seamless travel planning powered by technology.",
 
-  website: "https://transvistaafrica.com",
+  website: "https://www.transvistaafrica.com",
+
+  contact: {
+    // Single official number for calls and WhatsApp (international format).
+    whatsapp: "233248442916",
+    phoneDisplay: "+233 24 844 2916",
+    phoneHref: "tel:+233248442916",
+    email: "info@transvistaafrica.com",
+  },
 
   socials: {
     facebook: "https://web.facebook.com/transvista.africa",

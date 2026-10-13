@@ -36,8 +36,30 @@ export function UpcomingEventSpotlight() {
       return;
     }
 
-    const timer = window.setTimeout(() => setDisplay("open"), 900);
-    return () => window.clearTimeout(timer);
+    // Never cover the hero on first paint. Small screens get the compact
+    // pill only; larger screens open after real engagement (scroll or time).
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setDisplay("minimized");
+      return;
+    }
+
+    let opened = false;
+    const open = () => {
+      if (opened) return;
+      opened = true;
+      setDisplay("open");
+    };
+    const onScroll = () => {
+      const scrollable =
+        document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable > 0 && window.scrollY / scrollable > 0.35) open();
+    };
+    const timer = window.setTimeout(open, 20000);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -62,7 +84,7 @@ export function UpcomingEventSpotlight() {
 
   if (display === "minimized") {
     return (
-      <div className="fixed bottom-5 left-4 z-40 max-w-[calc(100vw-2rem)] sm:left-6">
+      <div className="fixed bottom-7 left-4 z-40 max-w-[calc(100vw-7rem)] sm:bottom-8 sm:left-6">
         <button
           type="button"
           onClick={() => setDisplay("open")}
@@ -76,7 +98,7 @@ export function UpcomingEventSpotlight() {
             <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-orange-200">
               Upcoming trip
             </span>
-            <span className="block max-w-52 truncate text-sm font-semibold">
+            <span className="block max-w-40 truncate sm:max-w-52 text-sm font-semibold">
               {event.title}
             </span>
           </span>
@@ -156,7 +178,7 @@ export function UpcomingEventSpotlight() {
               <Link
                 href={`${event.href}#register`}
                 onClick={dismiss}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-700 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
               >
                 Reserve my spot
               </Link>

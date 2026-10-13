@@ -113,7 +113,7 @@ export function HeroVisual() {
 
         <div
           className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/25 px-2.5 py-1.5 backdrop-blur-sm"
-          aria-label="Hero image slideshow"
+          aria-hidden="true"
         >
           {heroImages.map((image, index) => (
             <span

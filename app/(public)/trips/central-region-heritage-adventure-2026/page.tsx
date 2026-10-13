@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { CalendarDays, Clock3, MapPin, Camera, Utensils, Bus } from "lucide-react";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PackageTerms } from "@/components/packages/PackageTerms";
 import { PackageReservationForm } from "@/components/trips/PackageReservationForm";
 import { centralRegionPackage } from "@/lib/travel/packages";
 
-export const metadata: Metadata = {
-  title: "Central Region Heritage & Adventure Day Trip | TransVista Africa",
+export const metadata: Metadata = pageMetadata({
+  title: "Central Region Heritage & Adventure Day Trip",
   description:
-    "Join TransVista on November 14, 2026 for Kakum National Park, Cape Coast Castle, Elmina Castle, Hans Cottage Botel, meals, photos, and video.",
-};
+    "Sat 14 Nov 2026 · GH₵400 per person. Kakum canopy walk, Cape Coast & Elmina Castles, Hans Cottage Botel, meals, photos and video. Pickup at Accra Mall.",
+  path: "/trips/central-region-heritage-adventure-2026",
+  image: centralRegionPackage.image,
+  imageAlt: centralRegionPackage.imageAlt,
+});
 
 export default function CentralRegionTripPage() {
   const trip = centralRegionPackage;
@@ -44,9 +48,9 @@ export default function CentralRegionTripPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#register"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-700"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-700 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-800"
               >
-                Register my interest
+                Reserve my spot
               </a>
               <span className="inline-flex h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-base font-semibold backdrop-blur-sm">
                 {trip.currencySymbol}{trip.pricePerPerson} per person
@@ -168,12 +172,12 @@ function Fact({
   value: string;
 }) {
   return (
-    <div className="flex gap-3">
-      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-700" />
-      <div>
-        <dt className="text-sm font-semibold text-slate-900">{label}</dt>
-        <dd className="mt-1 text-sm leading-6 text-slate-600">{value}</dd>
-      </div>
+    <div>
+      <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
+        <Icon className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className="mt-1 pl-8 text-sm leading-6 text-slate-600">{value}</dd>
     </div>
   );
 }

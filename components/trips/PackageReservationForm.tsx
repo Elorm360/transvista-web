@@ -190,7 +190,15 @@ export function PackageReservationForm({
             Payment, Booking & Refund Policy
           </Link>
           . I understand that this registration is not confirmed until payment
-          requirements are completed.
+          requirements are completed. See our{" "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="font-semibold text-brand-blue-800 underline"
+          >
+            Privacy Policy
+          </Link>
+          .
         </CheckField>
       </div>
 
@@ -209,7 +217,7 @@ export function PackageReservationForm({
         disabled={submitting}
         className="mt-7 w-full rounded-full"
       >
-        {submitting ? "Sending registration…" : "Submit registration"}
+        {submitting ? "Sending registration…" : "Reserve my spot (no payment now)"}
       </Button>
     </form>
   );

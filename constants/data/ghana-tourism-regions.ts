@@ -194,7 +194,14 @@ const initialDestinationRegion: Record<string, string> = {
   accra: "greater-accra",
   "cape-coast": "central",
   "volta-region": "volta",
+  kumasi: "ashanti",
+  "mole-national-park": "savannah",
+  "kakum-national-park": "central",
+  mole: "savannah",
+  kakum: "central",
 };
+
+export const initialDestinationSlugs = Object.keys(initialDestinationRegion);
 
 export function regionSlugForInitialDestination(value: string) {
   return initialDestinationRegion[value] ?? value;

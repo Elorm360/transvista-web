@@ -77,7 +77,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1 — Brand */}
           <div>
-            <Logo width={36} height={36} className="shrink-0" imageClassName="h-[36px] w-auto" />
+            <Logo className="w-fit shrink-0 rounded-2xl bg-white px-3 py-2" imageClassName="h-9 w-auto" />
 
             <p className="mt-4 text-lg font-semibold text-white">
               {footerContent.brand.tagline}
@@ -179,7 +179,7 @@ export function Footer() {
                     aria-label={`Follow TransVista Africa on ${social.label}`}
                     className={`text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600 ${SOCIAL_HOVER[social.key]}`}
                   >
-                    <Icon size={22} />
+                    <Icon size={22} aria-hidden="true" />
                   </a>
                 );
               })}

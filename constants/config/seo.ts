@@ -9,7 +9,6 @@ export interface SeoConfig {
   author: string;
   keywords: string[];
   openGraphImage: string;
-  twitterHandle: string;
 }
 
 export const seoConfig: SeoConfig = {
@@ -23,7 +22,7 @@ export const seoConfig: SeoConfig = {
   description:
     "Explore curated Ghana destinations and let TransVista coordinate trusted experiences, transport, accommodation, or your complete trip.",
 
-  url: "https://transvistaafrica.com",
+  url: "https://www.transvistaafrica.com",
 
   locale: "en_GH",
 
@@ -46,5 +45,4 @@ export const seoConfig: SeoConfig = {
 
   openGraphImage: "/images/og/transvista-og.png",
 
-  twitterHandle: "@transvistaafrica",
 };

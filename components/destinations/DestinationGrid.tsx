@@ -9,16 +9,16 @@ export function DestinationGrid() {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange-700">
             Discover Ghana
           </p>
 
-          <h2
+          <h1
             id="destinations-heading"
-            className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl"
+            className="font-display mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl"
           >
             Places worth discovering
-          </h2>
+          </h1>
 
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
             Explore destinations across Ghana and discover the places,

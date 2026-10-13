@@ -9,14 +9,14 @@ interface LogoProps {
   priority?: boolean;
 }
 
-const DEFAULT_IMAGE_CLASS =
-  "h-[36px] w-auto md:h-[42px] lg:h-[48px]";
+// Wide, tightly-cropped wordmark so the logo stays legible on small screens.
+const DEFAULT_IMAGE_CLASS = "h-10 w-auto lg:h-12";
 
 export function Logo({
   className = "",
   imageClassName = "",
-  width = 48,
-  height = 48,
+  width = 400,
+  height = 164,
   priority = false,
 }: LogoProps) {
   return (
@@ -26,12 +26,12 @@ export function Logo({
       aria-label="TransVista Africa Home"
     >
       <Image
-        src="/images/hero/transvista-logo.png"
+        src="/images/brand/transvista-logo-wide.png"
         alt="TransVista Africa"
         width={width}
         height={height}
         priority={priority}
-        sizes="(max-width: 768px) 36px, (max-width: 1024px) 42px, 48px"
+        sizes="(max-width: 1024px) 100px, 120px"
         className={`h-auto w-auto object-contain ${imageClassName || DEFAULT_IMAGE_CLASS}`.trim()}
       />
     </Link>
