@@ -9,13 +9,13 @@ export function DestinationGrid() {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
             Discover Ghana
           </p>
 
           <h1
             id="destinations-heading"
-            className="font-display mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl"
+            className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl"
           >
             Places worth discovering
           </h1>

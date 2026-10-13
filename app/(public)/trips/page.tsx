@@ -69,7 +69,7 @@ export default function TripsPage() {
                   </p>
                   <Link
                     href={event.href}
-                    className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-700 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+                    className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-600__ focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
                   >
                     View trip and reserve
                   </Link>

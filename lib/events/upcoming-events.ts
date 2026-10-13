@@ -21,7 +21,7 @@ export const upcomingEvents: UpcomingEvent[] = [
     eyebrow: "Upcoming group trip",
     dateLabel: centralRegionPackage.displayDate,
     registrationDeadline: centralRegionPackage.registrationDeadline,
-    registrationDeadlineIso: "2026-11-01",
+    registrationDeadlineIso: centralRegionPackage.registrationDeadlineIso,
     priceLabel: `${centralRegionPackage.currencySymbol}${centralRegionPackage.pricePerPerson} per person`,
     summary:
       "Kakum National Park, Hans Cottage Botel, Cape Coast Castle and Elmina Castle—with meals, transport, photography and a short-form video experience.",

@@ -178,7 +178,7 @@ export function UpcomingEventSpotlight() {
               <Link
                 href={`${event.href}#register`}
                 onClick={dismiss}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-700 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
               >
                 Reserve my spot
               </Link>

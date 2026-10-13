@@ -77,7 +77,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1 — Brand */}
           <div>
-            <Logo className="w-fit shrink-0 rounded-2xl bg-white px-3 py-2" imageClassName="h-9 w-auto" />
+            <Logo width={36} height={36} className="shrink-0" imageClassName="h-[36px] w-auto" />
 
             <p className="mt-4 text-lg font-semibold text-white">
               {footerContent.brand.tagline}

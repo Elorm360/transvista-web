@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubmissionSuccess } from "@/components/forms/SubmissionSuccess";
+import { tripGoogleCalendarUrl, tripIcsPath } from "@/lib/travel/calendar";
 import { submitPackageReservation } from "@/app/actions/travel";
 import type { PackageReservationInput } from "@/lib/travel/types";
 import type { CentralRegionPackage } from "@/lib/travel/packages";
@@ -62,22 +63,19 @@ export function PackageReservationForm({
 
   if (result?.success && result.reference) {
     return (
-      <div className="rounded-[28px] border border-emerald-200 bg-emerald-50 p-8 text-center">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
-        <h2 className="font-display mt-4 text-2xl font-semibold text-slate-900">
-          Registration received
-        </h2>
-        <p className="mt-3 text-base leading-7 text-slate-600">
-          Reference <strong>{result.reference}</strong>. Your place is not
-          confirmed yet. TransVista will review the registration and send
-          official deposit instructions after confirmation.
-        </p>
-        {!result.emailSent && (
-          <p className="mt-3 text-sm text-slate-500">
-            Your registration was saved, but the confirmation email may be delayed.
-          </p>
-        )}
-      </div>
+      <SubmissionSuccess
+        title="Registration received"
+        reference={result.reference}
+        intro="Your place is not confirmed yet. No payment is due until TransVista confirms it."
+        emailSent={result.emailSent}
+        steps={[
+          "Registration received. Check your email for a copy.",
+          `TransVista confirms your place and sends official instructions for the ${trip.currencySymbol}${trip.depositPerPerson} deposit per traveller.`,
+          `Pay the remaining ${trip.currencySymbol}${trip.balancePerPerson} by ${trip.balanceDeadline} to fully confirm.`,
+          `Meet at ${trip.pickupLocation} from ${trip.checkInTime} on ${trip.displayDate}.`,
+        ]}
+        calendar={{ googleUrl: tripGoogleCalendarUrl, icsPath: tripIcsPath }}
+      />
     );
   }
 

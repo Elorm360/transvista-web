@@ -21,7 +21,7 @@ export function ExperienceDetail({
     <main id="main-content" className="bg-[#fffdfa]">
       <section className="border-b border-slate-200 bg-white pt-10 pb-14 lg:pt-14 lg:pb-20">
         <Container>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange-600">
             {destination ? (
               <Link
                 href={`/destinations/${destination.slug}`}

@@ -65,7 +65,7 @@ export default function TravellerStoriesPage() {
             </div>
             <Link
               href="/plan"
-              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-700 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
+              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-600__ focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
             >
               Plan my trip
               <ArrowRight aria-hidden="true" className="h-4 w-4" />

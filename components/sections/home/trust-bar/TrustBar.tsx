@@ -27,7 +27,7 @@ export function TrustBar() {
         {items.map((item, i) => (
           <span
             key={`${item}-${i}`}
-            className="flex items-center gap-2 whitespace-nowrap text-sm font-semibold uppercase tracking-[0.15em] text-slate-600"
+            className="flex items-center gap-2 whitespace-nowrap text-sm font-semibold uppercase tracking-[0.15em] text-slate-400"
           >
             <ShieldCheck className="h-4 w-4 text-brand-orange-500" aria-hidden="true" />
             {item}

@@ -91,7 +91,7 @@ export default function ContactPage() {
             </p>
             <Link
               href="/plan"
-              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-700 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-800"
+              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-600__"
             >
               Start my trip request
             </Link>

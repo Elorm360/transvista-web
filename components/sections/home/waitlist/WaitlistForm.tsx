@@ -364,7 +364,7 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
           type="submit"
           size="lg"
           disabled={isSubmitting}
-          className="w-full text-base disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full bg-accent text-base hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting
             ? waitlistContent.form.submittingLabel
@@ -373,7 +373,7 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
               : waitlistContent.form.submitLabel}
         </Button>
 
-        <p className="text-center text-xs leading-5 text-slate-300">
+        <p className="text-center text-xs leading-5 text-slate-400">
           {waitlistContent.form.privacyNote}{" "}
           <a href="/privacy" className="underline hover:text-white">
             Privacy Policy

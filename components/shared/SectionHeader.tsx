@@ -49,7 +49,7 @@ export function SectionHeader({
         className,
       )}
     >
-      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-orange-700">
+      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-orange-600">
         <span aria-hidden="true" className="h-px w-6 bg-gradient-to-r from-transparent to-brand-orange-500" />
         {badge}
         <span aria-hidden="true" className="h-px w-6 bg-gradient-to-l from-transparent to-brand-orange-500" />

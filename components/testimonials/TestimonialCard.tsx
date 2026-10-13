@@ -24,7 +24,7 @@ export function TestimonialCard({ story, compact = false }: TestimonialCardProps
           <p className="font-display text-lg font-semibold leading-tight text-slate-900">
             {story.name}
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-600">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
             <MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-brand-orange-500" />
             {story.location}
           </p>
@@ -38,7 +38,7 @@ export function TestimonialCard({ story, compact = false }: TestimonialCardProps
         </blockquote>
         <div className="mt-5 border-t border-slate-100 pt-4">
           <p className="text-sm font-semibold text-brand-blue-700">{story.trip}</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-600">{story.date}</p>
+          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">{story.date}</p>
         </div>
       </div>
     </article>

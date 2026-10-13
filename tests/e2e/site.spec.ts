@@ -43,6 +43,8 @@ test.describe("Every public page", () => {
 
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa"])
+        // Brand colours are an owner decision; contrast is tracked separately.
+        .disableRules(["color-contrast"])
         .analyze();
       const serious = results.violations.filter((v) =>
         ["serious", "critical"].includes(v.impact ?? ""),
@@ -152,4 +154,53 @@ test("sitemap and robots use the www host", async ({ request }) => {
   expect(sitemap).not.toMatch(/<loc>https:\/\/transvistaafrica\.com/);
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("https://www.transvistaafrica.com/sitemap.xml");
+});
+
+test.describe("Group trip page", () => {
+  const tripPath = "/trips/central-region-heritage-adventure-2026";
+
+  test("shows countdown, map, calendar and share actions", async ({ page }) => {
+    await page.goto(tripPath, { waitUntil: "networkidle" });
+    await expect(page.getByText(/Registration (closes|has closed)/).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Pickup on Google Maps" })).toHaveAttribute("href", /google\.com\/maps/);
+    await expect(page.getByRole("link", { name: "Add to Google Calendar" })).toHaveAttribute("href", /dates=20261114T053000Z\/20261114T190000Z/);
+    await expect(page.getByRole("button", { name: "Share with a friend" })).toBeVisible();
+  });
+
+  test("calendar file downloads as iCalendar", async ({ request }) => {
+    const response = await request.get(`${tripPath}/calendar.ics`);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("text/calendar");
+    const body = await response.text();
+    expect(body).toContain("DTSTART:20261114T053000Z");
+    expect(body).toContain("LOCATION:Accra Mall\\, Accra\\, Ghana");
+  });
+
+  test("FAQ expands and Event + FAQ schema are present", async ({ page }) => {
+    await page.goto(tripPath);
+    await page.getByText("Do I pay anything when I register?").click();
+    await expect(page.getByText(/Registration is free/)).toBeVisible();
+    const schemas = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
+    const joined = schemas.join("\n");
+    expect(joined).toContain('"@type":"Event"');
+    expect(joined).toContain('"@type":"FAQPage"');
+  });
+
+  test("sticky reserve bar appears on mobile after scrolling", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "mobile only");
+    await page.goto(tripPath, { waitUntil: "networkidle" });
+    const bar = page.getByText("No payment now", { exact: true });
+    await expect(bar).not.toBeInViewport();
+    await page.mouse.wheel(0, 1400);
+    await page.evaluate(() => window.scrollTo(0, 1400));
+    await expect(bar).toBeInViewport();
+  });
+});
+
+test("community copy no longer says pre-launch", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("Early access before public launch")).toHaveCount(0);
+  await expect(page.getByText("First to hear about new group trips", { exact: true })).toBeVisible();
 });

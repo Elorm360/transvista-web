@@ -1,9 +1,9 @@
 "use client";
 
-import { cloneElement, useState } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubmissionSuccess } from "@/components/forms/SubmissionSuccess";
 import { submitTripRequest } from "@/app/actions/travel";
 import type { TripRequestInput } from "@/lib/travel/types";
 import {
@@ -45,6 +45,16 @@ export function TripRequestForm({
   const [startDate, setStartDate] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const today = todayIso();
+  const currencyRef = useRef<HTMLSelectElement>(null);
+
+  // Suggest the visitor's likely currency; they can still change it.
+  useEffect(() => {
+    if (currencyRef.current) {
+      currencyRef.current.value = guessCurrency(
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+      );
+    }
+  }, []);
   const selectedRegion = getGhanaTourismRegion(selectedRegionSlug);
   const [result, setResult] = useState<{
     success: boolean;
@@ -113,21 +123,18 @@ export function TripRequestForm({
 
   if (result?.success && result.reference) {
     return (
-      <div className="rounded-[28px] border border-emerald-200 bg-emerald-50 p-8 text-center">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
-        <h2 className="font-display mt-4 text-2xl font-semibold text-slate-900">
-          Your request is with TransVista
-        </h2>
-        <p className="mt-3 text-base leading-7 text-slate-600">
-          Reference <strong>{result.reference}</strong>. We will review your
-          trip and respond within 48 hours.
-        </p>
-        {!result.emailSent && (
-          <p className="mt-3 text-sm text-slate-500">
-            Your request was saved, but the confirmation email may be delayed.
-          </p>
-        )}
-      </div>
+      <SubmissionSuccess
+        title="Your request is with TransVista"
+        reference={result.reference}
+        intro="This is a request, not a booking. Nothing is charged until you approve a proposal."
+        emailSent={result.emailSent}
+        steps={[
+          "Request received. Check your email for a copy.",
+          "We check routes, stays, experiences and trusted providers for your trip.",
+          "Within 48 hours you receive a proposal with availability and a clear price.",
+          "Approve the proposal and pay the agreed deposit to confirm.",
+        ]}
+      />
     );
   }
 
@@ -346,7 +353,13 @@ export function TripRequestForm({
       <FormSection number="4" title="Your comfortable budget">
         <div className="grid gap-5 sm:grid-cols-3">
           <Field label="Currency">
-            <select name="budgetCurrency" required className={fieldClass}>
+            <select
+              name="budgetCurrency"
+              required
+              ref={currencyRef}
+              defaultValue="GHS"
+              className={fieldClass}
+            >
               <option value="GHS">GH₵</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -510,6 +523,15 @@ type FieldName =
   | "country"
   | "acceptedPolicy";
 type FieldErrors = Partial<Record<FieldName, string>>;
+
+const euroZones = /^Europe\/(Berlin|Paris|Amsterdam|Brussels|Madrid|Rome|Vienna|Dublin|Lisbon|Helsinki|Athens|Luxembourg)/;
+
+function guessCurrency(timeZone: string) {
+  if (timeZone === "Europe/London") return "GBP";
+  if (euroZones.test(timeZone)) return "EUR";
+  if (timeZone.startsWith("America/")) return "USD";
+  return "GHS";
+}
 
 function todayIso() {
   const now = new Date();

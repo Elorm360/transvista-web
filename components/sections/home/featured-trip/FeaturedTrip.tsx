@@ -27,7 +27,7 @@ export function FeaturedTrip() {
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                <span className="absolute left-6 top-6 rounded-full bg-brand-orange-700 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+                <span className="absolute left-6 top-6 rounded-full bg-brand-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
                   Upcoming group trip
                 </span>
               </div>
