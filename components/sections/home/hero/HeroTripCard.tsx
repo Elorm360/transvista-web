@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { centralRegionPackage as trip } from "@/lib/travel/packages";
 
+const closesAt = Date.parse(`${trip.registrationDeadlineIso}T23:59:59Z`);
+const noopSubscribe = () => () => {};
+
 /** Compact "next departure" ticket; hides itself once registration closes. */
 export function HeroTripCard() {
-  const [open, setOpen] = useState(true);
-
-  useEffect(() => {
-    const closes = Date.parse(`${trip.registrationDeadlineIso}T23:59:59Z`);
-    if (Date.now() > closes) setOpen(false);
-  }, []);
+  const open = useSyncExternalStore(
+    noopSubscribe,
+    () => Date.now() <= closesAt,
+    () => true,
+  );
 
   if (!open) return null;
 
