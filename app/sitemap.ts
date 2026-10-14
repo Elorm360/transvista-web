@@ -31,6 +31,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    ...["/destinations", "/trips", "/contact", "/privacy", "/terms"].map(
+      (path) => ({
+        url: `${seoConfig.url}${path}`,
+        lastModified,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      }),
+    ),
     {
       url: `${seoConfig.url}/policies/payment-booking-refunds`,
       lastModified,

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
 import { ArrowRight, Heart, Sparkles } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -6,34 +7,12 @@ import { Reveal } from "@/components/motion/Reveal";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { travellerTestimonials } from "@/content/testimonials";
 
-const pageTitle = "Traveller Stories | TransVista Africa";
-const pageDescription =
-  "Read verified stories from travellers who explored Ghana with TransVista Africa.";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Traveller Stories",
-  description: pageDescription,
-  openGraph: {
-    type: "website",
-    url: "/stories",
-    title: pageTitle,
-    description: pageDescription,
-    images: [
-      {
-        url: "/images/og/transvista-og.png",
-        width: 1200,
-        height: 630,
-        alt: "TransVista Africa traveller stories",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: pageTitle,
-    description: pageDescription,
-    images: ["/images/og/transvista-og.png"],
-  },
-};
+  description:
+    "Read verified stories from travellers who explored Ghana with TransVista Africa.",
+  path: "/stories",
+});
 
 export default function TravellerStoriesPage() {
   return (
@@ -86,7 +65,7 @@ export default function TravellerStoriesPage() {
             </div>
             <Link
               href="/plan"
-              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
+              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-600__ focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
             >
               Plan my trip
               <ArrowRight aria-hidden="true" className="h-4 w-4" />

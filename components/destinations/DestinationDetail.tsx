@@ -182,7 +182,7 @@ export function DestinationDetail({ destination }: DestinationDetailProps) {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <PlanTripButton
-                href={`/plan?destination=${encodeURIComponent(destination.name)}`}
+                href={`/plan?destination=${destination.slug}`}
                 className="rounded-full"
               />
               <Link

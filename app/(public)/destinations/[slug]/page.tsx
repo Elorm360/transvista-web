@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { DestinationDetail } from "@/components/destinations/DestinationDetail";
 import {
   destinations,
@@ -26,10 +27,13 @@ export async function generateMetadata({
     return { title: "Destination" };
   }
 
-  return {
+  return pageMetadata({
     title: `${destination.name}, Ghana`,
     description: destination.description,
-  };
+    path: `/destinations/${destination.slug}`,
+    image: destination.image,
+    imageAlt: destination.imageAlt,
+  });
 }
 
 export default async function DestinationPage({

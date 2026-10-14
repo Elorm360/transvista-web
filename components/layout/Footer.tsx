@@ -179,7 +179,7 @@ export function Footer() {
                     aria-label={`Follow TransVista Africa on ${social.label}`}
                     className={`text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-orange-600 ${SOCIAL_HOVER[social.key]}`}
                   >
-                    <Icon size={22} />
+                    <Icon size={22} aria-hidden="true" />
                   </a>
                 );
               })}

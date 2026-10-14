@@ -150,7 +150,7 @@ function createPdf(title: string, reference: string, lines: DocumentLine[]) {
       "/F1 8 Tf",
       "0.392 0.455 0.545 rg",
       "1 0 0 1 " + MARGIN + " 38 Tm",
-      "(Accra, Ghana | Payment support: 0506987204 | Page " +
+      "(Accra, Ghana | Payment support: 0248442916 | Page " +
         (index + 1) +
         " of " +
         pageCount +
@@ -246,7 +246,7 @@ export function createPaymentDocuments(input: PaymentDocumentInput) {
       "Payment reference: " + input.reference,
     ]),
     ...section("Support", [
-      "For itinerary or payment questions, call or WhatsApp 0506987204.",
+      "For itinerary or payment questions, call or WhatsApp 0248442916.",
     ]),
   ];
 

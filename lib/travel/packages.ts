@@ -30,6 +30,7 @@ export const centralRegionPackage = {
   date: "2026-11-14",
   displayDate: "Saturday, November 14, 2026",
   registrationDeadline: "November 1, 2026",
+  registrationDeadlineIso: "2026-11-01",
   departureCity: "Accra",
   pickupLocation: "Accra Mall",
   checkInTime: "5:00 a.m.",

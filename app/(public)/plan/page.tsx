@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { Clock3, ShieldCheck } from "lucide-react";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { TripRequestForm } from "@/components/trip-planning/TripRequestForm";
-import { ghanaTourismRegions } from "@/constants/data/ghana-tourism-regions";
+import {
+  ghanaTourismRegions,
+  initialDestinationSlugs,
+} from "@/constants/data/ghana-tourism-regions";
 
-export const metadata: Metadata = {
-  title: "Plan Your Ghana Trip | TransVista Africa",
+export const metadata: Metadata = pageMetadata({
+  title: "Plan Your Ghana Trip",
   description:
     "Tell TransVista where you want to go, what you need, and your comfortable budget. Receive a coordinated response within 48 hours.",
-};
+  path: "/plan",
+});
 
 type PlanPageProps = {
   searchParams: Promise<{ destination?: string | string[] }>;
@@ -16,9 +21,7 @@ type PlanPageProps = {
 
 const allowedDestinations = new Set([
   ...ghanaTourismRegions.map((region) => region.slug),
-  "accra",
-  "cape-coast",
-  "volta-region",
+  ...initialDestinationSlugs,
 ]);
 
 export default async function PlanPage({ searchParams }: PlanPageProps) {
@@ -26,10 +29,15 @@ export default async function PlanPage({ searchParams }: PlanPageProps) {
   const rawDestination = Array.isArray(params.destination)
     ? params.destination[0]
     : params.destination;
-  const initialDestination =
-    rawDestination && allowedDestinations.has(rawDestination)
-      ? rawDestination
-      : "";
+  // Accept slugs and display names ("Accra", "Cape Coast") from older links.
+  const normalized = (rawDestination ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const initialDestination = allowedDestinations.has(normalized)
+    ? normalized
+    : "";
 
   return (
     <main id="main-content" className="bg-[#fffdfa]">

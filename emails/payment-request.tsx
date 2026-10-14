@@ -99,7 +99,7 @@ export default function PaymentRequestEmail({
           <Text style={paragraph}>
             Please retain your proof of payment. You may reply to this email or
             call/WhatsApp payment support on{" "}
-            <Link href="tel:+233506987204" style={link}>0506987204</Link>.
+            <Link href="tel:+233248442916" style={link}>0248442916</Link>.
           </Text>
 
           <Hr style={hr} />

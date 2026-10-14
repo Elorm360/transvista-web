@@ -1,4 +1,5 @@
 import { brand } from "@/constants/config/brand";
+import { whatsappLink } from "@/lib/whatsapp";
 
 export interface FooterColumnLink {
   label: string;
@@ -72,25 +73,27 @@ export const footerContent: FooterContent = {
     {
       heading: "Explore",
       links: [
-        { label: "Explore Ghana", href: "/#explore-ghana" },
+        { label: "Explore Ghana", href: "/destinations" },
         { label: "Accra", href: "/destinations/accra" },
         { label: "Cape Coast & Elmina", href: "/destinations/cape-coast" },
         { label: "Volta Region", href: "/destinations/volta-region" },
+        { label: "Contact", href: "/contact" },
         { label: "How It Works", href: "/#how-it-works" },
-        { label: "Upcoming Group Trip", href: "/trips/central-region-heritage-adventure-2026" },
+        { label: "Group Trips", href: "/trips" },
         { label: "Plan My Trip", href: "/plan" },
       ],
     },
   ],
 
   contact: {
-    phone: "+233 24 844 2916",
-    phoneHref: "tel:+233248442916",
-    email: "info@transvistaafrica.com",
-    emailHref: "mailto:info@transvistaafrica.com",
+    phone: brand.contact.phoneDisplay,
+    phoneHref: brand.contact.phoneHref,
+    email: brand.contact.email,
+    emailHref: `mailto:${brand.contact.email}`,
     location: "Accra, Ghana",
-    whatsappHref:
-      "https://wa.me/233248442916?text=Hi%20TransVista%20Africa%2C%20I%20would%20like%20help%20planning%20my%20trip.",
+    whatsappHref: whatsappLink(
+      "Hi TransVista Africa, I would like help planning my trip.",
+    ),
   },
 
   community: {
@@ -119,18 +122,9 @@ export const footerContent: FooterContent = {
         label: "Payment, Booking & Refund Policy",
         href: "/policies/payment-booking-refunds",
       },
-      {
-        label: "Privacy Policy",
-        comingSoon: true,
-      },
-      {
-        label: "Terms of Service",
-        comingSoon: true,
-      },
-      {
-        label: "Cookie Policy",
-        comingSoon: true,
-      },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Cookies", href: "/privacy#cookies" },
     ],
   },
 };

@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
 import { seoConfig } from "@/constants/config/seo";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,6 +43,10 @@ export const metadata: Metadata = {
 
   applicationName: seoConfig.shortTitle,
 
+  alternates: {
+    canonical: "/",
+  },
+
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png",
@@ -68,7 +73,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: seoConfig.title,
     description: seoConfig.description,
-    creator: seoConfig.twitterHandle,
     images: [seoConfig.openGraphImage],
   },
 };
@@ -83,6 +87,7 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${fraunces.variable} antialiased`}>
         <OrganizationSchema />
         {children}
+        <Analytics />
       </body>
     </html>
   );

@@ -18,13 +18,13 @@ export type SmsContact = {
 
 const templates: Record<string, string> = {
   "booking-update":
-    "Hello {name}, TransVista has an update for booking {reference}. Please check your email or contact 0506987204.",
+    "Hello {name}, TransVista has an update for booking {reference}. Please check your email or contact 0248442916.",
   "payment-reminder":
-    "Hello {name}, this is a payment reminder for TransVista booking {reference}. Please use your reference when paying or call 0506987204.",
+    "Hello {name}, this is a payment reminder for TransVista booking {reference}. Please use your reference when paying or call 0248442916.",
   "trip-reminder":
     "Hello {name}, this is a reminder about your upcoming TransVista trip, booking {reference}. We will share final trip details shortly.",
   "pickup-update":
-    "Hello {name}, there is a pickup update for TransVista booking {reference}. Please check your email or call 0506987204.",
+    "Hello {name}, there is a pickup update for TransVista booking {reference}. Please check your email or call 0248442916.",
   "custom-operational": "",
 };
 

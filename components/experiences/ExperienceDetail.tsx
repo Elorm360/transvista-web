@@ -136,7 +136,7 @@ export function ExperienceDetail({
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <PlanTripButton
-                href={`/plan?experience=${encodeURIComponent(experience.name)}`}
+                href={`/plan?destination=${experience.destinationId}`}
                 className="rounded-full"
               />
               {destination && (

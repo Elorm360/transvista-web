@@ -61,13 +61,13 @@ export const waitlistContent: WaitlistContent = {
   title: "Join the TransVista Family",
 
   description:
-    "Be among the first to discover new destinations, receive launch updates, exclusive travel opportunities, and partnership announcements.",
+    "Be first to hear about new group trips, Ghana destination stories, and partnership opportunities.",
 
   benefits: [
-    "Early access before public launch",
-    "Exclusive product updates",
-    "Invitations to beta testing",
-    "Help shape the platform through feedback",
+    "First to hear about new group trips",
+    "Ghana travel ideas and destination stories",
+    "Partner opportunities for guides, stays and transport",
+    "Help shape TransVista through feedback",
   ],
 
   form: {
@@ -92,7 +92,7 @@ export const waitlistContent: WaitlistContent = {
     partnerInterestLabel: "What kind of partner?",
 
     submitLabel: "Join the TransVista Family",
-    compactSubmitLabel: "Join the waitlist",
+    compactSubmitLabel: "Get trip updates",
     submittingLabel: "Joining…",
     privacyNote:
       "We’ll only use your details for TransVista updates. No spam.",
@@ -100,9 +100,9 @@ export const waitlistContent: WaitlistContent = {
 
   success: {
     heading: "You’re on the list. Welcome.",
-    body: "Thank you for joining the TransVista Family. We’ll email you as we open early access, new Ghana journeys, and partnership news.",
+    body: "Thank you for joining the TransVista Family. We’ll email you about new group trips, Ghana journeys, and partnership news.",
     travelerBody:
-      "You’re in as a traveler. We’ll send launch updates, destination stories, and early access to plan Ghana with trusted transport and local partners.",
+      "You’re in as a traveler. We’ll send new group trips, destination stories, and ideas for planning Ghana with trusted local partners.",
     partnerBody:
       "You’re in as a partner. We’ll share ecosystem updates and the right moment to join as a transport provider, guide, stay, or tourism business.",
     emailNote:
@@ -110,11 +110,11 @@ export const waitlistContent: WaitlistContent = {
     nextStepsTitle: "What happens next",
     nextSteps: [
       "Check your inbox for a short welcome from TransVista.",
-      "We’ll email you when early access and new journeys open.",
+      "We’ll email you when new group trips and journeys open.",
       "No spam — only updates about the platform and Ghana travel.",
     ],
     shareTitle: "Know someone exploring Ghana?",
-    shareBody: "Share the waitlist with a friend. The more of us on the list, the stronger the launch.",
+    shareBody: "Share the waitlist with a friend. Group trips are better with friends.",
     shareCta: "Share on WhatsApp",
     copyLinkCta: "Copy link",
     copiedCta: "Link copied",

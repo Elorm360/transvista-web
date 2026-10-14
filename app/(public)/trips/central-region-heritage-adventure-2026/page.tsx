@@ -1,20 +1,116 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CalendarDays, Clock3, MapPin, Camera, Utensils, Bus } from "lucide-react";
+import { CalendarDays, CalendarPlus, Clock3, MapPin, Camera, Utensils, Bus } from "lucide-react";
+import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PackageTerms } from "@/components/packages/PackageTerms";
 import { PackageReservationForm } from "@/components/trips/PackageReservationForm";
 import { centralRegionPackage } from "@/lib/travel/packages";
+import { seoConfig } from "@/constants/config/seo";
+import {
+  tripGoogleCalendarUrl,
+  tripIcsPath,
+  tripMapUrl,
+} from "@/lib/travel/calendar";
+import {
+  RegistrationCountdown,
+  ShareTripButton,
+  StickyReserveBar,
+} from "@/components/trips/TripEngagement";
 
-export const metadata: Metadata = {
-  title: "Central Region Heritage & Adventure Day Trip | TransVista Africa",
+export const metadata: Metadata = pageMetadata({
+  title: "Central Region Heritage & Adventure Day Trip",
   description:
-    "Join TransVista on November 14, 2026 for Kakum National Park, Cape Coast Castle, Elmina Castle, Hans Cottage Botel, meals, photos, and video.",
-};
+    "Sat 14 Nov 2026 · GH₵400 per person. Kakum canopy walk, Cape Coast & Elmina Castles, Hans Cottage Botel, meals, photos and video. Pickup at Accra Mall.",
+  path: "/trips/central-region-heritage-adventure-2026",
+  image: centralRegionPackage.image,
+  imageAlt: centralRegionPackage.imageAlt,
+});
+
+const trip = centralRegionPackage;
+const tripUrl = `${seoConfig.url}/trips/${trip.slug}`;
+
+const faqs = [
+  {
+    question: "Do I pay anything when I register?",
+    answer: `No. Registration is free. After TransVista confirms your place, you receive official instructions for the ${trip.currencySymbol}${trip.depositPerPerson} deposit per traveller. The remaining ${trip.currencySymbol}${trip.balancePerPerson} is due by ${trip.balanceDeadline}.`,
+  },
+  {
+    question: "When is my place confirmed?",
+    answer:
+      "Your registration is provisional once the deposit is received and fully confirmed after full payment.",
+  },
+  {
+    question: "Where and when do we meet?",
+    answer: `At ${trip.pickupLocation}, Accra. Check in from ${trip.checkInTime} for a prompt ${trip.departureTime} departure. We expect to return around 7:00 p.m., depending on traffic.`,
+  },
+  {
+    question: "What is included in the price?",
+    answer: `${trip.inclusions.join(", ")}.`,
+  },
+  {
+    question: "Can I register for a group?",
+    answer:
+      "Yes. Submit one form and enter the number of travellers. TransVista arranges vehicle size according to confirmed paid attendance.",
+  },
+  {
+    question: "Will I appear in photos or videos?",
+    answer:
+      "A guided photo and video experience is part of the trip and may happen in shared group areas. Using identifiable images of you for promotion is optional and needs your consent on the form.",
+  },
+  {
+    question: "What if I can't make it after paying?",
+    answer:
+      "Cancellations, transfers and travel credit follow the TransVista Payment, Booking & Refund Policy, linked in the booking terms on this page.",
+  },
+];
+
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: trip.title,
+    startDate: `${trip.date}T05:30:00+00:00`,
+    endDate: `${trip.date}T19:00:00+00:00`,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    image: [`${seoConfig.url}${trip.image}`],
+    description: metadata.description,
+    location: {
+      "@type": "Place",
+      name: trip.pickupLocation,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Accra",
+        addressCountry: "GH",
+      },
+    },
+    organizer: {
+      "@type": "Organization",
+      name: seoConfig.name,
+      url: seoConfig.url,
+    },
+    offers: {
+      "@type": "Offer",
+      price: trip.pricePerPerson,
+      priceCurrency: trip.currency,
+      availability: "https://schema.org/InStock",
+      url: tripUrl,
+      validThrough: `${trip.registrationDeadlineIso}T23:59:59+00:00`,
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  },
+];
 
 export default function CentralRegionTripPage() {
-  const trip = centralRegionPackage;
-
   return (
     <main id="main-content" className="bg-[#fffdfa]">
       <section className="relative min-h-[520px] overflow-hidden bg-slate-950">
@@ -44,13 +140,20 @@ export default function CentralRegionTripPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#register"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-700"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-600__"
               >
-                Register my interest
+                Reserve my spot
               </a>
               <span className="inline-flex h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-base font-semibold backdrop-blur-sm">
                 {trip.currencySymbol}{trip.pricePerPerson} per person
               </span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <RegistrationCountdown deadlineIso={trip.registrationDeadlineIso} />
+              <ShareTripButton
+                title={trip.title}
+                text={`Join me on the TransVista ${trip.shortTitle}: ${trip.displayDate}, ${trip.currencySymbol}${trip.pricePerPerson} per person.`}
+              />
             </div>
           </div>
         </Container>
@@ -64,6 +167,33 @@ export default function CentralRegionTripPage() {
             <Fact icon={Clock3} label="Departure" value={trip.departureTime} />
             <Fact icon={Bus} label="Return" value={trip.expectedReturnTime} />
           </dl>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold">
+            <a
+              href={tripMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-slate-800 transition hover:bg-slate-50"
+            >
+              <MapPin className="h-4 w-4" aria-hidden="true" />
+              Pickup on Google Maps
+            </a>
+            <a
+              href={tripGoogleCalendarUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-slate-800 transition hover:bg-slate-50"
+            >
+              <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+              Add to Google Calendar
+            </a>
+            <a
+              href={tripIcsPath}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-slate-800 transition hover:bg-slate-50"
+            >
+              <CalendarPlus className="h-4 w-4" aria-hidden="true" />
+              Apple / Outlook calendar
+            </a>
+          </div>
         </Container>
       </section>
 
@@ -135,6 +265,32 @@ export default function CentralRegionTripPage() {
         </Container>
       </section>
 
+      <section className="border-t border-slate-200 py-12 lg:py-16">
+        <Container>
+          <div className="mx-auto max-w-3xl">
+            <h2 className="font-display text-3xl font-semibold text-slate-900">
+              Questions travellers ask
+            </h2>
+            <div className="mt-6 divide-y divide-slate-200 rounded-[24px] border border-slate-200 bg-white">
+              {faqs.map((faq) => (
+                <details key={faq.question} className="group p-5 sm:p-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-slate-900">
+                    {faq.question}
+                    <span
+                      className="text-xl text-slate-400 transition group-open:rotate-45"
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
       <section className="border-t border-slate-200 bg-white py-12 lg:py-16">
         <Container>
           <div className="mx-auto max-w-3xl">
@@ -154,6 +310,13 @@ export default function CentralRegionTripPage() {
           </div>
         </Container>
       </section>
+      <StickyReserveBar
+        priceLabel={`${trip.currencySymbol}${trip.pricePerPerson} / person`}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
     </main>
   );
 }
@@ -168,12 +331,12 @@ function Fact({
   value: string;
 }) {
   return (
-    <div className="flex gap-3">
-      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-700" />
-      <div>
-        <dt className="text-sm font-semibold text-slate-900">{label}</dt>
-        <dd className="mt-1 text-sm leading-6 text-slate-600">{value}</dd>
-      </div>
+    <div>
+      <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
+        <Icon className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className="mt-1 pl-8 text-sm leading-6 text-slate-600">{value}</dd>
     </div>
   );
 }

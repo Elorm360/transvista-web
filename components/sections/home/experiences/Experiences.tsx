@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -41,6 +43,16 @@ export function Experiences() {
               />
             </Reveal>
           ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/destinations"
+            className="inline-flex items-center gap-2 rounded-full border border-brand-blue-200 bg-white px-6 py-3 text-sm font-semibold text-brand-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-blue-300 hover:bg-brand-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600 focus-visible:ring-offset-2"
+          >
+            See all {destinations.length} destinations
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
         </div>
       </Container>
     </Section>
