@@ -1,6 +1,5 @@
 export const heroTrustItems = [
-  "Trusted Local Partners",
-  "Curated Experiences",
-  "Secure Travel Planning",
+  "Vetted local partners",
+  "One clear price before you pay",
+  "Reply within 48 hours",
 ] as const;
-
