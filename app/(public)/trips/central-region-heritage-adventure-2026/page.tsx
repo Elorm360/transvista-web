@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CalendarDays, CalendarPlus, Clock3, MapPin, Camera, Utensils, Bus } from "lucide-react";
+import { CalendarDays, CalendarPlus, ChevronDown, Clock3, MapPin, Camera, Utensils, Bus } from "lucide-react";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PackageTerms } from "@/components/packages/PackageTerms";
@@ -148,7 +148,7 @@ export default function CentralRegionTripPage() {
                 {trip.currencySymbol}{trip.pricePerPerson} per person
               </span>
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               <RegistrationCountdown deadlineIso={trip.registrationDeadlineIso} />
               <ShareTripButton
                 title={trip.title}
@@ -276,12 +276,10 @@ export default function CentralRegionTripPage() {
                 <details key={faq.question} className="group p-5 sm:p-6">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold text-slate-900">
                     {faq.question}
-                    <span
-                      className="text-xl text-slate-400 transition group-open:rotate-45"
+                    <ChevronDown
+                      className="h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180"
                       aria-hidden="true"
-                    >
-                      +
-                    </span>
+                    />
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{faq.answer}</p>
                 </details>

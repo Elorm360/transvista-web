@@ -33,12 +33,24 @@ export function RegistrationCountdown({ deadlineIso }: { deadlineIso: string }) 
           ? "Registration closes tomorrow"
           : `Registration closes in ${days} days`;
 
+  const urgent = days >= 0 && days <= 3;
+
   return (
-    <span
-      className={`inline-flex h-12 items-center rounded-full px-5 text-sm font-semibold ${
-        days <= 3 ? "bg-red-600 text-white" : "bg-white/15 text-white"
-      }`}
-    >
+    <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-200">
+      <span className="relative flex h-2 w-2" aria-hidden="true">
+        {days >= 0 && (
+          <span
+            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${
+              urgent ? "bg-red-400" : "bg-emerald-400"
+            }`}
+          />
+        )}
+        <span
+          className={`relative inline-flex h-2 w-2 rounded-full ${
+            days < 0 ? "bg-slate-400" : urgent ? "bg-red-500" : "bg-emerald-400"
+          }`}
+        />
+      </span>
       {label}
     </span>
   );
@@ -73,20 +85,24 @@ export function StickyReserveBar({ priceLabel }: { priceLabel: string }) {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 pr-24 shadow-[0_-8px_30px_-12px_rgba(15,23,42,0.25)] backdrop-blur transition-transform duration-300 md:hidden ${
-        visible ? "translate-y-0" : "pointer-events-none translate-y-full"
+      className={`fixed bottom-5 left-3 right-[5.25rem] z-40 rounded-2xl border border-slate-200/80 bg-white/90 py-2.5 pl-4 pr-2.5 shadow-[0_18px_40px_-16px_rgba(15,23,42,0.35)] backdrop-blur-xl transition duration-300 ease-out md:hidden ${
+        visible
+          ? "translate-y-0 opacity-100"
+          : "pointer-events-none translate-y-[calc(100%+1rem)] opacity-0"
       }`}
       aria-hidden={!visible}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="whitespace-nowrap text-base font-bold text-slate-900">{priceLabel}</p>
-          <p className="text-xs text-slate-600">No payment now</p>
+          <p className="whitespace-nowrap text-[15px] font-semibold tracking-tight text-slate-900">
+            {priceLabel}
+          </p>
+          <p className="text-xs text-slate-500">No payment now</p>
         </div>
         <a
           href="#register"
           tabIndex={visible ? 0 : -1}
-          className="inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-brand-orange-600 px-4 text-sm font-semibold text-white"
+          className="inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-xl bg-brand-orange-600 px-5 text-sm font-semibold text-white shadow-sm transition active:scale-[0.98]"
         >
           Reserve my spot
         </a>
@@ -118,7 +134,7 @@ export function ShareTripButton({ title, text }: { title: string; text: string }
     <button
       type="button"
       onClick={share}
-      className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+      className="inline-flex items-center gap-2 text-sm font-medium text-slate-200 underline-offset-4 transition hover:text-white hover:underline"
     >
       <Share2 className="h-4 w-4" aria-hidden="true" />
       Share with a friend
