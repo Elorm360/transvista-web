@@ -60,9 +60,11 @@ export function DestinationDetail({ destination }: DestinationDetailProps) {
               ) : (
                 <PhotoPlaceholder caption="TransVista destination photography" />
               )}
-              <p className="border-t border-slate-200 bg-white px-5 py-3 text-xs text-slate-500">
-                {destination.photoNote}
-              </p>
+              {destination.image && (
+                <p className="border-t border-slate-200 bg-white px-5 py-3 text-xs text-slate-500">
+                  {destination.photoNote}
+                </p>
+              )}
             </div>
 
             <div>

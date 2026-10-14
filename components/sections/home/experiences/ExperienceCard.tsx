@@ -67,10 +67,7 @@ export function ExperienceCard({
               />
             </div>
           ) : (
-            <PhotoPlaceholder
-              label="Photo coming soon"
-              caption="TransVista destination photography"
-            />
+            <PhotoPlaceholder />
           )}
 
           {image && (

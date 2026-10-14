@@ -22,10 +22,7 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <PhotoPlaceholder
-              label="Photo coming soon"
-              caption="TransVista experience photography"
-            />
+            <PhotoPlaceholder />
           )}
 
           {experience.featured && (
