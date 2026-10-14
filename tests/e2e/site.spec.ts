@@ -119,7 +119,7 @@ test.describe("Plan form", () => {
 
   test("destination links pre-select the region", async ({ page }) => {
     await page.goto("/destinations/accra");
-    const cta = page.locator("main").getByRole("link", { name: /plan my trip/i }).first();
+    const cta = page.locator("main").getByRole("link", { name: "Plan this trip" });
     await expect(cta).toHaveAttribute("href", "/plan?destination=accra");
     await page.goto("/plan?destination=accra");
     await expect(page.getByRole("combobox", { name: /region/i })).toHaveValue("greater-accra");
@@ -157,10 +157,16 @@ test.describe("Plan form", () => {
 test.describe("Trip announcement", () => {
   test("does not cover the page on mobile first load", async ({ page, isMobile }) => {
     test.skip(!isMobile, "mobile behaviour");
-    await page.goto("/");
+    await page.goto("/stories");
     await page.waitForTimeout(2000);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Open upcoming trip details" })).toBeVisible();
+  });
+
+  test("homepage shows the next trip in the hero instead of the pill", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.getByRole("link", { name: /Next group trip/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Open upcoming trip details" })).toHaveCount(0);
   });
 
   test("opens on desktop only after scrolling", async ({ page, isMobile }) => {
@@ -231,6 +237,12 @@ test.describe("Group trip page", () => {
     await page.evaluate(() => window.scrollTo(0, 1400));
     await expect(bar).toBeInViewport();
   });
+});
+
+test("hero no longer says pre-launch", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("Launching First in Ghana")).toHaveCount(0);
+  await expect(page.locator("h1")).toContainText("thoughtfully");
 });
 
 test("community copy no longer says pre-launch", async ({ page }) => {

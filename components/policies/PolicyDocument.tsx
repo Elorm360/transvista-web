@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/shared/PageHeader";
 import type { PolicySection } from "@/content/payment-policy";
 
 type PolicyDocumentProps = {
@@ -16,22 +17,10 @@ export function PolicyDocument({
 }: PolicyDocumentProps) {
   return (
     <main id="main-content" className="bg-[#fffdfa]">
-      <header className="border-b border-slate-200 bg-white py-12 lg:py-16">
-        <Container>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-            TransVista Africa Ltd
-          </p>
-          <h1 className="font-display mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            {title}
-          </h1>
-          <p className="mt-4 text-sm font-medium text-slate-500">
-            {effectiveLabel}
-          </p>
-          <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600">
-            {introduction}
-          </p>
-        </Container>
-      </header>
+      <PageHeader eyebrow="TransVista Africa Ltd" title={title}>
+        <p className="mt-4 text-sm font-medium text-slate-500">{effectiveLabel}</p>
+        <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600">{introduction}</p>
+      </PageHeader>
 
       <section className="py-12 lg:py-16">
         <Container>

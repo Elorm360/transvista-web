@@ -37,6 +37,7 @@ export const centralRegionPackage = {
   departureTime: "5:30 a.m.",
   expectedReturnTime: "Approximately 7:00 p.m., subject to traffic",
   pricePerPerson: 400,
+  capacity: 35,
   depositPerPerson: 200,
   balancePerPerson: 200,
   balanceDeadline: "November 7, 2026",

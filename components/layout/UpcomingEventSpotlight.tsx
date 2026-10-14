@@ -83,6 +83,8 @@ export function UpcomingEventSpotlight() {
   if (!event || display === "hidden") return null;
 
   if (display === "minimized") {
+    // The homepage hero already shows the next trip.
+    if (pathname === "/") return null;
     return (
       <div className="fixed bottom-7 left-4 z-40 max-w-[calc(100vw-7rem)] sm:bottom-8 sm:left-6">
         <button
