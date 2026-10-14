@@ -49,17 +49,15 @@ export function SectionHeader({
         className,
       )}
     >
-      <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-orange-600">
-        <span aria-hidden="true" className="h-px w-6 bg-gradient-to-r from-transparent to-brand-orange-500" />
+      <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-orange-600">
         {badge}
-        <span aria-hidden="true" className="h-px w-6 bg-gradient-to-l from-transparent to-brand-orange-500" />
-      </span>
+      </p>
 
-      <h2 className="font-display mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">
+      <h2 className="font-display mt-3 text-[2rem] font-semibold leading-[1.1] tracking-tight text-slate-950 sm:text-[2.6rem]">
         {title}
       </h2>
 
-      <p className="mt-4 text-base leading-7 text-slate-600">
+      <p className="mt-4 text-base leading-7 text-slate-600 sm:text-[17px] sm:leading-8">
         {description}
       </p>
     </div>

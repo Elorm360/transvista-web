@@ -22,10 +22,7 @@ export function DestinationCard({ destination }: DestinationCardProps) {
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <PhotoPlaceholder
-              label="Photo coming soon"
-              caption="TransVista destination photography"
-            />
+            <PhotoPlaceholder />
           )}
         </div>
 

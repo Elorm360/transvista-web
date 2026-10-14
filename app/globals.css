@@ -153,19 +153,6 @@ body {
   }
 }
 
-@keyframes pulseWhatsapp {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
-  }
-}
-
-.pulse-whatsapp {
-  animation: pulseWhatsapp 2.6s ease-in-out infinite;
-}
-
 @keyframes meshDrift {
   0%, 100% {
     background-position: 0% 0%, 100% 100%, 50% 50%;

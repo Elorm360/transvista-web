@@ -1,5 +1,4 @@
 import { Hero } from "@/components/sections/home/hero/Hero";
-import { TrustBar } from "@/components/sections/home/trust-bar/TrustBar";
 import { Experiences } from "@/components/sections/home/experiences";
 import { FeaturedTrip } from "@/components/sections/home/featured-trip/FeaturedTrip";
 import { Services } from "@/components/sections/home/services/Services";
@@ -13,15 +12,14 @@ export default function HomePage() {
   return (
     <main id="main-content">
       <Hero />
-      <TrustBar />
       <Experiences />
       <FeaturedTrip />
       <Services />
       <HowItWorks />
       <WhyTransVista />
       <Testimonials />
-      <PlanTrip />
       <Waitlist />
+      <PlanTrip />
     </main>
   );
 }

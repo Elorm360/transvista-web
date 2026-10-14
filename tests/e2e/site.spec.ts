@@ -74,7 +74,7 @@ test("WhatsApp menu offers topics and a page-specific first option", async ({ pa
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
   const first = page.getByRole("link", { name: "About this page" });
   expect(decodeURIComponent((await first.getAttribute("href")) ?? "")).toContain("Central Region Heritage");
-  for (const name of ["Plan a custom trip", "Airport pickup or transport", "My booking or payment", "Partner with TransVista"]) {
+  for (const name of ["Plan a custom trip", "Airport pickup & transport", "My booking or payment", "Partner with us"]) {
     await expect(page.getByRole("link", { name })).toHaveAttribute("href", /wa\.me\/233248442916/);
   }
   await page.keyboard.press("Escape");
@@ -107,6 +107,15 @@ test("trip page shares its own preview", async ({ page }) => {
 
 test.describe("Plan form", () => {
   // networkidle = hydrated, so React-controlled inputs keep typed values.
+  // Mark the trip announcement as dismissed so it can't cover the form.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "transvista:event-spotlight:central-region-heritage-adventure-2026",
+        String(Date.now()),
+      );
+    });
+  });
 
   test("destination links pre-select the region", async ({ page }) => {
     await page.goto("/destinations/accra");

@@ -65,9 +65,11 @@ export function ExperienceDetail({
               ) : (
                 <PhotoPlaceholder caption="TransVista experience photography" />
               )}
-              <p className="border-t border-slate-200 bg-white px-5 py-3 text-xs text-slate-500">
-                {experience.photoNote}
-              </p>
+              {experience.image && (
+                <p className="border-t border-slate-200 bg-white px-5 py-3 text-xs text-slate-500">
+                  {experience.photoNote}
+                </p>
+              )}
             </div>
 
             <div>

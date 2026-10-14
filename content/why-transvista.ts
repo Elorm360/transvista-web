@@ -29,9 +29,9 @@ export const whyTransVistaContent: WhyTransVistaContent = {
       icon: "Compass",
     },
     {
-      title: "Verified & Secure",
+      title: "Vetted partners, clear prices",
       description:
-        "Every partner is vetted before they join, and every transaction is protected — so you can book with confidence, not guesswork.",
+        "Every partner is vetted before they join, and you agree one clear price with TransVista before you pay anything.",
       icon: "ShieldCheck",
     },
     {
