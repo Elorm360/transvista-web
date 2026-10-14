@@ -67,12 +67,34 @@ test("all WhatsApp links use the official number", async ({ page }) => {
   }
 });
 
-test("floating WhatsApp message matches the trip page", async ({ page }) => {
-  await page.goto("/trips/central-region-heritage-adventure-2026");
-  const href = await page
-    .getByRole("link", { name: "Chat with TransVista Africa on WhatsApp" })
-    .getAttribute("href");
-  expect(decodeURIComponent(href ?? "")).toContain("Central Region Heritage");
+test("WhatsApp menu offers topics and a page-specific first option", async ({ page }) => {
+  await page.goto("/trips/central-region-heritage-adventure-2026", { waitUntil: "networkidle" });
+  const toggle = page.getByRole("button", { name: "Chat with TransVista Africa on WhatsApp" });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const first = page.getByRole("link", { name: "About this page" });
+  expect(decodeURIComponent((await first.getAttribute("href")) ?? "")).toContain("Central Region Heritage");
+  for (const name of ["Plan a custom trip", "Airport pickup or transport", "My booking or payment", "Partner with TransVista"]) {
+    await expect(page.getByRole("link", { name })).toHaveAttribute("href", /wa\.me\/233248442916/);
+  }
+  await page.keyboard.press("Escape");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+});
+
+test("destinations can be filtered by theme", async ({ page }) => {
+  await page.goto("/destinations", { waitUntil: "networkidle" });
+  const cards = page.locator("main article");
+  await expect(cards).toHaveCount(6);
+  await page.getByRole("button", { name: "Wildlife" }).click();
+  await expect(cards).toHaveCount(1);
+  await expect(cards.first()).toContainText("Mole");
+  await page.getByRole("button", { name: "All" }).click();
+  await expect(cards).toHaveCount(6);
+});
+
+test("homepage links to all destinations", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "See all 6 destinations" })).toHaveAttribute("href", "/destinations");
 });
 
 test("trip page shares its own preview", async ({ page }) => {
@@ -112,7 +134,10 @@ test.describe("Plan form", () => {
     await page.goto("/plan", { waitUntil: "networkidle" });
     const start = page.locator('input[name="startDate"]');
     await expect(start).toHaveAttribute("min", /\d{4}-\d{2}-\d{2}/);
-    await start.fill("2030-12-20");
+    await expect(async () => {
+      await start.fill("2030-12-20");
+      await expect(start).toHaveValue("2030-12-20", { timeout: 1000 });
+    }).toPass();
     await expect(page.locator('input[name="endDate"]')).toHaveAttribute("min", "2030-12-20");
     await page.locator('input[name="endDate"]').fill("2030-12-10");
     await page.getByRole("button", { name: "Send my trip request" }).click();

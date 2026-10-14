@@ -73,13 +73,12 @@ export const footerContent: FooterContent = {
     {
       heading: "Explore",
       links: [
-        { label: "Explore Ghana", href: "/#explore-ghana" },
+        { label: "Explore Ghana", href: "/destinations" },
         { label: "Accra", href: "/destinations/accra" },
         { label: "Cape Coast & Elmina", href: "/destinations/cape-coast" },
         { label: "Volta Region", href: "/destinations/volta-region" },
         { label: "Contact", href: "/contact" },
         { label: "How It Works", href: "/#how-it-works" },
-        { label: "All Destinations", href: "/destinations" },
         { label: "Group Trips", href: "/trips" },
         { label: "Plan My Trip", href: "/plan" },
       ],

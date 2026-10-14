@@ -9,7 +9,7 @@ export const privacyPolicy: {
   introduction: string;
   sections: PolicySection[];
 } = {
-  effectiveLabel: "Last updated: October 13, 2026",
+  effectiveLabel: "Last updated: October 14, 2026",
   introduction:
     "TransVista Africa Ltd (“TransVista”, “we”, “us”) respects your privacy. This policy explains what personal data we collect through transvistaafrica.com and our booking channels, why we collect it, and the choices you have. We process personal data in line with Ghana’s Data Protection Act, 2012 (Act 843).",
   sections: [
@@ -57,7 +57,7 @@ export const privacyPolicy: {
       id: "cookies",
       title: "6. Cookies and local storage",
       paragraphs: [
-        "The public website does not use advertising or tracking cookies. We use your browser’s local storage to remember small preferences, such as having closed the upcoming-trip announcement. Staff sign-in to the admin area uses essential authentication cookies. If we add analytics in future, we will update this section first.",
+        "The public website does not use advertising or tracking cookies. We use Vercel Web Analytics, which counts page visits and actions such as sending a trip request without cookies and without identifying you personally. We use your browser’s local storage to remember small preferences, such as having closed the upcoming-trip announcement. Staff sign-in to the admin area uses essential authentication cookies.",
       ],
     },
     {

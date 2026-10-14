@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SubmissionSuccess } from "@/components/forms/SubmissionSuccess";
 import { tripGoogleCalendarUrl, tripIcsPath } from "@/lib/travel/calendar";
 import { submitPackageReservation } from "@/app/actions/travel";
+import { track } from "@/lib/analytics";
 import type { PackageReservationInput } from "@/lib/travel/types";
 import type { CentralRegionPackage } from "@/lib/travel/packages";
 
@@ -50,7 +51,14 @@ export function PackageReservationForm({
 
     setSubmitting(true);
     try {
-      setResult(await submitPackageReservation(input));
+      const response = await submitPackageReservation(input);
+      if (response.success) {
+        track("trip_reserve", {
+          trip: trip.slug,
+          travellers: input.participants,
+        });
+      }
+      setResult(response);
     } catch {
       setResult({
         success: false,

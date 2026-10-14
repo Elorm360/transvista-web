@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SubmissionSuccess } from "@/components/forms/SubmissionSuccess";
 import { submitTripRequest } from "@/app/actions/travel";
+import { track } from "@/lib/analytics";
 import type { TripRequestInput } from "@/lib/travel/types";
 import {
   getGhanaTourismRegion,
@@ -110,7 +111,14 @@ export function TripRequestForm({
 
     setSubmitting(true);
     try {
-      setResult(await submitTripRequest(input));
+      const response = await submitTripRequest(input);
+      if (response.success) {
+        track("plan_submit", {
+          services: input.serviceTypes.join(","),
+          currency: input.budgetCurrency,
+        });
+      }
+      setResult(response);
     } catch {
       setResult({
         success: false,

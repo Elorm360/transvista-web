@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
 import { seoConfig } from "@/constants/config/seo";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -86,6 +87,7 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${fraunces.variable} antialiased`}>
         <OrganizationSchema />
         {children}
+        <Analytics />
       </body>
     </html>
   );

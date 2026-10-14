@@ -6,6 +6,7 @@ import { countries } from "@/constants/data/countries";
 import { partnerInterests } from "@/constants/data/interests";
 import { waitlistContent } from "@/content/waitlist";
 import { joinWaitlist } from "@/app/actions/waitlist";
+import { track } from "@/lib/analytics";
 import { WaitlistThankYou } from "./WaitlistThankYou";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +126,7 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
         return;
       }
 
+      track("community_join", { interest: resolvedInterest });
       setSubmitSuccess(true);
       setIsDuplicate(false);
       setSubmitError("");
