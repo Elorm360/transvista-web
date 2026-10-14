@@ -4,6 +4,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { brand } from "@/constants/config/brand";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -42,20 +43,11 @@ const channels = [
 export default function ContactPage() {
   return (
     <main id="main-content" className="bg-[#fffdfa]">
-      <header className="border-b border-slate-200 bg-white py-12 lg:py-16">
-        <Container>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-            Contact
-          </p>
-          <h1 className="font-display mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            Talk to a real person.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-            Questions about a trip, a payment or partnering with TransVista?
-            Reach us any of these ways.
-          </p>
-        </Container>
-      </header>
+      <PageHeader
+        eyebrow="Contact"
+        title="Talk to a real person."
+        lead="Questions about a trip, a payment or partnering with TransVista? Reach us any of these ways."
+      />
 
       <section className="py-12 lg:py-16">
         <Container>
@@ -91,7 +83,7 @@ export default function ContactPage() {
             </p>
             <Link
               href="/plan"
-              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-600__"
+              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-700"
             >
               Start my trip request
             </Link>

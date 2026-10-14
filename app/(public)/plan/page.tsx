@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Clock3, ShieldCheck } from "lucide-react";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { TripRequestForm } from "@/components/trip-planning/TripRequestForm";
 import {
   ghanaTourismRegions,
@@ -41,31 +42,22 @@ export default async function PlanPage({ searchParams }: PlanPageProps) {
 
   return (
     <main id="main-content" className="bg-[#fffdfa]">
-      <header className="border-b border-slate-200 bg-white py-12 lg:py-16">
-        <Container>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-            Plan Your Trip
-          </p>
-          <h1 className="font-display mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            Tell us what you know. We’ll help shape the rest.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-            Request experiences, transport, accommodation, or a complete Ghana
-            itinerary. This form does not require payment and does not confirm
-            a booking.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:gap-6">
-            <span className="flex items-center gap-2">
-              <Clock3 className="h-5 w-5 text-brand-blue-700" />
-              Response within 48 hours
-            </span>
-            <span className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-brand-blue-700" />
-              TransVista coordinates first
-            </span>
-          </div>
-        </Container>
-      </header>
+      <PageHeader
+        eyebrow="Plan your trip"
+        title="Tell us what you know. We’ll help shape the rest."
+        lead="Request experiences, transport, accommodation or a complete Ghana itinerary. Sending this form is free and doesn’t confirm a booking."
+      >
+        <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:gap-6">
+          <li className="flex items-center gap-2">
+            <Clock3 className="h-4 w-4 text-brand-blue-700" aria-hidden="true" />
+            Proposal within 48 hours
+          </li>
+          <li className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-brand-blue-700" aria-hidden="true" />
+            No payment until you approve
+          </li>
+        </ul>
+      </PageHeader>
 
       <section className="py-12 lg:py-16">
         <Container>

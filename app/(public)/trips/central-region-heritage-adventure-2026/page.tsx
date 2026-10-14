@@ -6,6 +6,8 @@ import { Container } from "@/components/ui/Container";
 import { PackageTerms } from "@/components/packages/PackageTerms";
 import { PackageReservationForm } from "@/components/trips/PackageReservationForm";
 import { centralRegionPackage } from "@/lib/travel/packages";
+import { getPlacesLeft } from "@/lib/travel/seats";
+import { PlacesLeft } from "@/components/trips/PlacesLeft";
 import { seoConfig } from "@/constants/config/seo";
 import {
   tripGoogleCalendarUrl,
@@ -94,7 +96,7 @@ const structuredData = [
       "@type": "Offer",
       price: trip.pricePerPerson,
       priceCurrency: trip.currency,
-      availability: "https://schema.org/InStock",
+      availability: "https://schema.org/LimitedAvailability",
       url: tripUrl,
       validThrough: `${trip.registrationDeadlineIso}T23:59:59+00:00`,
     },
@@ -110,7 +112,12 @@ const structuredData = [
   },
 ];
 
-export default function CentralRegionTripPage() {
+// Refresh the places-left count every 5 minutes.
+export const revalidate = 300;
+
+export default async function CentralRegionTripPage() {
+  const placesLeft = await getPlacesLeft(trip.slug, trip.capacity);
+
   return (
     <main id="main-content" className="bg-[#fffdfa]">
       <section className="relative min-h-[520px] overflow-hidden bg-slate-950">
@@ -140,13 +147,16 @@ export default function CentralRegionTripPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#register"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-600__"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-700"
               >
                 Reserve my spot
               </a>
               <span className="inline-flex h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-base font-semibold backdrop-blur-sm">
                 {trip.currencySymbol}{trip.pricePerPerson} per person
               </span>
+            </div>
+            <div className="mt-8">
+              <PlacesLeft placesLeft={placesLeft} capacity={trip.capacity} />
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               <RegistrationCountdown deadlineIso={trip.registrationDeadlineIso} />
@@ -207,26 +217,27 @@ export default function CentralRegionTripPage() {
               <h2 className="font-display mt-3 text-3xl font-semibold text-slate-900">
                 Four destinations, one connected route
               </h2>
-              <div className="mt-8 space-y-4">
+              <ol className="relative mt-8 space-y-7">
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-3 left-[15px] top-3 w-px bg-slate-300"
+                />
                 {trip.itinerary.map((item, index) => (
-                  <article
-                    key={item.title}
-                    className="grid grid-cols-[auto_1fr] gap-4 rounded-[20px] border border-slate-200 bg-white p-5"
-                  >
-                    <span className="font-display flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue-800 text-sm font-bold text-white">
-                      {index + 1}
+                  <li key={item.title} className="relative grid grid-cols-[32px_1fr] gap-5">
+                    <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-[#fffdfa] text-xs font-semibold text-slate-700">
+                      {String(index + 1).padStart(2, "0")}
                     </span>
-                    <div>
-                      <h3 className="font-display text-lg font-semibold text-slate-900">
+                    <div className="pt-1">
+                      <h3 className="font-display text-lg font-semibold text-slate-950">
                         {item.title}
                       </h3>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                      <p className="mt-1 text-[15px] leading-7 text-slate-600">
                         {item.detail}
                       </p>
                     </div>
-                  </article>
+                  </li>
                 ))}
-              </div>
+              </ol>
               <p className="mt-5 text-sm leading-6 text-slate-500">
                 The sequence may change to account for traffic, attraction
                 access, group movement, and safety.
@@ -298,6 +309,9 @@ export default function CentralRegionTripPage() {
             <h2 className="font-display mt-3 text-center text-3xl font-semibold text-slate-900">
               Request your place
             </h2>
+            <div className="mt-5 flex justify-center">
+              <PlacesLeft placesLeft={placesLeft} capacity={trip.capacity} tone="light" />
+            </div>
             <p className="mx-auto mt-3 max-w-2xl text-center text-base leading-7 text-slate-600">
               Submit one form for yourself or your group. TransVista will
               confirm availability before requesting any deposit.

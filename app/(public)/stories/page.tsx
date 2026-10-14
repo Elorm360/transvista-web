@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import Link from "next/link";
-import { ArrowRight, Heart, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { Reveal } from "@/components/motion/Reveal";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
 import { travellerTestimonials } from "@/content/testimonials";
 
@@ -17,32 +17,19 @@ export const metadata: Metadata = pageMetadata({
 export default function TravellerStoriesPage() {
   return (
     <main id="main-content">
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-blue-950 via-brand-blue-800 to-brand-blue-700 py-20 text-white lg:py-28">
-        <div aria-hidden="true" className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-orange-500/20 blur-3xl" />
-        <div aria-hidden="true" className="absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-        <Container className="relative">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange-200">
-              <Heart aria-hidden="true" className="h-4 w-4" />
-              TransVista traveller stories
-            </span>
-            <h1 className="font-display mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              The people make every journey memorable.
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-blue-100 sm:text-lg">
-              These verified stories come from travellers who joined TransVista experiences across Ghana. Their words have been lightly edited only for clarity, with permission.
-            </p>
-          </div>
-        </Container>
-      </section>
+      <PageHeader
+        eyebrow="Traveller stories"
+        title="The people make every journey memorable."
+        lead="Stories from travellers who joined TransVista trips across Ghana, shared with permission and lightly edited for clarity."
+      />
 
-      <section className="py-16 lg:py-24">
+      <section className="py-12 lg:py-16">
         <Container>
-          <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-            {travellerTestimonials.map((story, index) => (
-              <Reveal key={story.slug} delay={(index % 3) * 70}>
+          <div className="columns-1 gap-6 md:columns-2 lg:columns-3">
+            {travellerTestimonials.map((story) => (
+              <div key={story.slug} className="mb-6 break-inside-avoid">
                 <TestimonialCard story={story} />
-              </Reveal>
+              </div>
             ))}
           </div>
         </Container>
@@ -52,8 +39,7 @@ export default function TravellerStoriesPage() {
         <Container>
           <div className="overflow-hidden rounded-3xl bg-brand-orange-50 p-8 ring-1 ring-brand-orange-100 sm:p-10 lg:flex lg:items-center lg:justify-between lg:gap-10">
             <div className="max-w-2xl">
-              <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-                <Sparkles aria-hidden="true" className="h-4 w-4" />
+              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-orange-700">
                 Your Ghana story starts here
               </p>
               <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight text-slate-900">
@@ -65,7 +51,7 @@ export default function TravellerStoriesPage() {
             </div>
             <Link
               href="/plan"
-              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-600__ focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
+              className="mt-7 inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-orange-900/15 transition hover:-translate-y-0.5 hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-600 focus-visible:ring-offset-2 lg:mt-0"
             >
               Plan my trip
               <ArrowRight aria-hidden="true" className="h-4 w-4" />

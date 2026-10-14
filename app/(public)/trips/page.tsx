@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CalendarDays, Clock3 } from "lucide-react";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { upcomingEvents } from "@/lib/events/upcoming-events";
 
 export const metadata: Metadata = pageMetadata({
@@ -16,21 +17,11 @@ export const metadata: Metadata = pageMetadata({
 export default function TripsPage() {
   return (
     <main id="main-content" className="bg-[#fffdfa]">
-      <header className="border-b border-slate-200 bg-white py-12 lg:py-16">
-        <Container>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-            Group trips
-          </p>
-          <h1 className="font-display mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            Travel Ghana together.
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-            Fixed-date trips with transport, meals and guided visits arranged
-            for you. Reserve with no payment upfront. TransVista confirms your
-            place before asking for a deposit.
-          </p>
-        </Container>
-      </header>
+      <PageHeader
+        eyebrow="Group trips"
+        title="Travel Ghana together."
+        lead="Fixed-date trips with transport, meals and guided visits arranged for you. Reserve with no payment upfront. TransVista confirms your place before asking for a deposit."
+      />
 
       <section className="py-12 lg:py-16">
         <Container>
@@ -69,7 +60,7 @@ export default function TripsPage() {
                   </p>
                   <Link
                     href={event.href}
-                    className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-600__ focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+                    className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
                   >
                     View trip and reserve
                   </Link>
