@@ -36,12 +36,9 @@ export function UpcomingEventSpotlight() {
       return;
     }
 
-    // Never cover the hero on first paint. Small screens get the compact
-    // pill only; larger screens open after real engagement (scroll or time).
-    if (window.matchMedia("(max-width: 767px)").matches) {
-      setDisplay("minimized");
-      return;
-    }
+    // Keep the first impression clear, then show the announcement on every
+    // device. On mobile the existing dialog layout becomes a bottom sheet.
+    const isSmallScreen = window.matchMedia("(max-width: 767px)").matches;
 
     let opened = false;
     const open = () => {
@@ -54,7 +51,7 @@ export function UpcomingEventSpotlight() {
         document.documentElement.scrollHeight - window.innerHeight;
       if (scrollable > 0 && window.scrollY / scrollable > 0.35) open();
     };
-    const timer = window.setTimeout(open, 20000);
+    const timer = window.setTimeout(open, isSmallScreen ? 10000 : 20000);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.clearTimeout(timer);
