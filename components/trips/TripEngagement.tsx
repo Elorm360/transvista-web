@@ -3,56 +3,63 @@
 import { useEffect, useState } from "react";
 import { Share2 } from "lucide-react";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const SECOND_MS = 1000;
+const DAY_SECONDS = 24 * 60 * 60;
 
-function daysUntil(isoDate: string) {
-  // Registration closes at the end of the deadline day (Ghana, UTC+0).
+function secondsUntil(isoDate: string) {
   const deadline = Date.parse(`${isoDate}T23:59:59Z`);
-  return Math.ceil((deadline - Date.now()) / DAY_MS);
+  return Math.max(0, Math.floor((deadline - Date.now()) / SECOND_MS));
 }
 
-/** "Registration closes in 12 days" — rendered client-side to stay accurate. */
+/** Live registration countdown, using Ghana local time (UTC+0). */
 export function RegistrationCountdown({ deadlineIso }: { deadlineIso: string }) {
-  const [days, setDays] = useState<number | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    const update = () => setDays(daysUntil(deadlineIso));
+    const update = () => setRemaining(secondsUntil(deadlineIso));
     update();
-    const timer = window.setInterval(update, 60 * 60 * 1000);
+    const timer = window.setInterval(update, SECOND_MS);
     return () => window.clearInterval(timer);
   }, [deadlineIso]);
 
-  if (days === null) return null;
+  if (remaining === null) return null;
 
-  const label =
-    days < 0
-      ? "Registration has closed"
-      : days === 0
-        ? "Registration closes today"
-        : days === 1
-          ? "Registration closes tomorrow"
-          : `Registration closes in ${days} days`;
-
-  const urgent = days >= 0 && days <= 3;
+  const days = Math.floor(remaining / DAY_SECONDS);
+  const hours = Math.floor((remaining % DAY_SECONDS) / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  const seconds = remaining % 60;
+  const closed = remaining === 0;
+  const units = [
+    ["Days", days],
+    ["Hours", hours],
+    ["Mins", minutes],
+    ["Secs", seconds],
+  ] as const;
 
   return (
-    <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-200">
-      <span className="relative flex h-2 w-2" aria-hidden="true">
-        {days >= 0 && (
-          <span
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${
-              urgent ? "bg-red-400" : "bg-emerald-400"
-            }`}
-          />
-        )}
-        <span
-          className={`relative inline-flex h-2 w-2 rounded-full ${
-            days < 0 ? "bg-slate-400" : urgent ? "bg-red-500" : "bg-emerald-400"
-          }`}
-        />
+    <div
+      className="inline-flex flex-col gap-2"
+      role="timer"
+      aria-label={closed ? "Registration has closed" : `Registration closes in ${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds`}
+    >
+      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/75">
+        {closed ? "Registration has closed" : "Registration closes in"}
       </span>
-      {label}
-    </span>
+      {!closed ? (
+        <span className="flex items-center gap-2" aria-hidden="true">
+          {units.map(([label, value]) => (
+            <span key={label} className="min-w-[3.5rem] rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-center backdrop-blur-sm">
+              <span className="block font-display text-2xl font-semibold leading-none tabular-nums text-white">
+                {String(value).padStart(2, "0")}
+              </span>
+              <span className="mt-1 block text-[0.58rem] uppercase tracking-[0.12em] text-white/65">
+                {label}
+              </span>
+            </span>
+          ))}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
