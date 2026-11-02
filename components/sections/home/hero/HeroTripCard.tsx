@@ -3,7 +3,8 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { centralRegionPackage as trip } from "@/lib/travel/packages";\nimport { RegistrationCountdown } from "@/components/trips/TripEngagement";
+import { centralRegionPackage as trip } from "@/lib/travel/packages";
+import { RegistrationCountdown } from "@/components/trips/TripEngagement";
 
 const closesAt = Date.parse(`${trip.registrationDeadlineIso}T23:59:59Z`);
 const noopSubscribe = () => () => {};
@@ -40,6 +41,9 @@ export function HeroTripCard() {
       <p className="mt-1 text-sm text-white/70">
         Kakum · Cape Coast · Elmina
       </p>
+      <div className="mt-4">
+        <RegistrationCountdown deadlineIso={trip.registrationDeadlineIso} />
+      </div>
       <div className="mt-4 flex items-end justify-between border-t border-white/15 pt-4 text-sm">
         <div>
           <p className="text-white/60">{weekday}</p>
