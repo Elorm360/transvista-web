@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { centralRegionPackage as trip } from "@/lib/travel/packages";
+import { centralRegionPackage as trip } from "@/lib/travel/packages";\nimport { RegistrationCountdown } from "@/components/trips/TripEngagement";
 
 const closesAt = Date.parse(`${trip.registrationDeadlineIso}T23:59:59Z`);
 const noopSubscribe = () => () => {};
