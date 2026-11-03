@@ -12,15 +12,15 @@ export default async function AdminDashboardPage() {
   await requireAdminArea("dashboard");
   const supabase=await createClient();
   const [packages,custom,leads]=await Promise.all([
-    supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,total_price,amount_paid,payment_status,status,created_at").order("created_at",{ascending:false}).limit(100),
-    supabase.from("trip_requests").select("id,reference,full_name,destinations,adults,children,quoted_amount,amount_paid,payment_status,status,created_at").order("created_at",{ascending:false}).limit(100),
+    supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,total_price,amount_paid,currency,payment_status,status,created_at").order("created_at",{ascending:false}).limit(100),
+    supabase.from("trip_requests").select("id,reference,full_name,destinations,adults,children,quoted_amount,amount_paid,quote_currency,budget_currency,payment_status,status,created_at").order("created_at",{ascending:false}).limit(100),
     supabase.from("leads").select("id,full_name,email,interest,created_at").order("created_at",{ascending:false}).limit(5)
   ]);
   const groupBookings=packages.data??[];
   const customRequests=custom.data??[];
   const allBookings=[...groupBookings,...customRequests];
-  const collected=allBookings.reduce((sum,b)=>sum+Number(b.amount_paid??0),0);
-  const expected=groupBookings.reduce((sum,b)=>sum+Number(b.total_price??0),0)+customRequests.reduce((sum,b)=>sum+Number(b.quoted_amount??0),0);
+  const collected=groupBookings.filter(b=>b.currency==="GHS").reduce((sum,b)=>sum+Number(b.amount_paid??0),0)+customRequests.filter(b=>(b.quote_currency??b.budget_currency)==="GHS").reduce((sum,b)=>sum+Number(b.amount_paid??0),0);
+  const expected=groupBookings.filter(b=>b.currency==="GHS").reduce((sum,b)=>sum+Number(b.total_price??0),0)+customRequests.filter(b=>(b.quote_currency??b.budget_currency)==="GHS").reduce((sum,b)=>sum+Number(b.quoted_amount??0),0);
   const outstanding=Math.max(0,expected-collected);
   const attention=allBookings.filter(b=>["pending-review","new","reviewing","confirmed-awaiting-deposit","payment-requested","deposit-requested"].includes(b.status)||["payment-requested","deposit-requested","not-requested"].includes(b.payment_status)).length;
   const latest=allBookings.slice(0,6);
@@ -29,7 +29,7 @@ export default async function AdminDashboardPage() {
     <div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <Metric label="All booking requests" value={String(allBookings.length)} icon={<ClipboardList className="h-5 w-5"/>} />
       <Metric label="Needs attention" value={String(attention)} icon={<Clock3 className="h-5 w-5"/>} />
-      <Metric label="Payments recorded" value={money(collected)} icon={<CreditCard className="h-5 w-5"/>} />
+      <Metric label="GHS payments recorded" value={money(collected)} icon={<CreditCard className="h-5 w-5"/>} />
       <Metric label="Outstanding (quoted / group)" value={money(outstanding)} icon={<ArrowUpRight className="h-5 w-5"/>} />
     </div>
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
