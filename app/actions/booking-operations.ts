@@ -290,7 +290,7 @@ export async function updateBookingOperation(
           reference: current.reference,
           status: label(status),
           paymentStatus: label(paymentStatus),
-          amountPaid,
+          amountPaid: amountPaid ?? Number(current.amount_paid ?? 0),
           currency: quoteCurrency ?? "GHS",
           note: note || undefined,
         });
