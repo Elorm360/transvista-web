@@ -15,6 +15,7 @@ import {
 import {
   inviteTeamMember,
   removeTeamMember,
+  reactivateTeamMember,
 } from "@/app/actions/team-members";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 
@@ -367,15 +368,12 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => {
-                          setRemoveError(null);
-                          setDeleteTarget(member);
-                        }}
+                        onClick={async () => { if (member.status === "inactive") { try { await reactivateTeamMember(member.id); router.refresh(); } catch (error) { setRemoveError(error instanceof Error ? error.message : "Could not reactivate."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
                         aria-label={`Remove ${member.fullName}`}
                         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Remove
+                        {member.status === "active" ? "Deactivate" : "Reactivate"}
                       </button>
                     )}
                   </td>
@@ -406,14 +404,13 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
               id="remove-team-member-title"
               className="mt-4 text-lg font-semibold text-slate-900"
             >
-              Remove this team member?
+              Deactivate this team member?
             </h2>
             <p className="mt-1.5 text-sm text-slate-500">
               <span className="font-medium text-slate-700">
                 {deleteTarget.fullName}
               </span>{" "}
-              ({deleteTarget.email}) will lose admin access and will no longer
-              be able to sign in.
+              ({deleteTarget.email}) will lose admin access. Their account and activity history will be preserved, and you can reactivate them later.
             </p>
 
             {removeError && (
@@ -437,7 +434,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 disabled={isRemoving}
                 className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
               >
-                {isRemoving ? "Removing…" : "Remove"}
+                {isRemoving ? "Deactivating…" : "Deactivate"}
               </button>
             </div>
           </div>
