@@ -369,7 +369,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                       <button
                         type="button"
                         onClick={async () => { if (member.status === "inactive") { try { await reactivateTeamMember(member.id); router.refresh(); } catch (error) { setRemoveError(error instanceof Error ? error.message : "Could not reactivate."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
-                        aria-label={`Remove ${member.fullName}`}
+                        aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
                         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
