@@ -92,7 +92,7 @@ export default function AdminShell({
         <nav className="flex-1 space-y-1 px-3 py-6" aria-label="Primary Navigation">
           {visibleItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = item.href === "/admin" ? pathname === "/admin" : pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
