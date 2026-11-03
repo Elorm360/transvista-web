@@ -24,9 +24,12 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
   const {data:member,error:memberError}=await supabase.from("admin_team_members").select("id,role,status").eq("user_id",user.id).maybeSingle();
   if(memberError||!member||member.status!=="active"||!["owner","admin","support"].includes(member.role))return{success:false,message:"You do not have permission to edit traveller details."};
   const table=kind==="custom"?"trip_requests":"package_reservations";
-  const {data:current,error:lookupError}=await supabase.from(table).select("*").eq("id",id).maybeSingle();
-  if(lookupError||!current)return{success:false,message:"The booking could not be loaded. Refresh and try again."};
+  const {data:currentData,error:lookupError}=await supabase.from(table).select("*").eq("id",id).maybeSingle();
+  if(lookupError||!currentData)return{success:false,message:"The booking could not be loaded. Refresh and try again."};
+  const current=currentData as unknown as Record<string,any>;
   let updates:Record<string,unknown>;
+  let beforeSummary="";
+  let afterSummary="";
   if(kind==="package"){
    const travellers=Number(field(formData,"travellers",4));
    if(!Number.isInteger(travellers)||travellers<1||travellers>200)return{success:false,message:"Number of travellers must be between 1 and 200."};
@@ -45,6 +48,8 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
     payment_status:Number(current.amount_paid??0)>=totalPrice?"paid":Number(current.amount_paid??0)>0?"deposit-paid":current.payment_status,
     updated_by:member.id,updated_at:new Date().toISOString()
    };
+   beforeSummary=`Travellers: ${current.travellers}; contact: ${current.full_name} / ${current.email} / ${current.phone}`;
+   afterSummary=`Travellers: ${travellers}; contact: ${fullName} / ${email} / ${phone}`;
   }else{
    const adults=Number(field(formData,"adults",4)),children=Number(field(formData,"children",4));
    if(!Number.isInteger(adults)||adults<1||adults>200||!Number.isInteger(children)||children<0||children>200||adults+children>200)return{success:false,message:"Enter at least 1 adult and no more than 200 travellers in total."};
@@ -64,18 +69,14 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
     updated_by:member.id,updated_at:new Date().toISOString()
    };
    if(!updates.country||String(updates.budget_range).length<1)return{success:false,message:"Country and budget range are required."};
+   beforeSummary=`Travellers: ${current.adults} adults, ${current.children} children; contact: ${current.full_name} / ${current.email} / ${current.phone}`;
+   afterSummary=`Travellers: ${adults} adults, ${children} children; contact: ${fullName} / ${email} / ${phone}`;
   }
-  const {error:updateError}=await supabase.from(table).update(updates).eq("id",id);
+  const {error:updateError}=await supabase.from(table).update(updates as never).eq("id",id);
   if(updateError){console.error("[updateTravellerSubmittedDetails]",updateError);return{success:false,message:"The corrected traveller details could not be saved."};}
-  const before=kind==="package"
-   ? `Travellers: ${current.travellers}; contact: ${current.full_name} / ${current.email} / ${current.phone}`
-   : `Travellers: ${current.adults} adults, ${current.children} children; contact: ${current.full_name} / ${current.email} / ${current.phone}`;
-  const after=kind==="package"
-   ? `Travellers: ${updates.travellers}; contact: ${updates.full_name} / ${updates.email} / ${updates.phone}`
-   : `Travellers: ${updates.adults} adults, ${updates.children} children; contact: ${updates.full_name} / ${updates.email} / ${updates.phone}`;
   const {error:activityError}=await supabase.from("request_activity").insert({
    request_kind:kind,request_id:id,reference:current.reference,activity_type:"details-corrected",
-   summary:`Traveller-submitted information corrected. ${before}. Updated to: ${after}. Reason: ${reason}`,
+   summary:`Traveller-submitted information corrected. ${beforeSummary}. Updated to: ${afterSummary}. Fields corrected: ${Object.keys(updates).filter(key=>!["updated_by","updated_at"].includes(key)).join(", ")}. Reason: ${reason}`,
    from_status:current.status,to_status:current.status,author_member_id:member.id
   });
   if(activityError)console.error("[updateTravellerSubmittedDetails] Activity insert failed",activityError);
