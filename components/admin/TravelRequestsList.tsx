@@ -39,6 +39,7 @@ import type {
   RequestOperator,
   TravelRequestRecord,
 } from "@/lib/dashboard/getTravelRequests";
+import TravellerDetailsEditor from "@/components/admin/TravellerDetailsEditor";
 
 const customStatuses = [
   "new",
@@ -569,6 +570,8 @@ function RequestDrawer({
               <Phone className="h-4 w-4" /> {request.phone}
             </a>
           </div>
+
+          {!request.archivedAt && <TravellerDetailsEditor request={{source:request.source,sourceId:request.sourceId,fullName:request.fullName,email:request.email,phone:request.phone,submitted:request.submitted}} />}
 
           <RequestRetentionPanel
             request={request}
