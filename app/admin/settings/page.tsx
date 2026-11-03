@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import SectionCard from "@/components/admin/SectionCard";
 import TeamMembersTable from "@/components/admin/TeamMembersTable";
+import TeamOnboardingGuide from "@/components/admin/TeamOnboardingGuide";
 import { getTeamMembers } from "@/lib/dashboard/getTeamMembers";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 
@@ -28,6 +29,7 @@ export default async function AdminSettingsPage() {
           </p>
         </SectionCard>
 
+        <TeamOnboardingGuide />
         <TeamMembersTable members={members} />
       </div>
     </div>
