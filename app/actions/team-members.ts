@@ -196,10 +196,8 @@ export async function inviteTeamMember({
 }
 
 /**
- * Remove a team member.
- *
- * Deletes the admin_team_members row and the matching Auth user so they
- * can no longer sign in. The owner account cannot be removed.
+ * Deactivate or reactivate a team member without deleting their account.
+ * The owner account and the current user's own access are protected.
  */
 async function updateTeamMemberStatus(memberId: string, status: "active" | "inactive") {
   if (!memberId) throw new Error("Team member id is required.");
