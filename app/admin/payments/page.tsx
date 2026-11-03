@@ -16,7 +16,7 @@ export default async function AdminPaymentsPage() {
   ]);
   if (error) console.error("[AdminPaymentsPage]",error);
   const bookingMap = new Map((bookings ?? []).map((b)=>[b.reference,b]));
-  const total = (transactions ?? []).filter(t=>t.status==="verified" && t.transaction_type!=="refund").reduce((sum,t)=>sum+Number(t.amount),0);
+  const total = (transactions ?? []).filter(t=>t.status==="verified" && t.transaction_type!=="refund" && t.currency==="GHS").reduce((sum,t)=>sum+Number(t.amount),0);
 
   return <div className="mx-auto max-w-[1500px]">
     <PageHeader icon={CreditCard} title="Payments & receipts" description="A clear transaction history for every group booking. Record each payment separately and retrieve its receipt at any time." />
