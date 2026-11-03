@@ -183,7 +183,7 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
       archiveReason: row.archive_reason,
       activity: activity.get(activityKey("custom", sourceId)) ?? [],
       submitted: {
-        country: row.country ?? "", destinations: (row.destinations ?? []).join("\\n"), services: (row.services ?? []).join("\\n"), interests: (row.interests ?? []).join("\\n"),
+        country: row.country ?? "", destinations: (row.destinations ?? []).join("\n"), services: (row.services ?? []).join("\n"), interests: (row.interests ?? []).join("\n"),
         travelStart: row.travel_start ?? "", travelEnd: row.travel_end ?? "", dateFlexibility: row.date_flexibility ?? "", adults: String(row.adults), children: String(row.children),
         budgetCurrency: row.budget_currency ?? "GHS", budgetBasis: row.budget_basis ?? "per-person", budgetRange: row.budget_range ?? "",
         accommodationStyle: row.accommodation_style ?? "", transportDetails: row.transport_details ?? "", notes: row.notes ?? "",
