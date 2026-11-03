@@ -1,7 +1,8 @@
 import Link from "next/link";
 import {
   LayoutDashboard, ClipboardList, CreditCard, Users, ArrowUpRight, Clock3,
-  Wallet, Compass, CalendarDays, ChevronRight, Sparkles, CircleAlert,
+  Wallet, Compass, CalendarDays, ChevronRight, Sparkles, CircleAlert, AlertTriangle,
+  UserRoundPlus, BellRing, ArrowRight, CalendarClock, BadgeCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
@@ -12,6 +13,74 @@ const money = (amount: number) => new Intl.NumberFormat("en-GH", { style: "curre
 type RecentBooking = { id: number; reference: string; full_name: string; description: string; amount_paid: number | string | null; currency: string; status: string; created_at: string; kind: "group" | "custom" };
 type LeadRow = { id: number; full_name: string; interest: string | null; created_at: string };
 type SummaryRow = { total_requests: number; attention_requests: number; ghs_received: number | string; ghs_outstanding: number | string };
+type ActionSource = {
+  id: number; reference: string; full_name: string; description: string; status: string;
+  assigned_to: string | null; priority: string | null; created_at: string;
+  follow_up_at: string | null; payment_due_at: string | null;
+  amount_paid: number | string | null; quoted_amount: number | string | null;
+  total_price?: number | string | null; currency: string; kind: "group" | "custom";
+};
+type ActionItem = {
+  key: string; reference: string; name: string; description: string; reason: string;
+  href: string; severity: "urgent" | "attention" | "normal"; dueAt: string;
+  action: string; icon: typeof AlertTriangle;
+};
+
+function buildActionItems(rows: ActionSource[], now: Date): ActionItem[] {
+  const items: ActionItem[] = [];
+  const nowMs = now.getTime();
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Accra", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
+  const terminal = new Set(["cancelled", "canceled", "rejected", "completed", "archived"]);
+
+  for (const row of rows) {
+    const status = (row.status ?? "").toLowerCase();
+    if (terminal.has(status)) continue;
+    const base = { reference: row.reference, name: row.full_name, description: row.description };
+    const ageMs = nowMs - new Date(row.created_at).getTime();
+    const olderThanSla = Number.isFinite(ageMs) && ageMs > 48 * 60 * 60 * 1000;
+
+    if (!row.assigned_to) {
+      items.push({
+        ...base, key: `${row.kind}-${row.id}-assign`,
+        reason: olderThanSla ? "Unassigned · response window exceeded" : "Waiting for a team owner",
+        href: "/admin/requests", severity: olderThanSla ? "urgent" : "normal",
+        dueAt: row.created_at, action: "Assign request", icon: UserRoundPlus,
+      });
+    } else if (olderThanSla && ["new", "pending", "submitted", "request_received"].includes(status)) {
+      items.push({
+        ...base, key: `${row.kind}-${row.id}-sla`,
+        reason: "Still awaiting a response after 48 hours",
+        href: "/admin/requests", severity: "urgent", dueAt: row.created_at,
+        action: "Review request", icon: BellRing,
+      });
+    }
+
+    if (row.follow_up_at && new Date(row.follow_up_at).getTime() < nowMs) {
+      items.push({
+        ...base, key: `${row.kind}-${row.id}-followup`,
+        reason: "Scheduled follow-up is overdue",
+        href: "/admin/requests", severity: "urgent", dueAt: row.follow_up_at,
+        action: "Follow up", icon: CalendarClock,
+      });
+    }
+
+    const total = Number(row.quoted_amount ?? row.total_price ?? 0);
+    const paid = Number(row.amount_paid ?? 0);
+    if (row.payment_due_at && row.payment_due_at < today && total > paid) {
+      items.push({
+        ...base, key: `${row.kind}-${row.id}-payment`,
+        reason: `Payment deadline passed · ${row.currency} ${(total - paid).toFixed(2)} outstanding`,
+        href: "/admin/payments", severity: "attention", dueAt: row.payment_due_at,
+        action: "Review payment", icon: CreditCard,
+      });
+    }
+  }
+
+  const rank = { urgent: 0, attention: 1, normal: 2 };
+  return items.sort((a, b) => rank[a.severity] - rank[b.severity] || new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()).slice(0, 8);
+}
 
 export default async function AdminDashboardPage() {
   const { role } = await requireAdminArea("dashboard");
@@ -21,20 +90,37 @@ export default async function AdminDashboardPage() {
   let totals: SummaryRow | null = null;
   let summaryError = false;
   let latest: RecentBooking[] = [];
-  let recentLeads: LeadRow[] = [];
+  let recentLeads: LeadRow[] = [];\n  let actionItems: ActionItem[] = [];\n  let actionLoadError = false;
 
   if (canSeeOperations) {
     const [summary, packages, custom] = await Promise.all([
       supabase.rpc("get_admin_operations_summary"),
-      supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,amount_paid,currency,status,created_at").order("created_at", { ascending: false }).limit(4),
-      supabase.from("trip_requests").select("id,reference,full_name,destinations,amount_paid,quote_currency,budget_currency,status,created_at").order("created_at", { ascending: false }).limit(4),
+      supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,amount_paid,currency,status,created_at,assigned_to,priority,follow_up_at,payment_due_at,quoted_amount,total_price").is("archived_at", null).order("created_at", { ascending: false }).limit(250),
+      supabase.from("trip_requests").select("id,reference,full_name,destinations,amount_paid,quote_currency,budget_currency,status,created_at,assigned_to,priority,follow_up_at,payment_due_at,quoted_amount").is("archived_at", null).order("created_at", { ascending: false }).limit(250),
     ]);
     if (summary.error) { summaryError = true; console.error("[AdminDashboard] Summary unavailable:", summary.error); }
     totals = (summary.data?.[0] as SummaryRow | undefined) ?? null;
-    latest = [
-      ...(packages.data ?? []).map((b) => ({ id: b.id, reference: b.reference, full_name: b.full_name, description: b.package_title ?? "Group trip", amount_paid: b.amount_paid, currency: b.currency ?? "GHS", status: b.status, created_at: b.created_at, kind: "group" as const })),
-      ...(custom.data ?? []).map((b) => ({ id: b.id, reference: b.reference, full_name: b.full_name, description: (b.destinations ?? []).join(", ") || "Custom trip", amount_paid: b.amount_paid, currency: b.quote_currency ?? b.budget_currency ?? "GHS", status: b.status, created_at: b.created_at, kind: "custom" as const })),
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
+    if (packages.error || custom.error) {
+      actionLoadError = true;
+      console.error("[AdminDashboard] Action centre records unavailable:", packages.error ?? custom.error);
+    }
+    const packageRows: ActionSource[] = (packages.data ?? []).map((b) => ({
+      id: b.id, reference: b.reference, full_name: b.full_name, description: b.package_title ?? "Group trip",
+      status: b.status, assigned_to: b.assigned_to, priority: b.priority, created_at: b.created_at,
+      follow_up_at: b.follow_up_at, payment_due_at: b.payment_due_at, amount_paid: b.amount_paid,
+      quoted_amount: b.quoted_amount, total_price: b.total_price, currency: b.currency ?? "GHS", kind: "group",
+    }));
+    const customRows: ActionSource[] = (custom.data ?? []).map((b) => ({
+      id: b.id, reference: b.reference, full_name: b.full_name, description: (b.destinations ?? []).join(", ") || "Custom trip",
+      status: b.status, assigned_to: b.assigned_to, priority: b.priority, created_at: b.created_at,
+      follow_up_at: b.follow_up_at, payment_due_at: b.payment_due_at, amount_paid: b.amount_paid,
+      quoted_amount: b.quoted_amount, currency: b.quote_currency ?? b.budget_currency ?? "GHS", kind: "custom",
+    }));
+    const actionSources = [...packageRows, ...customRows];
+    actionItems = buildActionItems(actionSources, new Date());
+    latest = actionSources
+      .map((b) => ({ id: b.id, reference: b.reference, full_name: b.full_name, description: b.description, amount_paid: b.amount_paid, currency: b.currency, status: b.status, created_at: b.created_at, kind: b.kind }))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
   }
 
   if (canSeeCommunity) {
@@ -74,7 +160,7 @@ export default async function AdminDashboardPage() {
       </div>
     </> : null}
 
-    <div className={canSeeOperations ? "grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]" : "grid gap-6"}>
+    {canSeeOperations && <ActionCentre items={actionItems} loadError={actionLoadError} />}\n\n    <div className={canSeeOperations ? "grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]" : "grid gap-6"}>
       {canSeeOperations ? <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
           <div><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#f47b20]" /><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Recent booking activity</h3></div><p className="mt-1.5 text-xs text-slate-500">Latest traveller requests received by TransVista.</p></div>
@@ -138,4 +224,39 @@ function QuickLink({ href, title, detail, icon: Icon }: { href: string; title: s
     <span className="min-w-0 flex-1"><span className="block text-xs font-bold text-slate-800">{title}</span><span className="mt-1 block text-[10px] text-slate-400">{detail}</span></span>
     <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#1a3a9c]" />
   </Link>;
+}
+
+
+function ActionCentre({ items, loadError }: { items: ActionItem[]; loadError: boolean }) {
+  const urgent = items.filter((item) => item.severity === "urgent").length;
+  const attention = items.filter((item) => item.severity === "attention").length;
+  const unassigned = items.filter((item) => item.key.endsWith("-assign")).length;
+  return <section className="mb-8 overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
+    <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
+      <div><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-50 text-[#c85f16]"><Sparkles className="h-4 w-4" /></span><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Smart Action Centre</h3></div><p className="mt-2 text-xs text-slate-500">A live queue of requests and follow-ups that may need your team’s attention.</p></div>
+      <Link href="/admin/requests" className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-[#1a3a9c] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#152f80] sm:self-auto">Open booking operations <ArrowRight className="h-3.5 w-3.5" /></Link>
+    </div>
+    <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+      <ActionStat label="Urgent" value={String(urgent)} tone="red" />
+      <ActionStat label="Payment deadlines" value={String(attention)} tone="orange" />
+      <ActionStat label="Unassigned" value={String(unassigned)} tone="blue" />
+    </div>
+    {loadError ? <div role="status" className="flex items-center gap-3 px-6 py-8 text-sm text-amber-800"><CircleAlert className="h-5 w-5 shrink-0" />Some action items could not be loaded. Open Booking Operations to review your records.</div> : items.length ? <div className="divide-y divide-slate-100">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const severity = item.severity === "urgent" ? "bg-rose-50 text-rose-700" : item.severity === "attention" ? "bg-orange-50 text-[#b45309]" : "bg-blue-50 text-[#1a3a9c]";
+        return <div key={item.key} className="flex flex-wrap items-center gap-3 px-5 py-4 transition hover:bg-slate-50/70 sm:px-6">
+          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${severity}`}><Icon className="h-[18px] w-[18px]" /></span>
+          <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-xs font-bold text-slate-900">{item.name}</p><span className="text-[10px] text-slate-400">{item.reference}</span></div><p className="mt-1 truncate text-xs text-slate-500">{item.reason}</p><p className="mt-1 truncate text-[10px] text-slate-400">{item.description}</p></div>
+          <div className="ml-[52px] flex w-full items-center justify-between gap-3 sm:ml-0 sm:w-auto sm:justify-end"><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${severity}`}>{item.severity === "urgent" ? "Urgent" : item.severity === "attention" ? "Attention" : "To assign"}</span><Link href={item.href} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-bold text-[#1a3a9c] transition hover:bg-blue-50">{item.action}<ArrowUpRight className="h-3.5 w-3.5" /></Link></div>
+        </div>;
+      })}
+    </div> : <div className="px-6 py-10 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700"><BadgeCheck className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-slate-800">You’re all caught up</p><p className="mt-1 text-xs text-slate-400">No unassigned requests, overdue follow-ups or missed payment deadlines were found.</p></div>}
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 sm:px-6"><p className="text-[10px] text-slate-400">Based on live booking records and scheduled deadlines.</p><p className="text-[10px] font-medium text-slate-500">Showing up to 8 priority items</p></div>
+  </section>;
+}
+
+function ActionStat({ label, value, tone }: { label: string; value: string; tone: "red" | "orange" | "blue" }) {
+  const colors = { red: "text-rose-700", orange: "text-[#c85f16]", blue: "text-[#1a3a9c]" };
+  return <div className="px-4 py-3.5 sm:px-6"><p className="text-[10px] font-semibold text-slate-400">{label}</p><p className={`mt-1 text-xl font-bold tracking-tight ${colors[tone]}`}>{value}</p></div>;
 }
