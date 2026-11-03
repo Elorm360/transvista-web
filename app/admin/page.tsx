@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const money=(amount:number)=>new Intl.NumberFormat("en-GH",{style:"currency",currency:"GHS",maximumFractionDigits:2}).format(amount);
 
 export default async function AdminDashboardPage() {
-  await requireAdminArea("dashboard");
+  const {role}=await requireAdminArea("dashboard");
   const supabase=await createClient();
   const [packages,custom,leads]=await Promise.all([
     supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,total_price,amount_paid,currency,payment_status,status,created_at").order("created_at",{ascending:false}).limit(100),
@@ -41,7 +41,7 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
       <section className="space-y-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold text-slate-950">Quick actions</h2><div className="mt-4 grid gap-2"><QuickLink href="/admin/requests" title="Manage bookings" detail="Review, assign and follow up" /><QuickLink href="/admin/payments" title="Payments & receipts" detail="Record transactions and issue receipts" /><QuickLink href="/admin/community" title="Community members" detail="Manage your traveller community" /><QuickLink href="/admin/settings" title="Team access" detail="Invite and manage staff accounts" /></div></div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold text-slate-950">Quick actions</h2><div className="mt-4 grid gap-2"><QuickLink href="/admin/requests" title="Manage bookings" detail="Review, assign and follow up" /><QuickLink href="/admin/payments" title="Payments & receipts" detail="Record transactions and issue receipts" />{["owner","admin","community_manager"].includes(role) ? <QuickLink href="/admin/community" title="Community members" detail="Manage your traveller community" /> : null}{role === "owner" ? <QuickLink href="/admin/settings" title="Team access" detail="Invite and manage staff accounts" /> : null}</div></div>
         <div className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-slate-500"/><h2 className="font-bold text-slate-950">Latest community sign-ups</h2></div><div className="mt-4 space-y-3">{(leads.data??[]).map(l=><div key={l.id} className="flex justify-between gap-3"><div><p className="text-sm font-semibold text-slate-800">{l.full_name}</p><p className="text-xs text-slate-500">{l.interest}</p></div><span className="text-xs text-slate-400">{new Date(l.created_at).toLocaleDateString("en-GB")}</span></div>)}{!leads.data?.length?<p className="text-sm text-slate-500">No recent sign-ups.</p>:null}</div></div>
       </section>
     </div>
