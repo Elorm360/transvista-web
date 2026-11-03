@@ -216,7 +216,7 @@ export async function updateBookingOperation(
         quoted_amount: quotedAmount,
         quote_currency: quoteCurrency,
         deposit_amount: depositAmount,
-        ...(kind === "custom" ? { amount_paid: amountPaid ?? 0, payment_status: paymentStatus, payment_method: paymentMethod, payment_verified_at: paymentIsVerified ? now : null, payment_verified_by: paymentIsVerified ? member.id : null } : {}),
+        ...(kind === "custom" ? { ...(amountPaid !== null ? { amount_paid: amountPaid } : {}), payment_status: paymentStatus, payment_method: paymentMethod, payment_verified_at: paymentIsVerified ? now : null, payment_verified_by: paymentIsVerified ? member.id : null } : {}),
         updated_by: member.id,
         updated_at: now,
       })
@@ -234,7 +234,7 @@ export async function updateBookingOperation(
     if (current.assigned_to !== assignedTo) {
       changes.push(`Assigned to ${assigneeName}`);
     }
-    if (kind === "custom" && (current.payment_status !== paymentStatus || Number(current.amount_paid) !== (amountPaid ?? 0))) {
+    if (kind === "custom" && (current.payment_status !== paymentStatus || (amountPaid !== null && Number(current.amount_paid) !== amountPaid))) {
       changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${(amountPaid ?? 0).toFixed(2)} received`);
     }
     if (current.follow_up_at !== followUpAt) {
