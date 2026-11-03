@@ -11,11 +11,13 @@ import {
   X,
   Users,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   inviteTeamMember,
   removeTeamMember,
   reactivateTeamMember,
+  updateTeamMemberDetails,
 } from "@/app/actions/team-members";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 
@@ -55,6 +57,11 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [deleteTarget, setDeleteTarget] = useState<TeamMember | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<TeamMember | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<"admin" | "community_manager" | "support">("support");
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   async function handleInvite() {
     setInviteError(null);
@@ -96,6 +103,20 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
     } finally {
       setIsInviting(false);
     }
+  }
+
+  function openEdit(member: TeamMember) {
+    setEditTarget(member); setEditName(member.fullName); setEditRole(member.role as "admin" | "community_manager" | "support"); setEditError(null);
+  }
+
+  async function saveEdit() {
+    if (!editTarget || isSavingEdit) return;
+    setIsSavingEdit(true); setEditError(null);
+    try {
+      await updateTeamMemberDetails({memberId:editTarget.id,fullName:editName,role:editRole});
+      setEditTarget(null); router.refresh();
+    } catch(error) { setEditError(error instanceof Error ? error.message : "Could not save team member details."); }
+    finally { setIsSavingEdit(false); }
   }
 
   async function confirmRemove() {
@@ -366,21 +387,45 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                     {member.role === "owner" ? (
                       <span className="text-xs text-slate-400">Protected</span>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={async () => { if (member.status === "inactive") { try { await reactivateTeamMember(member.id); router.refresh(); } catch (error) { setRemoveError(error instanceof Error ? error.message : "Could not reactivate."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
-                        aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                      >
-                        {member.status === "active" ? <Trash2 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                        {member.status === "active" ? "Deactivate" : "Reactivate"}
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button type="button" onClick={() => openEdit(member)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+                          <Pencil className="h-4 w-4" /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => { if (member.status === "inactive") { try { await reactivateTeamMember(member.id); router.refresh(); } catch (error) { setRemoveError(error instanceof Error ? error.message : "Could not reactivate."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
+                          aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                        >
+                          {member.status === "active" ? <Trash2 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                          {member.status === "active" ? "Deactivate" : "Reactivate"}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+
+      {editTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-team-member-title">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div><h2 id="edit-team-member-title" className="text-lg font-bold text-slate-950">Edit team member</h2><p className="mt-1 text-sm text-slate-500">Update their display name and access role.</p></div>
+              <button type="button" onClick={()=>setEditTarget(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="Close edit form"><X className="h-5 w-5"/></button>
+            </div>
+            <div className="mt-5 space-y-4">
+              <label className="block text-sm font-semibold text-slate-700">Full name<input value={editName} onChange={e=>setEditName(e.target.value)} maxLength={120} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 px-3 font-normal"/></label>
+              <label className="block text-sm font-semibold text-slate-700">Email / login address<input value={editTarget.email} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 font-normal text-slate-500"/><span className="mt-1 block text-xs font-normal text-slate-500">Login email is protected here to avoid accidentally locking the person out.</span></label>
+              <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value as "admin"|"community_manager"|"support")} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal"><option value="support">Support</option><option value="community_manager">Community Manager</option><option value="admin">Admin</option></select></label>
+              {editError?<p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{editError}</p>:null}
+            </div>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={()=>setEditTarget(null)} disabled={isSavingEdit} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button><button type="button" onClick={saveEdit} disabled={isSavingEdit || editName.trim().length<2} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{isSavingEdit?"Saving…":"Save changes"}</button></div>
+          </div>
         </div>
       )}
 
