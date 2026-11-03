@@ -235,7 +235,7 @@ export async function updateBookingOperation(
       changes.push(`Assigned to ${assigneeName}`);
     }
     if (kind === "custom" && (current.payment_status !== paymentStatus || Number(current.amount_paid) !== (amountPaid ?? 0))) {
-      changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${amountPaid.toFixed(2)} received`);
+      changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${(amountPaid ?? 0).toFixed(2)} received`);
     }
     if (current.follow_up_at !== followUpAt) {
       changes.push(
