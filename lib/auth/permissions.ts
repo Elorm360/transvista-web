@@ -8,6 +8,7 @@ export type AdminArea =
   | "dashboard"
   | "community"
   | "requests"
+  | "payments"
   | "analytics"
   | "settings";
 
@@ -35,6 +36,7 @@ export function canAccess(
       );
 
     case "requests":
+    case "payments":
       return role === "owner" || role === "admin" || role === "support";
 
     case "analytics":
