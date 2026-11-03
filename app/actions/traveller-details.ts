@@ -42,6 +42,7 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
     notes:field(formData,"travellerNotes",4000)||null,
     total_price:totalPrice,deposit_due:depositDue,balance_per_person:Math.max(0,pricePerPerson-depositPerPerson),
     quoted_amount:totalPrice,quote_currency:current.currency,deposit_amount:depositDue,
+    payment_status:Number(current.amount_paid??0)>=totalPrice?"paid":Number(current.amount_paid??0)>0?"deposit-paid":current.payment_status,
     updated_by:member.id,updated_at:new Date().toISOString()
    };
   }else{
@@ -80,6 +81,7 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
   if(activityError)console.error("[updateTravellerSubmittedDetails] Activity insert failed",activityError);
   const completedAt=new Date().toISOString();
   revalidatePath("/admin/requests");revalidatePath("/admin/payments");revalidatePath("/admin");
-  return{success:true,message:kind==="package"?"Traveller details saved. Package price and deposit were recalculated from the updated headcount; payments already received were preserved.":"Traveller details saved and the corrected traveller count is reflected in the booking.",completedAt};
+  const priorRequestNote=kind==="package"&&current.payment_request_sent_at?" A payment request had previously been sent; review it and send an updated request if the amount changed.":"";
+  return{success:true,message:kind==="package"?"Traveller details saved. Package price and deposit were recalculated from the updated headcount; payments already received were preserved."+priorRequestNote:"Traveller details saved and the corrected traveller count is reflected in the booking.",completedAt};
  }catch(error){console.error("[updateTravellerSubmittedDetails] Unexpected error",error);return{success:false,message:error instanceof Error?error.message:"The traveller details could not be saved."};}
 }
