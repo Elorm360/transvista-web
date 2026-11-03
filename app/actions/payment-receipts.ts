@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendPaymentReceiptEmail } from "@/lib/email/sendPaymentReceiptEmail";
 
-export async function sendPackagePaymentReceipt(formData: FormData) {
+export async function sendPackagePaymentReceipt(formData: FormData): Promise<void> {
   const transactionId=String(formData.get("transactionId")??"").trim();
   if(!transactionId) throw new Error("Receipt transaction is missing.");
   const supabase=await createClient();
@@ -30,5 +30,5 @@ export async function sendPackagePaymentReceipt(formData: FormData) {
   await supabase.from("package_payment_transactions").update({receipt_sent_at:new Date().toISOString(),receipt_sent_to:b.email}).eq("id",t.id);
   revalidatePath("/admin/payments");
   revalidatePath("/admin/payments/"+t.id+"/receipt");
-  return {success:true,email:b.email};
+  return;
 }
