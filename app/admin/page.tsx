@@ -90,7 +90,9 @@ export default async function AdminDashboardPage() {
   let totals: SummaryRow | null = null;
   let summaryError = false;
   let latest: RecentBooking[] = [];
-  let recentLeads: LeadRow[] = [];\n  let actionItems: ActionItem[] = [];\n  let actionLoadError = false;
+  let recentLeads: LeadRow[] = [];
+  let actionItems: ActionItem[] = [];
+  let actionLoadError = false;
 
   if (canSeeOperations) {
     const [summary, packages, custom] = await Promise.all([
@@ -160,7 +162,9 @@ export default async function AdminDashboardPage() {
       </div>
     </> : null}
 
-    {canSeeOperations && <ActionCentre items={actionItems} loadError={actionLoadError} />}\n\n    <div className={canSeeOperations ? "grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]" : "grid gap-6"}>
+    {canSeeOperations && <ActionCentre items={actionItems} loadError={actionLoadError} />}
+
+    <div className={canSeeOperations ? "grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]" : "grid gap-6"}>
       {canSeeOperations ? <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
           <div><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#f47b20]" /><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Recent booking activity</h3></div><p className="mt-1.5 text-xs text-slate-500">Latest traveller requests received by TransVista.</p></div>
