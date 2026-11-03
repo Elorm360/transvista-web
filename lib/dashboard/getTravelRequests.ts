@@ -54,6 +54,7 @@ export type TravelRequestRecord = {
   archivedAt: string | null;
   archiveReason: string | null;
   details: RequestDetail[];
+  submitted: Record<string, string>;
   activity: RequestActivityRecord[];
 };
 
@@ -181,6 +182,12 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
       archivedAt: row.archived_at,
       archiveReason: row.archive_reason,
       activity: activity.get(activityKey("custom", sourceId)) ?? [],
+      submitted: {
+        country: row.country ?? "", destinations: (row.destinations ?? []).join("\\n"), services: (row.services ?? []).join("\\n"), interests: (row.interests ?? []).join("\\n"),
+        travelStart: row.travel_start ?? "", travelEnd: row.travel_end ?? "", dateFlexibility: row.date_flexibility ?? "", adults: String(row.adults), children: String(row.children),
+        budgetCurrency: row.budget_currency ?? "GHS", budgetBasis: row.budget_basis ?? "per-person", budgetRange: row.budget_range ?? "",
+        accommodationStyle: row.accommodation_style ?? "", transportDetails: row.transport_details ?? "", notes: row.notes ?? "",
+      },
       details: [
         { label: "Country", value: valueOrDash(row.country) },
         { label: "Destinations", value: row.destinations?.join(", ") || "—" },
@@ -246,6 +253,11 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
       archivedAt: row.archived_at,
       archiveReason: row.archive_reason,
       activity: activity.get(activityKey("package", sourceId)) ?? [],
+      submitted: {
+        city: row.city ?? "", packageDate: row.package_date ?? "", travellers: String(row.travellers),
+        emergencyContactName: row.emergency_contact_name ?? "", emergencyContactPhone: row.emergency_contact_phone ?? "",
+        dietaryRequirements: row.dietary_requirements ?? "", accessibilityRequirements: row.accessibility_requirements ?? "", notes: row.notes ?? "",
+      },
       details: [
         { label: "Trip date", value: valueOrDash(row.package_date) },
         { label: "City", value: valueOrDash(row.city) },
