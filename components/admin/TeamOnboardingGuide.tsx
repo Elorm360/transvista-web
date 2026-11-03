@@ -3,7 +3,7 @@ import { BookOpen, ShieldCheck, UserPlus, MailCheck } from "lucide-react";
 const roles=[
  {name:"Owner",access:"Full access, including team settings and access management."},
  {name:"Admin",access:"Bookings, payments, community, analytics and daily operations. Cannot manage team access."},
- {name:"Support",access:"Booking requests, traveller follow-ups, messages and payment workspace access."},
+ {name:"Support",access:"Booking requests, traveller follow-ups and messages. Can view payment records, but cannot record payments or send receipts."},
  {name:"Community Manager",access:"Community members and the main dashboard. No booking or payment management."},
 ];
 
