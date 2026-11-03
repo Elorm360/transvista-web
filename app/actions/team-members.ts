@@ -215,3 +215,26 @@ async function updateTeamMemberStatus(memberId: string, status: "active" | "inac
 }
 export async function removeTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"inactive"); }
 export async function reactivateTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"active"); }
+
+
+/** Owner-only profile and role editing. Login email is intentionally immutable here. */
+export async function updateTeamMemberDetails({memberId,fullName,role}:{memberId:string;fullName:string;role:InviteableRole}) {
+  const cleanName=fullName.trim();
+  if(!memberId || cleanName.length<2 || cleanName.length>120) throw new Error("Enter a valid team member name.");
+  if(!allowedRoles.includes(role)) throw new Error("Choose a valid team role.");
+  const supabase=await createClient();
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user || !(await isOwner(user))) throw new Error("Only the TransVista owner can edit team profiles and roles.");
+  const adminSupabase=createAdminClient();
+  const {data:member,error:lookupError}=await adminSupabase.from("admin_team_members").select("id,user_id,role").eq("id",memberId).maybeSingle();
+  if(lookupError || !member) throw new Error("This team member could not be found.");
+  if(member.role==="owner") throw new Error("The owner account is protected.");
+  if(member.user_id===user.id) throw new Error("You cannot change your own team role.");
+  const {error}=await adminSupabase.from("admin_team_members").update({full_name:cleanName,role,updated_at:new Date().toISOString()}).eq("id",memberId);
+  if(error) throw new Error("The team member details could not be saved.");
+  if(member.user_id) {
+    const {error:authError}=await adminSupabase.auth.admin.updateUserById(member.user_id,{user_metadata:{full_name:cleanName,role}});
+    if(authError) throw new Error("The team profile was updated, but the login profile metadata could not be synchronized. Please contact support.");
+  }
+  return {success:true};
+}
