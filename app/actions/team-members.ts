@@ -201,71 +201,19 @@ export async function inviteTeamMember({
  * Deletes the admin_team_members row and the matching Auth user so they
  * can no longer sign in. The owner account cannot be removed.
  */
-export async function removeTeamMember(memberId: string) {
-  if (!memberId) {
-    throw new Error("Team member id is required.");
-  }
-
+async function updateTeamMemberStatus(memberId: string, status: "active" | "inactive") {
+  if (!memberId) throw new Error("Team member id is required.");
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || !(await isOwner(user))) {
-    throw new Error("Only the TransVista owner can remove team members.");
-  }
-
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !(await isOwner(user))) throw new Error("Only the TransVista owner can manage team access.");
   const adminSupabase = createAdminClient();
-
-  const { data: member, error: lookupError } = await adminSupabase
-    .from("admin_team_members")
-    .select("id, user_id, full_name, email, role")
-    .eq("id", memberId)
-    .maybeSingle();
-
-  if (lookupError) {
-    console.error("[removeTeamMember] Lookup error:", lookupError);
-    throw new Error("Could not find this team member.");
-  }
-
-  if (!member) {
-    throw new Error("This team member was not found.");
-  }
-
-  if (member.role === "owner") {
-    throw new Error("The owner account cannot be removed.");
-  }
-
-  if (member.user_id && member.user_id === user.id) {
-    throw new Error("You cannot remove your own account.");
-  }
-
-  const { error: deleteError } = await adminSupabase
-    .from("admin_team_members")
-    .delete()
-    .eq("id", memberId);
-
-  if (deleteError) {
-    console.error("[removeTeamMember] Delete error:", deleteError);
-    throw new Error("The team member could not be removed.");
-  }
-
-  if (member.user_id) {
-    const { error: authError } =
-      await adminSupabase.auth.admin.deleteUser(member.user_id);
-
-    if (authError) {
-      console.error("[removeTeamMember] Auth delete error:", authError);
-    }
-  }
-
-  return {
-    success: true,
-    member: {
-      id: member.id,
-      fullName: member.full_name,
-      email: member.email,
-    },
-  };
+  const { data: member, error: lookupError } = await adminSupabase.from("admin_team_members").select("id,user_id,full_name,role").eq("id",memberId).maybeSingle();
+  if (lookupError || !member) throw new Error("This team member could not be found.");
+  if (member.role === "owner") throw new Error("The owner account is protected.");
+  if (member.user_id === user.id) throw new Error("You cannot change your own access.");
+  const { error } = await adminSupabase.from("admin_team_members").update({status,updated_at:new Date().toISOString()}).eq("id",memberId);
+  if (error) throw new Error("The team member's access could not be updated.");
+  return {success:true,member:{id:member.id,fullName:member.full_name,status}};
 }
+export async function removeTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"inactive"); }
+export async function reactivateTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"active"); }

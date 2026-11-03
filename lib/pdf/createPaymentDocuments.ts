@@ -255,3 +255,39 @@ export function createPaymentDocuments(input: PaymentDocumentInput) {
     itinerary: createPdf("CONFIRMED ITINERARY", input.reference, itineraryLines),
   };
 }
+
+
+export function createPaymentReceiptDocument(input: {
+  receiptNumber: string;
+  reference: string;
+  fullName: string;
+  packageTitle: string;
+  travellers: number;
+  currency: string;
+  amount: number;
+  totalPaid: number;
+  bookingTotal: number;
+  paymentDate: string;
+  paymentMethod: string;
+  externalReference?: string | null;
+}) {
+  const balance = Math.max(0, input.bookingTotal - input.totalPaid);
+  const lines: DocumentLine[] = [
+    ...section("Received from", [input.fullName]),
+    ...section("Booking details", [input.packageTitle, "Booking reference: " + input.reference, "Travellers: " + input.travellers]),
+    ...section("Transaction details", [
+      "Receipt number: " + input.receiptNumber,
+      "Payment date: " + input.paymentDate,
+      "Payment method: " + input.paymentMethod,
+      "Amount received in this transaction: " + money(input.currency, input.amount),
+      ...(input.externalReference ? ["External transaction reference: " + input.externalReference] : []),
+    ]),
+    ...section("Booking account summary", [
+      "Total booking value: " + money(input.currency, input.bookingTotal),
+      "Total payments received: " + money(input.currency, input.totalPaid),
+      "Outstanding balance: " + money(input.currency, balance),
+    ]),
+    ...section("Acknowledgement", ["TransVista Africa acknowledges receipt of the transaction amount stated above.", "Please retain this receipt for your records."]),
+  ];
+  return createPdf("PAYMENT RECEIPT", input.receiptNumber, lines);
+}

@@ -133,7 +133,7 @@ export async function updateBookingOperation(
 
     const quotedAmount = optionalAmount(formData, "quotedAmount");
     const depositAmount = optionalAmount(formData, "depositAmount");
-    const amountPaid = optionalAmount(formData, "amountPaid") ?? 0;
+    const amountPaid = optionalAmount(formData, "amountPaid");
     if ((quotedAmount !== null || depositAmount !== null) && !quoteCurrency) {
       return { success: false, message: "Choose the currency for this quote." };
     }
@@ -216,11 +216,7 @@ export async function updateBookingOperation(
         quoted_amount: quotedAmount,
         quote_currency: quoteCurrency,
         deposit_amount: depositAmount,
-        amount_paid: amountPaid,
-        payment_status: paymentStatus,
-        payment_method: paymentMethod,
-        payment_verified_at: paymentIsVerified ? now : null,
-        payment_verified_by: paymentIsVerified ? member.id : null,
+        ...(kind === "custom" ? { amount_paid: amountPaid ?? 0, payment_status: paymentStatus, payment_method: paymentMethod, payment_verified_at: paymentIsVerified ? now : null, payment_verified_by: paymentIsVerified ? member.id : null } : {}),
         updated_by: member.id,
         updated_at: now,
       })
@@ -238,8 +234,8 @@ export async function updateBookingOperation(
     if (current.assigned_to !== assignedTo) {
       changes.push(`Assigned to ${assigneeName}`);
     }
-    if (current.payment_status !== paymentStatus || Number(current.amount_paid) !== amountPaid) {
-      changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${amountPaid.toFixed(2)} received`);
+    if (kind === "custom" && (current.payment_status !== paymentStatus || Number(current.amount_paid) !== (amountPaid ?? 0))) {
+      changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${(amountPaid ?? 0).toFixed(2)} received`);
     }
     if (current.follow_up_at !== followUpAt) {
       changes.push(
@@ -294,7 +290,7 @@ export async function updateBookingOperation(
           reference: current.reference,
           status: label(status),
           paymentStatus: label(paymentStatus),
-          amountPaid,
+          amountPaid: amountPaid ?? Number(current.amount_paid ?? 0),
           currency: quoteCurrency ?? "GHS",
           note: note || undefined,
         });
