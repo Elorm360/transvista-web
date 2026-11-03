@@ -11,7 +11,7 @@ export default function RecordPaymentForm({bookings}:{bookings:Booking[]}) {
  const [state,action,pending]=useActionState(recordPackagePayment,initial);
  useEffect(()=>{if(state.success) router.refresh()},[router,state.success]);
  return <section className="rounded-2xl border border-blue-200 bg-white p-5 shadow-sm">
-  <h2 className="font-bold text-slate-950">Record a payment</h2><p className="mt-1 text-sm text-slate-500">Add each new payment as its own transaction. The system recalculates the booking balance and creates a receipt number.</p>
+  <h2 className="font-bold text-slate-950">Record a payment</h2><p className="mt-1 text-sm text-slate-500">Support, Admin and Owner team members can record each verified payment. The system recalculates the balance and creates a receipt; only Admins and the Owner can correct a total.</p>
   <form action={action} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
    <label className="text-sm font-semibold text-slate-700 md:col-span-2 xl:col-span-1">Booking<select required name="reservationId" className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 px-3 font-normal"><option value="">Choose booking</option>{bookings.map(b=><option key={b.id} value={b.id}>{b.reference} · {b.name} · {b.travellers} people · {b.currency} {b.total}</option>)}</select></label>
    <label className="text-sm font-semibold text-slate-700">Amount received<input required name="amount" type="number" min="0.01" step="0.01" className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 px-3 font-normal" placeholder="e.g. 400.00"/></label>
