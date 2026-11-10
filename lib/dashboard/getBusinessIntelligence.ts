@@ -158,7 +158,8 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
   for (const entry of ledgerResult.data ?? []) {
     const reservationId = Number(entry.reservation_id);
     const current = ledgerByReservation.get(reservationId) ?? { total: 0, entries: 0 };
-    current.total += Number(entry.amount);
+    const amount = Number(entry.amount);
+    current.total += entry.transaction_type === "adjustment" ? -amount : amount;
     current.entries += 1;
     ledgerByReservation.set(reservationId, current);
   }
@@ -197,10 +198,14 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
       bookingAmountPaid: 0, paymentEntries: 0, openingBalances: 0, adjustments: 0, verifiedLedgerTotal: 0,
     };
     const amount = Number(entry.amount);
-    current.verifiedLedgerTotal += amount;
-    if (entry.transaction_type === "payment") current.paymentEntries += amount;
-    if (entry.transaction_type === "opening_balance") current.openingBalances += amount;
-    if (entry.transaction_type === "adjustment") current.adjustments += amount;
+    if (entry.transaction_type === "adjustment") {
+      current.adjustments += amount;
+      current.verifiedLedgerTotal -= amount;
+    } else {
+      current.verifiedLedgerTotal += amount;
+      if (entry.transaction_type === "payment") current.paymentEntries += amount;
+      if (entry.transaction_type === "opening_balance") current.openingBalances += amount;
+    }
     paymentLedgerMap.set(currency, current);
   }
   const paymentReconciliation: PaymentReconciliationRow[] = Array.from(paymentLedgerMap.entries())
