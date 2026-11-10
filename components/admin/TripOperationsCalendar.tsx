@@ -38,7 +38,12 @@ export default function TripOperationsCalendar({
   operators: TripOperationsOperator[];
 }) {
   const [month, setMonth] = useState(() => new Date());
-  const [selectedDate, setSelectedDate] = useState(() => trips[0]?.calendarStartDate ?? dateKey(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const todayKey = dateKey(new Date());
+    return trips.find((trip) => trip.calendarEndDate >= todayKey)?.calendarStartDate
+      ?? trips[0]?.calendarStartDate
+      ?? todayKey;
+  });
   const [selectedTrip, setSelectedTrip] = useState<TripOperationRecord | null>(null);
 
   const days = useMemo(() => {
@@ -187,8 +192,15 @@ function TripOperationDrawer({
             <Field label="Meeting point / pickup"><input name="meetingPoint" maxLength={500} defaultValue={trip.meetingPoint} placeholder="Confirmed meeting point" className={inputClass} /></Field>
             <Field label="Operations lead"><select name="operationsLeadId" defaultValue={trip.operationsLeadId ?? ""} className={inputClass}><option value="">Not assigned</option>{operators.map((operator) => <option key={operator.id} value={operator.id}>{operator.fullName} · {human(operator.role)}</option>)}</select></Field>
             <Field label="Transport provider"><input name="transportProvider" maxLength={500} defaultValue={trip.transportProvider} placeholder="Verified provider name" className={inputClass} /></Field>
-            <Field label="Driver name"><input name="driverName" maxLength={160} defaultValue={trip.driverName} placeholder="Add after confirmation" className={inputClass} /></Field>
-            <Field label="Driver phone"><input name="driverPhone" maxLength={60} defaultValue={trip.driverPhone} placeholder="Verified contact number" className={inputClass} /></Field>
+            {trip.requestKind === "package" ? (
+              <Field label="Driver name"><input name="driverName" maxLength={160} defaultValue={trip.driverName} placeholder="Verified driver name" className={inputClass} /></Field>
+            ) : (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-900">
+                <p className="font-semibold">Driver assignment is not available yet</p>
+                <p className="mt-1 leading-5">There are currently no driver applications or transport assignments recorded. Keep this trip unassigned until a driver has been vetted and approved.</p>
+              </div>
+            )}
+            {trip.requestKind === "package" && <Field label="Driver phone"><input name="driverPhone" maxLength={60} defaultValue={trip.driverPhone} placeholder="Verified contact number" className={inputClass} /></Field>}
             <Field label="Vehicle type"><input name="vehicleType" maxLength={120} defaultValue={trip.vehicleType} placeholder="Vehicle type" className={inputClass} /></Field>
             <Field label="Vehicle registration"><input name="vehicleRegistration" maxLength={60} defaultValue={trip.vehicleRegistration} placeholder="Registration number" className={inputClass} /></Field>
             <Field label="Operations status"><select name="operationalStatus" defaultValue={trip.operationalStatus} className={inputClass}><option value="planning">Planning</option><option value="ready">Ready</option><option value="underway">Underway</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></Field>
