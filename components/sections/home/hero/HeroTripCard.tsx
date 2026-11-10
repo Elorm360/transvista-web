@@ -6,7 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { centralRegionPackage as trip } from "@/lib/travel/packages";
 import { RegistrationCountdown } from "@/components/trips/TripEngagement";
 
-const closesAt = Date.parse(`${trip.registrationDeadlineIso}T23:59:59Z`);
+const closesAt = Date.parse(`${trip.registrationDeadlineIso}T23:59:59+00:00`);
 const noopSubscribe = () => () => {};
 
 /** Compact "next departure" ticket; hides itself once registration closes. */
