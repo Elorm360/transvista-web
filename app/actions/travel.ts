@@ -168,6 +168,13 @@ export async function submitPackageReservation(
   if (input.packageSlug !== centralRegionPackage.slug) {
     return { success: false, message: "This package is not available." };
   }
+  const registrationClosesAt = Date.parse(`${centralRegionPackage.registrationDeadlineIso}T23:59:59+00:00`);
+  if (Date.now() > registrationClosesAt) {
+    return {
+      success: false,
+      message: "Registration for the Central Region trip closed on Thursday, 12 November 2026 at 11:59 p.m. Ghana time. We are no longer accepting registrations. Please follow TransVista for future trips.",
+    };
+  }
 
   const fullName = clean(input.fullName, 120);
   const email = clean(input.email, 254).toLowerCase();
