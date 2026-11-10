@@ -39,7 +39,7 @@ export default async function AdminAnalyticsPage({
 
   const [business, growthData, countries, interests, kpis] = await Promise.all([
     getBusinessIntelligence(days),
-    getGrowthData(days ?? 365),
+    getGrowthData(30),
     getCountryDistribution(5),
     getInterestBreakdown(),
     getAnalyticsKpis(30),
