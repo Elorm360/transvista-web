@@ -154,7 +154,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
   const statusMap = new Map<string, number>();
   const sourceMap = new Map<string, number>();
   const tripMap = new Map<string, number>();
-  const teamMap = new Map<string, { assignedBookings: number; confirmedBookings: number }>();
+  const teamMap = new Map<string, { bookings: number; confirmedBookings: number }>();
   for (const row of records) {
     statusMap.set(row.status, (statusMap.get(row.status) ?? 0) + 1);
     const sourceLabel = row.source === "package" ? "Group trips" : "Custom trips";
