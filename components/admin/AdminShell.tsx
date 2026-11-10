@@ -18,7 +18,7 @@ const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard;
   { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments", group: "OPERATIONS" },
   { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests", group: "OPERATIONS" },
   { label: "Community", href: "/admin/community", icon: Users, area: "community", group: "PEOPLE" },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart3, area: "analytics", group: "INSIGHTS" },
+  { label: "Business intelligence", href: "/admin/analytics", icon: BarChart3, area: "analytics", group: "INSIGHTS" },
   { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings", group: "PREFERENCES" },
 ];
 
@@ -30,7 +30,7 @@ const pageNames: Record<string, string> = {
   "/admin/payments": "Payments",
   "/admin/messages": "Messages",
   "/admin/community": "Community",
-  "/admin/analytics": "Analytics",
+  "/admin/analytics": "Business intelligence",
   "/admin/settings": "Settings",
 };
 
