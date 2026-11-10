@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, MessageSquareText,
-  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass,
+  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
 
 const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard; area: AdminArea; group: string }[] = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard, area: "dashboard", group: "WORKSPACE" },
+  { label: "Notifications", href: "/admin/notifications", icon: Bell, area: "dashboard", group: "WORKSPACE" },
   { label: "Booking requests", href: "/admin/requests", icon: ClipboardList, area: "requests", group: "OPERATIONS" },
   { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments", group: "OPERATIONS" },
   { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests", group: "OPERATIONS" },
@@ -22,6 +23,7 @@ const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard;
 
 const pageNames: Record<string, string> = {
   "/admin": "Overview",
+  "/admin/notifications": "Notifications",
   "/admin/requests": "Booking requests",
   "/admin/payments": "Payments",
   "/admin/messages": "Messages",
@@ -30,7 +32,7 @@ const pageNames: Record<string, string> = {
   "/admin/settings": "Settings",
 };
 
-export default function AdminShell({ role, children }: Readonly<{ role: AdminRole; children: React.ReactNode }>) {
+export default function AdminShell({ role, children, unreadCount = 0 }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const visibleItems = sidebarItems.filter((item) => canAccess(role, item.area));
@@ -90,6 +92,10 @@ export default function AdminShell({ role, children }: Readonly<{ role: AdminRol
             <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">TransVista Africa</p><h1 className="mt-0.5 truncate text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">{currentPage}</h1></div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/admin/notifications" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"} className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-[#c85f16]">
+              <Bell className="h-[18px] w-[18px]" />
+              {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#fffefa] bg-[#f47b20] px-1 text-[9px] font-bold text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+            </Link>
             <div className="hidden text-right sm:block"><p className="text-xs font-semibold text-slate-800">{formatAdminRole(role)}</p><p className="mt-0.5 text-[10px] text-slate-400">Access level</p></div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full border border-orange-100 bg-orange-50 text-sm font-bold text-[#c85f16]">{formatAdminRole(role).charAt(0)}</div>
           </div>
