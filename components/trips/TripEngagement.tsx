@@ -67,7 +67,7 @@ export function RegistrationCountdown({ deadlineIso }: { deadlineIso: string }) 
  * Mobile-only bar with price + reserve, shown once the hero CTA scrolls
  * away and hidden again while the registration form is on screen.
  */
-export function StickyReserveBar({ priceLabel }: { priceLabel: string }) {
+export function StickyReserveBar({ priceLabel, registrationOpen }: { priceLabel: string; registrationOpen: boolean }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -89,6 +89,8 @@ export function StickyReserveBar({ priceLabel }: { priceLabel: string }) {
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  if (!registrationOpen) return null;
 
   return (
     <div
