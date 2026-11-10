@@ -179,7 +179,7 @@ export default function TripOperationsCalendar({
         {upcoming.length ? (
           <div className="divide-y divide-slate-100">
             {upcoming.map((group) => (
-              <button key={group.key} type="button" onClick={() => setSelectedTrip(group.bookings[0]) className="flex w-full flex-wrap items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50">
+              <button key={group.key} type="button" onClick={() => setSelectedTrip(group.bookings[0])} className="flex w-full flex-wrap items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50">
                 <div className="min-w-[220px] flex-1"><p className="text-xs font-bold text-blue-700">{group.bookings.length} booking{group.bookings.length === 1 ? "" : "s"}</p><p className="mt-1 text-sm font-semibold text-slate-900">{group.title}</p><p className="mt-1 text-xs text-slate-500">{dateLabel(group.startDate)}{group.endDate !== group.startDate ? ` – ${dateLabel(group.endDate)}` : ""} · {group.travellers} travellers</p></div>
                 <div className="flex items-center gap-3"><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${statusStyle(group.operationalStatus)}`}>{human(group.operationalStatus)}</span><span className="text-xs font-semibold text-slate-500">{group.bookings[0].operationsLeadName ?? "No operations lead"}</span><span className="text-xs font-bold text-blue-700">Manage</span></div>
               </button>
