@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CalendarDays, CarFront, CheckCircle2, Clock3, MapPin, Users, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, CarFront, Clock3, MapPin, X } from "lucide-react";
 import { saveTripOperation, type TripOperationActionState } from "@/app/actions/trip-operations";
 import type { TripOperationRecord, TripOperationsOperator } from "@/lib/dashboard/getTripOperations";
 
@@ -153,7 +153,7 @@ export default function TripOperationsCalendar({
           </div>
           <div className="space-y-3 p-4">
             {selectedDayTrips.length ? selectedDayTrips.map((group) => (
-              <button key={group.key} type="button" onClick={() => setSelectedTrip(group.bookings[0])
+              <button key={group.key} type="button" onClick={() => setSelectedTrip(group.bookings[0])}
                 className="block w-full rounded-xl border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50/40">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wide text-blue-700">{group.bookings.length} booking{group.bookings.length === 1 ? "" : "s"}</span>
