@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { roleFor } from "@/lib/auth/isAdmin";
 import AdminShell from "@/components/admin/AdminShell";
+import { getAdminNotifications } from "@/lib/dashboard/getAdminNotifications";
 
 /**
  * Admin layout (server component)
@@ -35,5 +36,7 @@ export default async function AdminLayout({
     redirect("/unauthorized");
   }
 
-  return <AdminShell role={role}>{children}</AdminShell>;
+  const { unreadCount } = await getAdminNotifications(user.id, role, { limit: 150 });
+
+  return <AdminShell role={role} unreadCount={unreadCount}>{children}</AdminShell>;
 }
