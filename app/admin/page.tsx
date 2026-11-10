@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   LayoutDashboard, ClipboardList, CreditCard, Users, ArrowUpRight, Clock3,
-  Wallet, Compass, CalendarDays, ChevronRight, Sparkles, CircleAlert, AlertTriangle,
+  Wallet, Compass, CalendarDays, ChevronRight, CircleAlert, AlertTriangle,
   UserRoundPlus, BellRing, ArrowRight, CalendarClock, BadgeCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -136,13 +136,11 @@ export default async function AdminDashboardPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return <div className="mx-auto max-w-[1540px]">
-    <section className="relative mb-8 overflow-hidden rounded-[26px] bg-[#142b65] px-6 py-7 text-white shadow-xl shadow-blue-950/10 sm:px-8 sm:py-8">
-      <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full border border-white/10" />
-      <div className="pointer-events-none absolute -right-2 -bottom-36 h-80 w-80 rounded-full border border-white/[0.07]" />
-      <div className="pointer-events-none absolute right-24 top-0 h-48 w-48 rounded-full bg-[#f47b20]/15 blur-3xl" />
+    <section className="relative mb-8 overflow-hidden rounded-[22px] border border-[#dfe4ed] bg-[#142b65] px-6 py-7 text-white shadow-[0_12px_32px_rgba(17,28,54,0.08)] sm:px-8 sm:py-8">
+      <div className="absolute inset-y-0 left-0 w-1 bg-[#f47b20]" />
       <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-blue-100"><Sparkles className="h-3.5 w-3.5 text-orange-300" /> Admin control centre</div>
+          <div className="mb-4 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.19em] text-orange-200"><Compass className="h-3.5 w-3.5" /> TransVista operations</div>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-[30px]">{greeting}</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-blue-100/75">Here’s your operational snapshot. Keep an eye on new requests, payment follow-ups and the traveller experience.</p>
         </div>
