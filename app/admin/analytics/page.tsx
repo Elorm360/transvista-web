@@ -1,4 +1,4 @@
-import { BarChart3, Users, Globe, TrendingUp, ClipboardList, Clock3, CreditCard, Wallet, Percent, CalendarCheck } from "lucide-react";
+import { BarChart3, Users, Globe, TrendingUp, ClipboardList, Clock3, Percent, CalendarCheck, CheckCircle2 } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import { getGrowthData, getCountryDistribution, getInterestBreakdown, getAnalyticsKpis } from "@/lib/dashboard/getAnalytics";
 import { getBusinessIntelligence } from "@/lib/dashboard/getBusinessIntelligence";
@@ -11,9 +11,13 @@ import InterestBreakdownChart from "@/components/admin/charts/InterestBreakdownC
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 
 export const dynamic = "force-dynamic";
-const money = (currency: string, amount: number) => new Intl.NumberFormat("en-GH", {
-  style: "currency", currency, maximumFractionDigits: 2,
-}).format(amount);
+const money = (currency: string, amount: number) => {
+  try {
+    return new Intl.NumberFormat("en-GH", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString("en-GH", { maximumFractionDigits: 2 })}`;
+  }
+};
 
 const rangeOptions = [
   { value: "7", label: "7 days", days: 7 },
@@ -75,7 +79,7 @@ export default async function AdminAnalyticsPage({
         <KpiCard label="Cancellation rate" value={`${business.cancellationRate.toFixed(1)}%`} icon={TrendingUp}/>
         <KpiCard label="Average first team action" value={firstResponse} icon={Clock3}/>
         <KpiCard label="Upcoming confirmed trips" value={business.upcomingTrips} icon={CalendarCheck}/>
-        <KpiCard label="Trips marked ready" value={business.tripsReady} icon={CheckCircleIcon}/>
+        <KpiCard label="Trips marked ready" value={business.tripsReady} icon={CheckCircle2}/>
       </div>
     </section>
 
@@ -137,6 +141,3 @@ export default async function AdminAnalyticsPage({
   </div>;
 }
 
-function CheckCircleIcon({ className }: { className?: string }) {
-  return <span className={className}><CalendarCheck className="h-5 w-5 text-blue-700" /></span>;
-}
