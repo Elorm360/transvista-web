@@ -38,12 +38,12 @@ export default function AdminShell({ role, children }: Readonly<{ role: AdminRol
   const groupedItems = [...new Set(visibleItems.map((item) => item.group))];
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] text-slate-900">
+    <div className="min-h-screen bg-[#f7f7f4] text-slate-900">
       {sidebarOpen && <button type="button" className="fixed inset-0 z-30 bg-slate-950/45 backdrop-blur-[2px] lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation overlay" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-white/10 bg-[#101d3e] text-white shadow-2xl shadow-slate-950/10 transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-white/10 bg-[#111c36] text-white shadow-2xl shadow-slate-950/10 transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-[82px] items-center justify-between border-b border-white/10 px-6">
           <Link href="/admin" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#1a3a9c] shadow-sm"><Compass className="h-5 w-5" /></span>
+            <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#f47b20] text-white shadow-sm"><Compass className="h-5 w-5" /><span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-[#101d3e] bg-white" /></span>
             <span><span className="block text-[15px] font-bold tracking-tight text-white">TransVista</span><span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-200/70">Africa · Admin</span></span>
           </Link>
           <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-blue-100/70 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation"><X className="h-5 w-5" /></button>
@@ -84,7 +84,7 @@ export default function AdminShell({ role, children }: Readonly<{ role: AdminRol
       </aside>
 
       <div className="min-h-screen lg:pl-[264px]">
-        <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
+        <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-[#fffefa]/95 px-4 backdrop-blur-md sm:px-7 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" onClick={() => setSidebarOpen(true)} className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
             <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">TransVista Africa</p><h1 className="mt-0.5 truncate text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">{currentPage}</h1></div>
