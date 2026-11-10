@@ -13,7 +13,7 @@ export type CurrencyPerformance = {
 };
 export type TeamWorkloadPoint = {
   name: string;
-  assignedBookings: number;
+  bookings: number;
   confirmedBookings: number;
 };
 export type BusinessIntelligence = {
@@ -161,8 +161,8 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
     sourceMap.set(sourceLabel, (sourceMap.get(sourceLabel) ?? 0) + 1);
     tripMap.set(row.title, (tripMap.get(row.title) ?? 0) + 1);
     const teamKey = row.assignedTo ?? "unassigned";
-    const team = teamMap.get(teamKey) ?? { assignedBookings: 0, confirmedBookings: 0 };
-    if (row.assignedTo) team.assignedBookings += 1;
+    const team = teamMap.get(teamKey) ?? { bookings: 0, confirmedBookings: 0 };
+    team.bookings += 1;
     if (confirmedStatuses.has(row.status)) team.confirmedBookings += 1;
     teamMap.set(teamKey, team);
   }
@@ -175,7 +175,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
       name: id === "unassigned" ? "Unassigned" : operatorNames.get(id) ?? "Former team member",
       ...value,
     }))
-    .sort((a, b) => b.assignedBookings - a.assignedBookings || a.name.localeCompare(b.name));
+    .sort((a, b) => b.bookings - a.bookings || a.name.localeCompare(b.name));
 
   const activityByBooking = new Map<string, string>();
   for (const activity of activityResult.data ?? []) {
@@ -195,7 +195,8 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
 
   const monthly = days === null || (days !== null && days > 90);
   const now = new Date();
-  const minCreated = records[0]?.createdAt ? new Date(records[0].createdAt) : now;
+  const minCreatedAt = records.map((row) => row.createdAt).sort()[0];
+  const minCreated = minCreatedAt ? new Date(minCreatedAt) : now;
   const trendStart = cutoff ? new Date(cutoff) : minCreated;
   if (monthly) trendStart.setUTCDate(1);
   const trendMap = new Map<string, { bookings: number; confirmed: number }>();
