@@ -112,11 +112,11 @@ const structuredData = [
   },
 ];
 
-// Refresh the places-left count every 5 minutes.
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function CentralRegionTripPage() {
   const placesLeft = await getPlacesLeft(trip.slug, trip.capacity);
+  const registrationOpen = Date.now() <= Date.parse(`${trip.registrationDeadlineIso}T23:59:59+00:00`);
 
   return (
     <main id="main-content" className="bg-[#fffdfa]">
@@ -134,7 +134,7 @@ export default async function CentralRegionTripPage() {
         <Container className="relative flex min-h-[520px] items-center py-16">
           <div className="max-w-3xl text-white">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange-300">
-              Upcoming group trip · Open registration
+              {registrationOpen ? "Upcoming group trip · Open registration" : "Upcoming group trip · Registration closed"}
             </p>
             <h1 className="font-display mt-5 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
               {trip.title}
@@ -145,12 +145,11 @@ export default async function CentralRegionTripPage() {
               coordinated day.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="#register"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-700"
-              >
-                Reserve my spot
-              </a>
+              {registrationOpen ? (
+                <a href="#register" className="inline-flex h-12 items-center justify-center rounded-full bg-brand-orange-600 px-7 text-base font-semibold text-white shadow-lg transition hover:bg-brand-orange-700">Reserve my spot</a>
+              ) : (
+                <span className="inline-flex h-12 items-center rounded-full border border-white/25 bg-white/10 px-6 text-sm font-semibold text-white/90">Registration closed</span>
+              )}
               <span className="inline-flex h-12 items-center rounded-full border border-white/20 bg-white/10 px-5 text-base font-semibold backdrop-blur-sm">
                 {trip.currencySymbol}{trip.pricePerPerson} per person
               </span>
@@ -304,7 +303,7 @@ export default async function CentralRegionTripPage() {
         <Container>
           <div className="mx-auto max-w-3xl">
             <p className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-              Registration closes {trip.registrationDeadline}
+              {registrationOpen ? `Registration closes ${trip.registrationDeadline} at 11:59 p.m. Ghana time` : "Registration closed"}
             </p>
             <h2 className="font-display mt-3 text-center text-3xl font-semibold text-slate-900">
               Request your place
@@ -317,7 +316,7 @@ export default async function CentralRegionTripPage() {
               confirm availability before requesting any deposit.
             </p>
             <div className="mt-8">
-              <PackageReservationForm trip={trip} />
+              <PackageReservationForm trip={trip} registrationOpen={registrationOpen} />
             </div>
           </div>
         </Container>
