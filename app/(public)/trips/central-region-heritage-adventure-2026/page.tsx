@@ -323,6 +323,7 @@ export default async function CentralRegionTripPage() {
       </section>
       <StickyReserveBar
         priceLabel={`${trip.currencySymbol}${trip.pricePerPerson} / person`}
+        registrationOpen={registrationOpen}
       />
       <script
         type="application/ld+json"
