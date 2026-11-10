@@ -586,3 +586,51 @@ export async function permanentlyDeleteRequest(
     };
   }
 }
+
+
+export async function assignSelectedBookings(input: { ids: string[]; assignedTo: string }): Promise<BookingOperationState> {
+  try {
+    const ids = Array.from(new Set(input.ids)).slice(0, 50);
+    if (!ids.length || ids.length !== input.ids.length || ids.some((id) => !/^(custom|package)-\\d+$/.test(id))) {
+      return { success: false, message: "Select up to 50 valid bookings." };
+    }
+    if (!input.assignedTo) return { success: false, message: "Choose an active team member." };
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "Your session has expired. Please sign in again." };
+    const { data: member, error: memberError } = await supabase.from("admin_team_members")
+      .select("id, role, status").eq("user_id", user.id).maybeSingle();
+    if (memberError || !member || member.status !== "active" || !["owner", "admin", "support"].includes(member.role)) {
+      return { success: false, message: "You do not have permission to assign bookings." };
+    }
+    const { data: operators, error: operatorsError } = await supabase.rpc("list_request_operators");
+    if (operatorsError) return { success: false, message: "Team member could not be verified." };
+    const assignee = (operators ?? []).find((operator: { id: string; full_name: string }) => operator.id === input.assignedTo);
+    if (!assignee) return { success: false, message: "Choose an active team member." };
+    let updated = 0;
+    for (const id of ids) {
+      const [kind, rawId] = id.split("-");
+      const requestId = Number(rawId);
+      const table = kind === "custom" ? "trip_requests" : "package_reservations";
+      const { data: current, error: lookupError } = await supabase.from(table)
+        .select("id, reference, status, assigned_to").eq("id", requestId).maybeSingle();
+      if (lookupError || !current) continue;
+      if (current.assigned_to === input.assignedTo) { updated += 1; continue; }
+      const now = new Date().toISOString();
+      const { error: updateError } = await supabase.from(table)
+        .update({ assigned_to: input.assignedTo, updated_by: member.id, updated_at: now }).eq("id", requestId);
+      if (updateError) continue;
+      const { error: activityError } = await supabase.from("request_activity").insert({
+        request_kind: kind, request_id: requestId, reference: current.reference,
+        activity_type: "assignment", summary: `Bulk assignment: assigned to ${assignee.full_name}`,
+        from_status: current.status, to_status: current.status, author_member_id: member.id,
+      });
+      if (!activityError) updated += 1;
+    }
+    revalidatePath("/admin/requests");
+    return { success: updated === ids.length, message: `Assigned ${updated} of ${ids.length} selected bookings.`, completedAt: new Date().toISOString() };
+  } catch (error) {
+    console.error("[assignSelectedBookings]", error);
+    return { success: false, message: "The selected bookings could not be assigned." };
+  }
+}
