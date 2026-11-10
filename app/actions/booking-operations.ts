@@ -591,7 +591,7 @@ export async function permanentlyDeleteRequest(
 export async function assignSelectedBookings(input: { ids: string[]; assignedTo: string }): Promise<BookingOperationState> {
   try {
     const ids = Array.from(new Set(input.ids)).slice(0, 50);
-    if (!ids.length || ids.length !== input.ids.length || ids.some((id) => !/^(custom|package)-\\d+$/.test(id))) {
+    if (!ids.length || ids.length !== input.ids.length || ids.some((id) => !/^(custom|package)-\d+$/.test(id))) {
       return { success: false, message: "Select up to 50 valid bookings." };
     }
     if (!input.assignedTo) return { success: false, message: "Choose an active team member." };
