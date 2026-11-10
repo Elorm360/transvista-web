@@ -29,6 +29,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  assignSelectedBookings,
   permanentlyDeleteRequest,
   sendBookingPaymentRequest,
   setRequestArchiveState,
@@ -154,48 +155,52 @@ export default function TravelRequestsList({
   const [kindFilter, setKindFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [assigneeFilter, setAssigneeFilter] = useState("all");
+  const [tripDateFrom, setTripDateFrom] = useState("");
+  const [tripDateTo, setTripDateTo] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState("active");
+  const [savedView, setSavedView] = useState("all");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkAssignee, setBulkAssignee] = useState("");
+  const [bulkMessage, setBulkMessage] = useState("");
 
   const filteredRequests = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return requests.filter((request) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        [
-          request.reference,
-          request.fullName,
-          request.email,
-          request.phone,
-          request.summary,
-          request.assigneeName ?? "",
-        ].some((value) => value.toLowerCase().includes(normalizedQuery));
-      const matchesKind =
-        kindFilter === "all" || request.source === kindFilter;
-      const matchesStatus =
-        statusFilter === "all" || request.status === statusFilter;
-      const matchesPriority =
-        priorityFilter === "all" || request.priority === priorityFilter;
-      const matchesVisibility =
-        visibilityFilter === "all" ||
-        (visibilityFilter === "archived"
-          ? Boolean(request.archivedAt)
-          : !request.archivedAt);
-      return (
-        matchesQuery &&
-        matchesKind &&
-        matchesStatus &&
-        matchesPriority &&
-        matchesVisibility
-      );
+      const matchesQuery = !normalizedQuery || [
+        request.reference, request.fullName, request.email, request.phone,
+        request.summary, request.assigneeName ?? "",
+      ].some((value) => value.toLowerCase().includes(normalizedQuery));
+      const matchesKind = kindFilter === "all" || request.source === kindFilter;
+      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
+      const matchesPriority = priorityFilter === "all" || request.priority === priorityFilter;
+      const matchesPayment = paymentFilter === "all" || request.paymentStatus === paymentFilter;
+      const matchesAssignee = assigneeFilter === "all" ||
+        (assigneeFilter === "unassigned" ? !request.assignedTo : request.assignedTo === assigneeFilter);
+      const matchesTripDate = (!tripDateFrom || Boolean(request.tripDate && request.tripDate >= tripDateFrom)) &&
+        (!tripDateTo || Boolean(request.tripDate && request.tripDate <= tripDateTo));
+      const matchesVisibility = visibilityFilter === "all" ||
+        (visibilityFilter === "archived" ? Boolean(request.archivedAt) : !request.archivedAt);
+      const matchesSavedView =
+        savedView === "all" ||
+        (savedView === "new" && ["new", "pending-review"].includes(request.status)) ||
+        (savedView === "awaiting-payment" && !["cancelled", "closed", "completed"].includes(request.status) &&
+          ["not-requested", "payment-requested", "deposit-requested"].includes(request.paymentStatus)) ||
+        (savedView === "confirmed" && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(request.status)) ||
+        (savedView === "overdue" && Boolean(request.followUpAt && Date.parse(request.followUpAt) < Date.now()));
+      return matchesQuery && matchesKind && matchesStatus && matchesPriority && matchesPayment &&
+        matchesAssignee && matchesTripDate && matchesVisibility && matchesSavedView;
     });
-  }, [
-    kindFilter,
-    priorityFilter,
-    query,
-    requests,
-    statusFilter,
-    visibilityFilter,
-  ]);
+  }, [assigneeFilter, kindFilter, paymentFilter, priorityFilter, query, requests, savedView, statusFilter, tripDateFrom, tripDateTo, visibilityFilter]);
+
+  useEffect(() => {
+    const visibleIds = new Set(filteredRequests.map((request) => request.id));
+    setSelectedIds((current) => {
+      const next = current.filter((id) => visibleIds.has(id));
+      return next.length === current.length ? current : next;
+    });
+  }, [filteredRequests]);
 
   const activeRequests = useMemo(
     () => requests.filter((request) => !request.archivedAt),
@@ -316,69 +321,67 @@ export default function TravelRequestsList({
         />
       </div>
 
-      <div className="mb-5 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[minmax(240px,1fr)_repeat(4,minmax(145px,auto))_auto]">
-        <label className="relative">
-          <span className="sr-only">Search requests</span>
-          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search reference, traveller, email or destination"
-            className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-        </label>
-        <FilterSelect
-          label="Request type"
-          value={kindFilter}
-          onChange={setKindFilter}
-          options={[
-            ["all", "All request types"],
-            ["custom", "Custom trips"],
-            ["package", "Group trips"],
-          ]}
-        />
-        <FilterSelect
-          label="Status"
-          value={statusFilter}
-          onChange={setStatusFilter}
-          options={[
-            ["all", "All statuses"],
-            ...Array.from(new Set(requests.map((request) => request.status)))
-              .sort()
-              .map((status) => [status, label(status)] as [string, string]),
-          ]}
-        />
-        <FilterSelect
-          label="Priority"
-          value={priorityFilter}
-          onChange={setPriorityFilter}
-          options={[
-            ["all", "All priorities"],
-            ["urgent", "Urgent"],
-            ["high", "High"],
-            ["normal", "Normal"],
-            ["low", "Low"],
-          ]}
-        />
-        <FilterSelect
-          label="Queue"
-          value={visibilityFilter}
-          onChange={setVisibilityFilter}
-          options={[
-            ["active", "Active queue"],
-            ["archived", "Archived"],
-            ["all", "Active and archived"],
-          ]}
-        />
-        <button
-          type="button"
-          onClick={exportCsv}
-          disabled={!filteredRequests.length}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Download className="h-4 w-4" /> Export
-        </button>
+      <div className="mb-5 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {[
+            ["all", "All bookings", requests.length],
+            ["new", "New requests", requests.filter((r) => !r.archivedAt && ["new", "pending-review"].includes(r.status)).length],
+            ["awaiting-payment", "Awaiting payment", requests.filter((r) => !r.archivedAt && !["cancelled", "closed", "completed"].includes(r.status) && ["not-requested", "payment-requested", "deposit-requested"].includes(r.paymentStatus)).length],
+            ["confirmed", "Confirmed trips", requests.filter((r) => !r.archivedAt && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(r.status)).length],
+            ["overdue", "Overdue follow-ups", requests.filter((r) => !r.archivedAt && Boolean(r.followUpAt && Date.parse(r.followUpAt) < Date.now())).length],
+          ].map(([value, title, count]) => (
+            <button key={value} type="button" onClick={() => setSavedView(String(value))}
+              className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${savedView === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}>
+              {title} <span className={savedView === value ? "ml-1 opacity-80" : "ml-1 text-slate-400"}>{count}</span>
+            </button>
+          ))}
+        </div>
+        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+          <label className="relative sm:col-span-2 xl:col-span-1">
+            <span className="sr-only">Search bookings</span>
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, phone, email, reference or destination"
+              className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+          </label>
+          <FilterSelect label="Request type" value={kindFilter} onChange={setKindFilter}
+            options={[["all", "All request types"], ["custom", "Custom trips"], ["package", "Group trips"]]} />
+          <FilterSelect label="Booking status" value={statusFilter} onChange={setStatusFilter}
+            options={[["all", "All statuses"], ...Array.from(new Set(requests.map((r) => r.status))).sort().map((s) => [s, label(s)] as [string, string])]} />
+          <FilterSelect label="Payment status" value={paymentFilter} onChange={setPaymentFilter}
+            options={[["all", "All payment statuses"], ...Array.from(new Set(requests.map((r) => r.paymentStatus))).sort().map((s) => [s, label(s)] as [string, string])]} />
+          <FilterSelect label="Priority" value={priorityFilter} onChange={setPriorityFilter}
+            options={[["all", "All priorities"], ["urgent", "Urgent"], ["high", "High"], ["normal", "Normal"], ["low", "Low"]]} />
+          <FilterSelect label="Assigned team member" value={assigneeFilter} onChange={setAssigneeFilter}
+            options={[["all", "All team members"], ["unassigned", "Unassigned"], ...operators.map((o) => [o.id, o.fullName] as [string, string])]} />
+          <label><span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Trip date from</span>
+            <input type="date" value={tripDateFrom} onChange={(event) => setTripDateFrom(event.target.value)} className={inputClass} /></label>
+          <label><span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Trip date to</span>
+            <input type="date" value={tripDateTo} onChange={(event) => setTripDateTo(event.target.value)} className={inputClass} /></label>
+          <FilterSelect label="Queue" value={visibilityFilter} onChange={setVisibilityFilter}
+            options={[["active", "Active queue"], ["archived", "Archived"], ["all", "Active and archived"]]} />
+          <button type="button" onClick={() => { setQuery(""); setKindFilter("all"); setStatusFilter("all"); setPriorityFilter("all"); setPaymentFilter("all"); setAssigneeFilter("all"); setTripDateFrom(""); setTripDateTo(""); setVisibilityFilter("active"); setSavedView("all"); }}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Clear filters</button>
+          <button type="button" onClick={exportCsv} disabled={!filteredRequests.length}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"><Download className="h-4 w-4" /> Export results</button>
+        </div>
       </div>
+      {selectedIds.length > 0 && (
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+          <span className="text-sm font-bold text-blue-950">{selectedIds.length} selected</span>
+          <select value={bulkAssignee} onChange={(event) => setBulkAssignee(event.target.value)} required className="h-10 min-w-[220px] rounded-xl border border-blue-200 bg-white px-3 text-sm">
+            <option value="">Assign to team member…</option>
+            {operators.map((operator) => <option key={operator.id} value={operator.id}>{operator.fullName} · {label(operator.role)}</option>)}
+          </select>
+          <button type="button" disabled={!bulkAssignee} onClick={async () => {
+            setBulkMessage("");
+            const result = await assignSelectedBookings({ ids: selectedIds, assignedTo: bulkAssignee });
+            setBulkMessage(result.message);
+            if (result.success) { setSelectedIds([]); setBulkAssignee(""); }
+          }} className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">Apply assignment</button>
+          <button type="button" onClick={() => setSelectedIds([])} className="text-sm font-semibold text-blue-800">Clear selection</button>
+          {bulkMessage && <span aria-live="polite" className="w-full text-sm font-semibold text-blue-900">{bulkMessage}</span>}
+        </div>
+      )}
 
       {requests.length === 0 ? (
         <EmptyMessage
@@ -397,6 +400,7 @@ export default function TravelRequestsList({
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
                   {[
+                    "",
                     "Reference",
                     "Traveller",
                     "Request",
@@ -421,6 +425,11 @@ export default function TravelRequestsList({
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((request) => (
                   <tr key={request.id} className="align-top hover:bg-slate-50/70">
+                    <td className="px-4 py-4">
+                      <input type="checkbox" aria-label={`Select ${request.reference}`} checked={selectedIds.includes(request.id)}
+                        onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, request.id] : current.filter((id) => id !== request.id))}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600" />
+                    </td>
                     <td className="px-4 py-4 text-sm font-semibold text-blue-700">
                       {request.reference}
                       {request.archivedAt && (
