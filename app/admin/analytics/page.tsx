@@ -119,6 +119,30 @@ export default async function AdminAnalyticsPage({
       </ChartCard>
     </section>
 
+    <section className="mb-8">
+      <ChartCard title="Group-trip payment reconciliation" subtitle="Compares booking-level amount received with verified ledger entries for the same group-trip bookings.">
+        {business.paymentReconciliation.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[820px] text-left text-sm">
+              <thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400">
+                <th className="pb-3">Currency</th><th className="pb-3 text-right">Booking records</th><th className="pb-3 text-right">Verified ledger</th><th className="pb-3 text-right">New payments</th><th className="pb-3 text-right">Opening balances</th><th className="pb-3 text-right">Adjustments</th><th className="pb-3 text-right">Difference</th>
+              </tr></thead>
+              <tbody>{business.paymentReconciliation.map((item) => <tr key={item.currency} className="border-b border-slate-50 last:border-0">
+                <td className="py-3 font-bold text-slate-800">{item.currency}</td>
+                <td className="py-3 text-right text-slate-600">{money(item.currency,item.bookingAmountPaid)}</td>
+                <td className="py-3 text-right font-semibold text-slate-800">{money(item.currency,item.verifiedLedgerTotal)}</td>
+                <td className="py-3 text-right text-slate-600">{money(item.currency,item.paymentEntries)}</td>
+                <td className="py-3 text-right text-slate-600">{money(item.currency,item.openingBalances)}</td>
+                <td className="py-3 text-right text-slate-600">{money(item.currency,item.adjustments)}</td>
+                <td className={`py-3 text-right font-bold ${Math.abs(item.difference) > 0.01 ? "text-amber-700" : "text-emerald-700"}`}>{money(item.currency,item.difference)}</td>
+              </tr>)}</tbody>
+            </table>
+            <p className="mt-3 text-xs leading-5 text-slate-500">Verified ledger totals include payment entries, opening balances and adjustments. Differences are flagged for review only; this report never changes booking or ledger amounts. Custom-trip payments are not included in this group-trip ledger comparison.</p>
+          </div>
+        ) : <p className="py-10 text-center text-sm text-slate-400">No group-trip payment ledger entries are available for this reporting period.</p>}
+      </ChartCard>
+    </section>
+
     <section className="mb-10">
       <ChartCard title="Team workload" subtitle="Booking ownership and confirmed bookings in the selected period">
         {business.teamWorkload.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400"><th className="pb-3">Team member</th><th className="pb-3 text-right">Bookings</th><th className="pb-3 text-right">Confirmed</th></tr></thead><tbody>{business.teamWorkload.map((item) => <tr key={item.name} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-slate-800">{item.name}</td><td className="py-3 text-right text-slate-600">{item.bookings}</td><td className="py-3 text-right text-slate-600">{item.confirmedBookings}</td></tr>)}</tbody></table></div> : <p className="py-10 text-center text-sm text-slate-400">No booking ownership data is available.</p>}
