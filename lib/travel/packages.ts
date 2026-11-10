@@ -40,7 +40,7 @@ export const centralRegionPackage = {
   capacity: 35,
   depositPerPerson: 200,
   balancePerPerson: 200,
-  balanceDeadline: "November 7, 2026",
+  balanceDeadline: "November 12, 2026",
   currency: "GHS",
   currencySymbol: "GH₵",
   bookingMode: "Open registration",
