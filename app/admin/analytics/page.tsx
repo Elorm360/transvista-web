@@ -138,6 +138,17 @@ export default async function AdminAnalyticsPage({
               </tr>)}</tbody>
             </table>
             <p className="mt-3 text-xs leading-5 text-slate-500">Verified ledger totals include payment entries, opening balances and adjustments. Differences are flagged for review only; this report never changes booking or ledger amounts. Custom-trip payments are not included in this group-trip ledger comparison.</p>
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-bold text-slate-900">Bookings requiring reconciliation</h3><span className="text-xs font-semibold text-slate-500">{business.paymentMismatches.length} difference{business.paymentMismatches.length === 1 ? "" : "s"}</span></div>
+              {business.paymentMismatches.length ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[580px] text-left text-xs">
+                    <thead><tr className="border-b border-slate-100 uppercase tracking-wide text-slate-400"><th className="pb-2">Booking reference</th><th className="pb-2 text-right">Booking record</th><th className="pb-2 text-right">Verified ledger</th><th className="pb-2 text-right">Difference</th></tr></thead>
+                    <tbody>{business.paymentMismatches.map((item) => <tr key={item.reference} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-blue-700">{item.reference}<span className="ml-2 font-normal text-slate-400">{item.ledgerEntries} ledger entries</span></td><td className="py-3 text-right text-slate-600">{money(item.currency,item.bookingAmountPaid)}</td><td className="py-3 text-right text-slate-600">{money(item.currency,item.verifiedLedgerTotal)}</td><td className="py-3 text-right font-bold text-amber-700">{money(item.currency,item.difference)}</td></tr>)}</tbody>
+                  </table>
+                </div>
+              ) : <p className="rounded-lg bg-emerald-50 px-3 py-3 text-xs font-medium text-emerald-800">No booking-to-ledger differences were found in this period.</p>}
+            </div>
           </div>
         ) : <p className="py-10 text-center text-sm text-slate-400">No group-trip payment ledger entries are available for this reporting period.</p>}
       </ChartCard>
