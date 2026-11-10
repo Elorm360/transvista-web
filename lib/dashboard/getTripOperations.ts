@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type TripOperationRecord = {
   id: string;
+  calendarGroupKey: string;
   requestKind: "custom" | "package";
   requestId: number;
   reference: string;
@@ -55,7 +56,7 @@ export async function getTripOperations(): Promise<{
         "id, reference, full_name, email, phone, destinations, adults, children, travel_start, travel_end, status, payment_status, amount_paid, quote_currency, assigned_to, pickup_location, dropoff_location, vehicle_preference, vehicle_recommendation, archived_at",
       ).is("archived_at", null).in("status", ["confirmed", "in-progress", "completed"]).not("travel_start", "is", null),
       supabase.from("package_reservations").select(
-        "id, reference, package_title, package_date, full_name, email, phone, city, travellers, status, payment_status, amount_paid, currency, assigned_to, archived_at",
+        "id, reference, package_slug, package_title, package_date, full_name, email, phone, city, travellers, status, payment_status, amount_paid, currency, assigned_to, archived_at",
       ).is("archived_at", null).in("status", ["confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress", "completed"]).not("package_date", "is", null),
       supabase.from("trip_operation_details").select("*"),
       supabase.rpc("list_request_operators"),
@@ -91,6 +92,7 @@ export async function getTripOperations(): Promise<{
       : end;
     return {
       id: `custom-${row.id}`,
+      calendarGroupKey: `custom-${row.id}`,
       requestKind: "custom",
       requestId: Number(row.id),
       reference: row.reference,
@@ -138,6 +140,7 @@ export async function getTripOperations(): Promise<{
       : start;
     return {
       id: `package-${row.id}`,
+      calendarGroupKey: `package-${row.package_slug}-${start}`,
       requestKind: "package",
       requestId: Number(row.id),
       reference: row.reference,
