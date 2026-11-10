@@ -125,7 +125,7 @@ export default async function AdminAnalyticsPage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left text-sm">
               <thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400">
-                <th className="pb-3">Currency</th><th className="pb-3 text-right">Booking records</th><th className="pb-3 text-right">Verified ledger</th><th className="pb-3 text-right">New payments</th><th className="pb-3 text-right">Opening balances</th><th className="pb-3 text-right">Adjustments</th><th className="pb-3 text-right">Difference</th>
+                <th className="pb-3">Currency</th><th className="pb-3 text-right">Booking records</th><th className="pb-3 text-right">Verified ledger</th><th className="pb-3 text-right">New payments</th><th className="pb-3 text-right">Opening balances</th><th className="pb-3 text-right">Adjustment deductions</th><th className="pb-3 text-right">Difference</th>
               </tr></thead>
               <tbody>{business.paymentReconciliation.map((item) => <tr key={item.currency} className="border-b border-slate-50 last:border-0">
                 <td className="py-3 font-bold text-slate-800">{item.currency}</td>
