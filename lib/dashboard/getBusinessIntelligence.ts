@@ -16,6 +16,15 @@ export type TeamWorkloadPoint = {
   bookings: number;
   confirmedBookings: number;
 };
+export type PaymentReconciliationRow = {
+  currency: string;
+  bookingAmountPaid: number;
+  paymentEntries: number;
+  openingBalances: number;
+  adjustments: number;
+  verifiedLedgerTotal: number;
+  difference: number;
+};
 export type BusinessIntelligence = {
   rangeLabel: string;
   totalBookings: number;
@@ -31,6 +40,7 @@ export type BusinessIntelligence = {
   sources: BusinessBarPoint[];
   currencies: CurrencyPerformance[];
   teamWorkload: TeamWorkloadPoint[];
+  paymentReconciliation: PaymentReconciliationRow[];
   upcomingTrips: number;
   tripsReady: number;
   tripsNeedingPreparation: number;
@@ -85,6 +95,16 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
   if (operationsResult.error) console.error("[BusinessIntelligence] Trip operations:", operationsResult.error);
   if (operatorsResult.error) console.error("[BusinessIntelligence] Team members:", operatorsResult.error);
 
+  const packageRows = packageResult.data ?? [];
+  const packageIds = packageRows.map((row) => Number(row.id));
+  const ledgerResult = packageIds.length
+    ? await supabase.from("package_payment_transactions")
+        .select("reservation_id,transaction_type,amount,currency,status")
+        .in("reservation_id", packageIds)
+        .eq("status", "verified")
+    : { data: [], error: null };
+  if (ledgerResult.error) console.error("[BusinessIntelligence] Payment ledger:", ledgerResult.error);
+
   type RecordRow = {
     key: string;
     source: "custom" | "package";
@@ -111,7 +131,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
       title: (row.destinations ?? []).join(", ") || "Custom trip",
       tripDate: row.travel_start,
     })),
-    ...(packageResult.data ?? []).map((row) => ({
+    ...packageRows.map((row) => ({
       key: `package-${row.id}`,
       source: "package" as const,
       status: row.status,
@@ -124,6 +144,41 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
       tripDate: row.package_date,
     })),
   ];
+
+  const paymentLedgerMap = new Map<string, {
+    bookingAmountPaid: number;
+    paymentEntries: number;
+    openingBalances: number;
+    adjustments: number;
+    verifiedLedgerTotal: number;
+  }>();
+  for (const row of packageRows) {
+    const currency = row.currency ?? "GHS";
+    const current = paymentLedgerMap.get(currency) ?? {
+      bookingAmountPaid: 0, paymentEntries: 0, openingBalances: 0, adjustments: 0, verifiedLedgerTotal: 0,
+    };
+    current.bookingAmountPaid += Number(row.amount_paid ?? 0);
+    paymentLedgerMap.set(currency, current);
+  }
+  for (const entry of ledgerResult.data ?? []) {
+    const currency = entry.currency ?? "GHS";
+    const current = paymentLedgerMap.get(currency) ?? {
+      bookingAmountPaid: 0, paymentEntries: 0, openingBalances: 0, adjustments: 0, verifiedLedgerTotal: 0,
+    };
+    const amount = Number(entry.amount);
+    current.verifiedLedgerTotal += amount;
+    if (entry.transaction_type === "payment") current.paymentEntries += amount;
+    if (entry.transaction_type === "opening_balance") current.openingBalances += amount;
+    if (entry.transaction_type === "adjustment") current.adjustments += amount;
+    paymentLedgerMap.set(currency, current);
+  }
+  const paymentReconciliation: PaymentReconciliationRow[] = Array.from(paymentLedgerMap.entries())
+    .map(([currency, value]) => ({
+      currency,
+      ...value,
+      difference: value.verifiedLedgerTotal - value.bookingAmountPaid,
+    }))
+    .sort((a, b) => a.currency.localeCompare(b.currency));
 
   const totalBookings = records.length;
   const confirmedBookings = records.filter((row) => confirmedStatuses.has(row.status)).length;
@@ -262,6 +317,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
     sources,
     currencies,
     teamWorkload,
+    paymentReconciliation,
     upcomingTrips: upcomingConfirmed.length,
     tripsReady,
     tripsNeedingPreparation: Math.max(upcomingConfirmed.length - tripsReady, 0),
