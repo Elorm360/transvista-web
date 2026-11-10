@@ -25,6 +25,14 @@ export type PaymentReconciliationRow = {
   verifiedLedgerTotal: number;
   difference: number;
 };
+export type PaymentMismatch = {
+  reference: string;
+  currency: string;
+  bookingAmountPaid: number;
+  verifiedLedgerTotal: number;
+  difference: number;
+  ledgerEntries: number;
+};
 export type BusinessIntelligence = {
   rangeLabel: string;
   totalBookings: number;
@@ -41,6 +49,7 @@ export type BusinessIntelligence = {
   currencies: CurrencyPerformance[];
   teamWorkload: TeamWorkloadPoint[];
   paymentReconciliation: PaymentReconciliationRow[];
+  paymentMismatches: PaymentMismatch[];
   upcomingTrips: number;
   tripsReady: number;
   tripsNeedingPreparation: number;
@@ -73,7 +82,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
     .select("id,status,payment_status,amount_paid,quoted_amount,quote_currency,budget_currency,created_at,travel_start,destinations,assigned_to,archived_at")
     .is("archived_at", null).order("created_at", { ascending: true });
   let packageQuery = supabase.from("package_reservations")
-    .select("id,status,payment_status,amount_paid,total_price,currency,created_at,package_date,package_title,assigned_to,archived_at")
+    .select("id,reference,status,payment_status,amount_paid,total_price,currency,created_at,package_date,package_title,assigned_to,archived_at")
     .is("archived_at", null).order("created_at", { ascending: true });
   if (cutoff) {
     customQuery = customQuery.gte("created_at", cutoff);
@@ -144,6 +153,28 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
       tripDate: row.package_date,
     })),
   ];
+
+  const ledgerByReservation = new Map<number, { total: number; entries: number }>();
+  for (const entry of ledgerResult.data ?? []) {
+    const reservationId = Number(entry.reservation_id);
+    const current = ledgerByReservation.get(reservationId) ?? { total: 0, entries: 0 };
+    current.total += Number(entry.amount);
+    current.entries += 1;
+    ledgerByReservation.set(reservationId, current);
+  }
+  const paymentMismatches: PaymentMismatch[] = packageRows.flatMap((row) => {
+    const ledger = ledgerByReservation.get(Number(row.id)) ?? { total: 0, entries: 0 };
+    const bookingAmountPaid = Number(row.amount_paid ?? 0);
+    const difference = ledger.total - bookingAmountPaid;
+    return Math.abs(difference) > 0.01 ? [{
+      reference: row.reference,
+      currency: row.currency ?? "GHS",
+      bookingAmountPaid,
+      verifiedLedgerTotal: ledger.total,
+      difference,
+      ledgerEntries: ledger.entries,
+    }] : [];
+  }).sort((a, b) => Math.abs(b.difference) - Math.abs(a.difference));
 
   const paymentLedgerMap = new Map<string, {
     bookingAmountPaid: number;
@@ -318,6 +349,7 @@ export async function getBusinessIntelligence(days: number | null = 30): Promise
     currencies,
     teamWorkload,
     paymentReconciliation,
+    paymentMismatches,
     upcomingTrips: upcomingConfirmed.length,
     tripsReady,
     tripsNeedingPreparation: Math.max(upcomingConfirmed.length - tripsReady, 0),
