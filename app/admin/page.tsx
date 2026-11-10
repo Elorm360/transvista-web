@@ -235,7 +235,7 @@ function ActionCentre({ items, loadError }: { items: ActionItem[]; loadError: bo
   const unassigned = items.filter((item) => item.key.endsWith("-assign")).length;
   return <section className="mb-8 overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
     <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
-      <div><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-50 text-[#c85f16]"><Sparkles className="h-4 w-4" /></span><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Smart Action Centre</h3></div><p className="mt-2 text-xs text-slate-500">A live queue of requests and follow-ups that may need your team’s attention.</p></div>
+      <div><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-50 text-[#c85f16]"><ClipboardList className="h-4 w-4" /></span><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Team action queue</h3></div><p className="mt-2 text-xs text-slate-500">A live queue of requests and follow-ups that may need your team’s attention.</p></div>
       <Link href="/admin/requests" className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-[#1a3a9c] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#152f80] sm:self-auto">Open booking operations <ArrowRight className="h-3.5 w-3.5" /></Link>
     </div>
     <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
