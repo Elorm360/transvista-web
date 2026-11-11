@@ -4,8 +4,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
-import { travellerTestimonials } from "@/content/testimonials";
+import { StorySlideshow } from "@/components/testimonials/StorySlideshow";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { getStories } from "@/lib/reviews/getStories";
 
 export const metadata: Metadata = pageMetadata({
   title: "Traveller Stories",
@@ -14,7 +15,12 @@ export const metadata: Metadata = pageMetadata({
   path: "/stories",
 });
 
-export default function TravellerStoriesPage() {
+// Refresh approved reviews at least every 5 minutes (new verified reviews refresh instantly).
+export const revalidate = 300;
+
+export default async function TravellerStoriesPage() {
+  const stories = await getStories();
+
   return (
     <main id="main-content">
       <PageHeader
@@ -25,12 +31,25 @@ export default function TravellerStoriesPage() {
 
       <section className="py-12 lg:py-16">
         <Container>
-          <div className="columns-1 gap-6 md:columns-2 lg:columns-3">
-            {travellerTestimonials.map((story) => (
-              <div key={story.slug} className="mb-6 break-inside-avoid">
-                <TestimonialCard story={story} />
-              </div>
-            ))}
+          <StorySlideshow stories={stories} />
+        </Container>
+      </section>
+
+      <section id="share-your-story" className="scroll-mt-24 pb-16 lg:pb-20">
+        <Container>
+          <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-orange-700">
+              Travelled with us?
+            </p>
+            <h2 className="font-display mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+              Share your experience
+            </h2>
+            <p className="mt-3 leading-7 text-slate-600">
+              Your story helps other travellers discover Ghana with confidence.
+            </p>
+            <div className="mt-8">
+              <ReviewForm />
+            </div>
           </div>
         </Container>
       </section>

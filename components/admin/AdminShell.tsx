@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, MessageSquareText,
-  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell, CalendarDays,
+  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell, CalendarDays, Star,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
@@ -18,6 +18,7 @@ const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard;
   { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments", group: "OPERATIONS" },
   { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests", group: "OPERATIONS" },
   { label: "Community", href: "/admin/community", icon: Users, area: "community", group: "PEOPLE" },
+  { label: "Reviews", href: "/admin/reviews", icon: Star, area: "community", group: "PEOPLE" },
   { label: "Business intelligence", href: "/admin/analytics", icon: BarChart3, area: "analytics", group: "INSIGHTS" },
   { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings", group: "PREFERENCES" },
 ];
@@ -30,6 +31,7 @@ const pageNames: Record<string, string> = {
   "/admin/payments": "Payments",
   "/admin/messages": "Messages",
   "/admin/community": "Community",
+  "/admin/reviews": "Traveller reviews",
   "/admin/analytics": "Business intelligence",
   "/admin/settings": "Settings",
 };

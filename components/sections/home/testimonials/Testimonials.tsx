@@ -4,12 +4,13 @@ import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
-import { TestimonialCard } from "@/components/testimonials/TestimonialCard";
-import { featuredTestimonials, travellerTestimonials } from "@/content/testimonials";
+import { StorySlideshow } from "@/components/testimonials/StorySlideshow";
+import { getStories } from "@/lib/reviews/getStories";
+import { featuredTestimonials } from "@/content/testimonials";
 
-export function Testimonials() {
+export async function Testimonials() {
   const [lead] = featuredTestimonials;
-  const others = travellerTestimonials.filter((story) => story.slug !== lead.slug);
+  const stories = (await getStories()).filter((story) => story.key !== lead.slug);
 
   return (
     <Section id="traveller-stories" className="bg-[#f7f5f1]">
@@ -48,36 +49,16 @@ export function Testimonials() {
               href="/stories"
               className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-800 underline-offset-4 hover:underline"
             >
-              Read all {travellerTestimonials.length} traveller stories
+              Read all traveller stories
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </Reveal>
         </div>
       </Container>
 
-      <div className="relative mt-16 overflow-hidden">
-        <div
-          className="marquee-track flex w-max focus:outline-none focus:[animation-play-state:paused]"
-          tabIndex={0}
-          aria-label="More traveller stories. Focus or hover to pause."
-        >
-          {["primary", "duplicate"].map((group) => (
-            <div
-              key={group}
-              className="flex shrink-0 gap-5 pr-5"
-              aria-hidden={group === "duplicate" ? true : undefined}
-            >
-              {others.map((story) => (
-                <div key={`${group}-${story.slug}`} className="w-[80vw] max-w-sm shrink-0 md:w-[360px]">
-                  <TestimonialCard story={story} compact />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#f7f5f1] to-transparent md:w-24" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#f7f5f1] to-transparent md:w-24" />
-      </div>
+      <Container className="mt-16">
+        <StorySlideshow stories={stories} label="More traveller stories" />
+      </Container>
     </Section>
   );
 }

@@ -8,6 +8,9 @@ import { Testimonials } from "@/components/sections/home/testimonials";
 import { PlanTrip } from "@/components/sections/home/plan-trip/PlanTrip";
 import { Waitlist } from "@/components/sections/home/waitlist";
 
+// Refresh traveller reviews at least every 5 minutes.
+export const revalidate = 300;
+
 export default function HomePage() {
   return (
     <main id="main-content">
