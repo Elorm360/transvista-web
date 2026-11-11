@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { BadgeCheck, Star } from "lucide-react";
 import type { StoryItem } from "@/lib/reviews/getStories";
+import { ADINKRA_AVATARS, AdinkraAvatar } from "@/components/reviews/AdinkraAvatars";
 
 function initials(name: string) {
   return name
@@ -40,8 +41,11 @@ export function ReviewCard({ story }: { story: StoryItem }) {
               alt={story.imageAlt ?? story.name}
               fill
               sizes="56px"
+              unoptimized={story.remoteImage}
               className="object-cover object-[50%_25%]"
             />
+          ) : story.avatar ? (
+            <AdinkraAvatar id={story.avatar} size={56} />
           ) : (
             <span aria-hidden="true">{initials(story.name)}</span>
           )}
@@ -59,6 +63,14 @@ export function ReviewCard({ story }: { story: StoryItem }) {
           <p className="text-xs leading-5 text-slate-500">
             {[story.location, story.trip, story.date].filter(Boolean).join(" · ")}
           </p>
+          {story.avatar && !story.image && (
+            <p className="mt-0.5 text-[11px] italic text-brand-orange-700">
+              {(() => {
+                const a = ADINKRA_AVATARS.find((x) => x.id === story.avatar);
+                return a ? `${a.name} · ${a.meaning}` : null;
+              })()}
+            </p>
+          )}
         </div>
       </header>
 
