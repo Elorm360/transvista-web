@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { BadgeCheck, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { BadgeCheck, Star } from "lucide-react";
 import type { StoryItem } from "@/lib/reviews/getStories";
 
 function initials(name: string) {
@@ -12,6 +12,20 @@ function initials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+function subscribeReducedMotion(onChange: () => void) {
+  const query = window.matchMedia(REDUCED_MOTION);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+export function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia(REDUCED_MOTION).matches,
+    () => false,
+  );
 }
 
 /** Review-style card: small round photo top-left, name and trip beside it, quote below. */
@@ -33,8 +47,8 @@ export function ReviewCard({ story }: { story: StoryItem }) {
           )}
         </div>
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-            <span className="truncate">{story.name}</span>
+          <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold text-slate-900">
+            <span>{story.name}</span>
             {story.verified && (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                 <BadgeCheck aria-hidden="true" className="h-3.5 w-3.5" />
@@ -70,148 +84,88 @@ export function ReviewCard({ story }: { story: StoryItem }) {
   );
 }
 
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-function subscribeReducedMotion(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
 /**
- * Auto-advancing, swipeable slideshow of traveller stories.
- * Pauses on hover, focus or touch and respects reduced-motion settings.
+ * Continuously gliding row of story cards (slow and calm).
+ * Pauses on hover, keyboard focus or tap. Shows a still, swipeable row
+ * for visitors who prefer reduced motion.
  */
 export function StorySlideshow({
   stories,
-  intervalMs = 5000,
+  secondsPerCard = 8,
+  fadeFrom = "#ffffff",
   label = "Traveller stories",
 }: {
   stories: StoryItem[];
-  intervalMs?: number;
+  /** Higher = slower. */
+  secondsPerCard?: number;
+  /** Background colour behind the row, used for the soft edge fades. */
+  fadeFrom?: string;
   label?: string;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
-  const [active, setActive] = useState(0);
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(REDUCED_MOTION).matches,
-    () => false,
-  );
-
-  const slideWidth = useCallback(() => {
-    const track = trackRef.current;
-    const first = track?.firstElementChild as HTMLElement | null;
-    if (!track || !first) return 0;
-    const gap = parseFloat(getComputedStyle(track).columnGap || "0") || 0;
-    return first.offsetWidth + gap;
-  }, []);
-
-  const goTo = useCallback(
-    (index: number) => {
-      const track = trackRef.current;
-      if (!track) return;
-      const width = slideWidth();
-      const maxScroll = track.scrollWidth - track.clientWidth;
-      let left = index * width;
-      if (left > maxScroll + 4) left = 0; // loop back to the start
-      if (left < 0) left = maxScroll;
-      track.scrollTo({ left, behavior: reducedMotion ? "auto" : "smooth" });
-    },
-    [reducedMotion, slideWidth],
-  );
-
-  const step = useCallback(
-    (direction: 1 | -1) => {
-      const track = trackRef.current;
-      if (!track) return;
-      const width = slideWidth() || 1;
-      const current = Math.round(track.scrollLeft / width);
-      const maxScroll = track.scrollWidth - track.clientWidth;
-      if (direction === 1 && track.scrollLeft >= maxScroll - 4) goTo(0);
-      else goTo(current + direction);
-    },
-    [goTo, slideWidth],
-  );
-
-  // Track the visible slide for the dots
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const onScroll = () => {
-      const width = slideWidth() || 1;
-      setActive(Math.min(stories.length - 1, Math.round(track.scrollLeft / width)));
-    };
-    track.addEventListener("scroll", onScroll, { passive: true });
-    return () => track.removeEventListener("scroll", onScroll);
-  }, [slideWidth, stories.length]);
-
-  // Auto-advance
-  useEffect(() => {
-    if (paused || reducedMotion || stories.length < 2) return;
-    const timer = window.setInterval(() => step(1), intervalMs);
-    return () => window.clearInterval(timer);
-  }, [paused, reducedMotion, step, intervalMs, stories.length]);
+  const reducedMotion = usePrefersReducedMotion();
+  const [hovered, setHovered] = useState(false);
+  const [tapPaused, setTapPaused] = useState(false);
+  const paused = hovered || tapPaused;
 
   if (!stories.length) return null;
 
+  const card = (story: StoryItem, key: string) => (
+    <div key={key} className="w-[80vw] max-w-sm shrink-0 md:w-[360px]">
+      <ReviewCard story={story} />
+    </div>
+  );
+
+  if (reducedMotion) {
+    return (
+      <div role="region" aria-label={label} className="overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="flex w-max gap-5 px-6 lg:px-8">{stories.map((s) => card(s, s.key))}</div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="relative"
       role="region"
-      aria-roledescription="carousel"
-      aria-label={label}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
+      aria-label={`${label}. Hover, focus or tap to pause.`}
+      className="relative overflow-hidden"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocusCapture={() => setHovered(true)}
+      onBlurCapture={() => setHovered(false)}
+      onClick={() => setTapPaused((value) => !value)}
     >
       <div
-        ref={trackRef}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex w-max items-start"
+        style={{
+          animation: `marquee ${Math.max(stories.length * secondsPerCard, 30)}s linear infinite`,
+          animationPlayState: paused ? "paused" : "running",
+        }}
       >
-        {stories.map((story, index) => (
+        {["primary", "duplicate"].map((group) => (
           <div
-            key={story.key}
-            className="w-[85%] shrink-0 snap-start sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${index + 1} of ${stories.length}`}
+            key={group}
+            className="flex shrink-0 items-start gap-5 pr-5"
+            aria-hidden={group === "duplicate" ? true : undefined}
           >
-            <ReviewCard story={story} />
+            {stories.map((story) => card(story, `${group}-${story.key}`))}
           </div>
         ))}
       </div>
-
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-1.5" aria-hidden="true">
-          {stories.map((story, index) => (
-            <span
-              key={story.key}
-              className={`h-1.5 rounded-full transition-all ${index === active ? "w-6 bg-brand-orange-500" : "w-1.5 bg-slate-300"}`}
-            />
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => step(-1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-brand-orange-500 hover:text-brand-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500"
-            aria-label="Previous story"
-          >
-            <ChevronLeft aria-hidden="true" className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => step(1)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-brand-orange-500 hover:text-brand-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500"
-            aria-label="Next story"
-          >
-            <ChevronRight aria-hidden="true" className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 w-10 md:w-24"
+        style={{ background: `linear-gradient(to right, ${fadeFrom}, transparent)` }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 w-10 md:w-24"
+        style={{ background: `linear-gradient(to left, ${fadeFrom}, transparent)` }}
+      />
+      {tapPaused && (
+        <p className="pointer-events-none absolute right-4 top-3 rounded-full bg-slate-900/75 px-3 py-1 text-xs font-medium text-white">
+          Paused · tap to continue
+        </p>
+      )}
     </div>
   );
 }
