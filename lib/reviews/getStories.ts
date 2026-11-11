@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { travellerTestimonials } from "@/content/testimonials";
+import { isAdinkraId, type AdinkraId } from "@/components/reviews/AdinkraAvatars";
 
 /** One story/review card, from either the curated list or a submitted review. */
 export type StoryItem = {
@@ -11,6 +12,9 @@ export type StoryItem = {
   quote: string;
   image?: string;
   imageAlt?: string;
+  /** True for traveller-uploaded photos served from storage (already optimised). */
+  remoteImage?: boolean;
+  avatar?: AdinkraId;
   rating?: number;
   verified?: boolean;
 };
@@ -33,7 +37,7 @@ async function getPublishedReviews(): Promise<StoryItem[]> {
     });
     const { data, error } = await supabase
       .from("traveller_reviews")
-      .select("id, full_name, location, trip_name, rating, review, verified, published_at")
+      .select("id, full_name, location, trip_name, rating, review, verified, published_at, avatar_choice, photo_url")
       .eq("status", "approved")
       .order("published_at", { ascending: false })
       .limit(40);
@@ -52,6 +56,10 @@ async function getPublishedReviews(): Promise<StoryItem[]> {
       quote: row.review,
       rating: row.rating,
       verified: row.verified,
+      image: row.photo_url ?? undefined,
+      imageAlt: row.photo_url ? `${row.full_name}, TransVista traveller` : undefined,
+      remoteImage: Boolean(row.photo_url),
+      avatar: !row.photo_url && isAdinkraId(row.avatar_choice) ? row.avatar_choice : undefined,
     }));
   } catch (error) {
     console.error("[getPublishedReviews]", error);
