@@ -178,7 +178,7 @@ export async function saveTripDeparture(
     const operationsLeadId = value(formData, "operationsLeadId", 60) || null;
     const operationsNotes = value(formData, "operationsNotes", 3000);
 
-    if (!id || !/^\d{4}-\d{2}-\d{2}$/.test(departureDate)) {
+        if (!id || title.length < 2 || !/^\d{4}-\d{2}-\d{2}$/.test(departureDate)) {
       return { success: false, message: "The departure could not be identified." };
     }
     if (!["planning", "confirmed", "ready", "underway", "completed", "cancelled"].includes(status)) {
@@ -218,6 +218,7 @@ export async function saveTripDeparture(
     }
 
     const { error: updateError } = await supabase.from("trip_departures").update({
+      title,
       departure_date: departureDate,
       return_date: returnDate,
       scheduled_start_at: scheduledStartAt,
