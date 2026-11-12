@@ -44,10 +44,12 @@ export default function TripDepartureManager({
   departures,
   candidates,
   operators,
+  readOnly,
 }: {
   departures: TripDepartureRecord[];
   candidates: TripDepartureCandidate[];
   operators: TripOperationsOperator[];
+  readOnly: boolean;
 }) {
   const active = departures.filter((departure) => !["completed", "cancelled"].includes(departure.status));
   const ready = active.filter((departure) => departure.status === "ready").length;
@@ -56,6 +58,11 @@ export default function TripDepartureManager({
 
   return (
     <div className="space-y-6">
+      {readOnly && (
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-900">
+          Preview is read-only because it shares live TransVista data. You can inspect departures here, but creating or editing records is disabled.
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Active departures" value={active.length} icon={CalendarDays} />
         <Metric label="Planning / confirmed" value={planning} icon={Clock3} />
@@ -74,7 +81,7 @@ export default function TripDepartureManager({
         {candidates.length ? (
           <div className="grid gap-3 p-4 md:grid-cols-2">
             {candidates.map((candidate) => (
-              <CreateDepartureCard key={candidate.key} candidate={candidate} operators={operators} />
+              <CreateDepartureCard key={candidate.key} candidate={candidate} operators={operators} readOnly={readOnly} />
             ))}
           </div>
         ) : (
@@ -97,7 +104,7 @@ export default function TripDepartureManager({
         {departures.length ? (
           <div className="divide-y divide-slate-100">
             {departures.map((departure) => (
-              <DepartureCard key={departure.id} departure={departure} operators={operators} />
+              <DepartureCard key={departure.id} departure={departure} operators={operators} readOnly={readOnly} />
             ))}
           </div>
         ) : (
@@ -115,9 +122,11 @@ export default function TripDepartureManager({
 function CreateDepartureCard({
   candidate,
   operators,
+  readOnly,
 }: {
   candidate: TripDepartureCandidate;
   operators: TripOperationsOperator[];
+  readOnly: boolean;
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(createTripDeparture, initialState);
@@ -158,8 +167,8 @@ function CreateDepartureCard({
         </select>
       </label>
       {state.message && <p aria-live="polite" className={"mt-3 rounded-lg px-3 py-2 text-xs font-semibold " + (state.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800")}>{state.message}</p>}
-      <button type="submit" disabled={pending} className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
-        {pending ? "Creating departure…" : "Create shared departure"}
+      <button type="submit" disabled={pending || readOnly} className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
+        {readOnly ? "Read-only preview" : pending ? "Creating departure…" : "Create shared departure"}
       </button>
     </form>
   );
@@ -168,9 +177,11 @@ function CreateDepartureCard({
 function DepartureCard({
   departure,
   operators,
+  readOnly,
 }: {
   departure: TripDepartureRecord;
   operators: TripOperationsOperator[];
+  readOnly: boolean;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -242,8 +253,8 @@ function DepartureCard({
             </label>
             <Field label="Operations briefing / notes"><textarea name="operationsNotes" rows={3} maxLength={3000} defaultValue={departure.operationsNotes} className={inputClass + " h-auto py-3"} /></Field>
             {state.message && <p aria-live="polite" className={"rounded-lg px-3 py-2 text-xs font-semibold " + (state.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800")}>{state.message}</p>}
-            <button type="submit" disabled={pending} className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
-              {pending ? "Saving departure…" : "Save departure details"}
+            <button type="submit" disabled={pending || readOnly} className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
+              {readOnly ? "Preview — saving disabled" : pending ? "Saving departure…" : "Save departure details"}
             </button>
           </form>
 
@@ -260,7 +271,7 @@ function DepartureCard({
                     <input type="hidden" name="departureId" value={departure.id} />
                     <input type="hidden" name="itemId" value={item.id} />
                     <input type="hidden" name="isComplete" value={item.isComplete ? "false" : "true"} />
-                    <button type="submit" className="flex w-full items-start gap-2 rounded-lg p-2 text-left hover:bg-slate-50">
+                    <button type="submit" disabled={readOnly} className="flex w-full items-start gap-2 rounded-lg p-2 text-left hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
                       <span className={"mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border " + (item.isComplete ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-300 bg-white")}>{item.isComplete ? <CheckCircle2 className="h-3 w-3" /> : null}</span>
                       <span className={"text-xs " + (item.isComplete ? "text-slate-400 line-through" : "text-slate-700")}>{item.label}</span>
                     </button>
