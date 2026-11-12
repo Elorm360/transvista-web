@@ -82,7 +82,7 @@ revoke all on public.trip_departures from anon, public;
 revoke all on public.trip_departure_bookings from anon, public;
 revoke all on public.trip_departure_checklist_items from anon, public;
 
-grant select, insert, update on public.trip_departures to authenticated;
+grant select, insert, update, delete on public.trip_departures to authenticated;
 grant select, insert, delete on public.trip_departure_bookings to authenticated;
 grant select, insert, update on public.trip_departure_checklist_items to authenticated;
 
@@ -204,6 +204,19 @@ create policy "Active operations staff can update departure checklist"
     )
   )
   with check (
+    exists (
+      select 1 from public.admin_team_members member
+      where member.user_id = (select auth.uid())
+        and member.status = 'active'
+        and member.role in ('owner', 'admin', 'support')
+    )
+  );
+
+
+drop policy if exists "Active operations staff can delete empty departures" on public.trip_departures;
+create policy "Active operations staff can delete empty departures"
+  on public.trip_departures for delete to authenticated
+  using (
     exists (
       select 1 from public.admin_team_members member
       where member.user_id = (select auth.uid())
