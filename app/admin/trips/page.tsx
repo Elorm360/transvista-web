@@ -20,7 +20,7 @@ export default async function AdminTripOperationsPage() {
         title="Trip Operations & Departures"
         description="Manage shared departures, traveller manifests, transport arrangements and operational readiness."
       />
-      <TripDepartureManager departures={departures} candidates={candidates} operators={operators} />
+      <TripDepartureManager departures={departures} candidates={candidates} operators={operators} readOnly={process.env.VERCEL_ENV === "preview"} />
       <details className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
         <summary className="cursor-pointer text-sm font-semibold text-slate-700">Legacy booking-level calendar and operational details</summary>
         <div className="mt-5"><TripOperationsCalendar trips={trips} operators={operators} /></div>
