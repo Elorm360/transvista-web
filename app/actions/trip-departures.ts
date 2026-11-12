@@ -143,6 +143,7 @@ export async function createTripDeparture(
       })),
     );
     if (checklistError) {
+      await supabase.from("trip_departure_bookings").delete().eq("departure_id", departure.id);
       await supabase.from("trip_departures").delete().eq("id", departure.id);
       console.error("[createTripDeparture] Checklist failed:", checklistError);
       return { success: false, message: "The departure checklist could not be created. No departure was kept." };
