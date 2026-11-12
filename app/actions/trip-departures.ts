@@ -162,7 +162,7 @@ export async function saveTripDeparture(
 ): Promise<TripDepartureActionState> {
   try {
     const id = value(formData, "departureId", 60);
-    const status = value(formData, "status", 30);
+    const title = value(formData, "title", 160);\n    const status = value(formData, "status", 30);
     const scheduledStartAt = dateTime(value(formData, "scheduledStartAt", 40));
     const scheduledEndAt = dateTime(value(formData, "scheduledEndAt", 40));
     const departureDate = value(formData, "departureDate", 10);
