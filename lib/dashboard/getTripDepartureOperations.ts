@@ -108,7 +108,10 @@ export async function getTripDepartureOperations(
   const candidateGroups = new Map<string, TripOperationRecord[]>();
   for (const trip of trips) {
     const bookingKey = trip.requestKind + "-" + trip.requestId;
-    if (linkedKeys.has(bookingKey)) continue;
+    const eligible = trip.requestKind === "custom"
+      ? ["confirmed", "in-progress"].includes(trip.bookingStatus)
+      : ["confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(trip.bookingStatus);
+    if (linkedKeys.has(bookingKey) || !eligible) continue;
     const current = candidateGroups.get(trip.calendarGroupKey) ?? [];
     current.push(trip);
     candidateGroups.set(trip.calendarGroupKey, current);
