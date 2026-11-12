@@ -1,6 +1,6 @@
 import { CalendarDays } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
-import TripDepartureManager from "@/components/admin/TripDepartureManager";
+import TripDepartureManager from "@/components/admin/TripDepartureManager";\nimport TripOperationsCalendar from "@/components/admin/TripOperationsCalendar";
 import { getTripOperations } from "@/lib/dashboard/getTripOperations";
 import { getTripDepartureOperations } from "@/lib/dashboard/getTripDepartureOperations";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
@@ -19,7 +19,7 @@ export default async function AdminTripOperationsPage() {
         title="Trip Operations & Departures"
         description="Manage shared departures, traveller manifests, transport arrangements and operational readiness."
       />
-      <TripDepartureManager departures={departures} candidates={candidates} operators={operators} />
+      <TripDepartureManager departures={departures} candidates={candidates} operators={operators} />\n      <details className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">\n        <summary className="cursor-pointer text-sm font-semibold text-slate-700">Legacy booking-level calendar and operational details</summary>\n        <div className="mt-5"><TripOperationsCalendar trips={trips} operators={operators} /></div>\n      </details>
     </div>
   );
 }
