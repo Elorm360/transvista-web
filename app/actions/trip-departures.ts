@@ -53,6 +53,9 @@ export async function createTripDeparture(
   formData: FormData,
 ): Promise<TripDepartureActionState> {
   try {
+    if (process.env.VERCEL_ENV === "preview") {
+      return { success: false, message: "This preview is read-only because it shares live TransVista data. No changes can be saved here." };
+    }
     const title = value(formData, "title", 160);
     const departureDate = value(formData, "departureDate", 10);
     const bookingKeys = JSON.parse(value(formData, "bookingKeys", 5000)) as string[];
@@ -162,6 +165,9 @@ export async function saveTripDeparture(
   formData: FormData,
 ): Promise<TripDepartureActionState> {
   try {
+    if (process.env.VERCEL_ENV === "preview") {
+      return { success: false, message: "This preview is read-only because it shares live TransVista data. No changes can be saved here." };
+    }
     const id = value(formData, "departureId", 60);
     const title = value(formData, "title", 160);
     const status = value(formData, "status", 30);
@@ -252,6 +258,7 @@ export async function saveTripDeparture(
 }
 
 export async function setTripDepartureChecklistItem(formData: FormData) {
+  if (process.env.VERCEL_ENV === "preview") return;
   const id = String(formData.get("departureId") ?? "").trim();
   const itemId = String(formData.get("itemId") ?? "").trim();
   const isComplete = String(formData.get("isComplete") ?? "") === "true";
