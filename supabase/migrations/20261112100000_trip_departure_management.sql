@@ -217,7 +217,7 @@ create policy "Active operations staff can update departure checklist"
   );
 
 
-drop policy if exists "Active operations staff can delete unlinked departures" on public.trip_departures;
+drop policy if exists "Active operations staff can delete empty departures" on public.trip_departures;
 create policy "Active operations staff can delete empty departures"
   on public.trip_departures for delete to authenticated
   using (
@@ -226,5 +226,9 @@ create policy "Active operations staff can delete empty departures"
       where member.user_id = (select auth.uid())
         and member.status = 'active'
         and member.role in ('owner', 'admin', 'support')
+    )
+    and not exists (
+      select 1 from public.trip_departure_bookings link
+      where link.departure_id = trip_departures.id
     )
   );
