@@ -22,6 +22,17 @@ export function FeaturedStoryRotator({
   const reducedMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  function handleTouchEnd(endX: number) {
+    if (touchStartX === null) return;
+    const delta = endX - touchStartX;
+    if (Math.abs(delta) > 40 && stories.length > 1) {
+      setIndex((current) => (current + (delta < 0 ? 1 : -1) + stories.length) % stories.length);
+      setPaused(true);
+    }
+    setTouchStartX(null);
+  }
 
   useEffect(() => {
     if (paused || reducedMotion || stories.length < 2) return;
@@ -34,11 +45,16 @@ export function FeaturedStoryRotator({
 
   return (
     <div
-      className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      onTouchStart={(event) => {
+        setTouchStartX(event.changedTouches[0]?.clientX ?? null);
+        setPaused(true);
+      }}
+      onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0]?.clientX ?? 0)}
+      className="grid touch-pan-y items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
       aria-roledescription="carousel"
       aria-label="Featured traveller stories"
     >
