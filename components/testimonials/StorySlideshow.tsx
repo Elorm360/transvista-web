@@ -102,7 +102,6 @@ export function ReviewCard({ story }: { story: StoryItem }) {
  */
 export function StorySlideshow({
   stories,
-  fadeFrom = "#ffffff",
   label = "Traveller stories",
 }: {
   stories: StoryItem[];
@@ -132,7 +131,7 @@ export function StorySlideshow({
   return (
     <section aria-label={label} className="w-full">
       {/* Desktop: a composed, three-column editorial layout with deliberate controls. */}
-      <div className="hidden md:block">
+      <div className="hidden md:block [@media(hover:none)]:!hidden">
         <div className="grid grid-cols-3 items-stretch gap-5">
           {visibleStories.map((story) =>
             card(story, `desktop-${story.key}-${activeIndex}`, "min-w-0"),
@@ -167,7 +166,7 @@ export function StorySlideshow({
 
       {/* Phones and touch tablets: native momentum scrolling with clear snap points. */}
       <div
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-4 md:hidden [scrollbar-width:thin] [overscroll-behavior-x:contain]"
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-4 md:hidden [@media(hover:none)]:!flex [@media(hover:hover)]:!hidden [scrollbar-width:thin] [overscroll-behavior-x:contain]"
         role="region"
         aria-label={`${label}. Swipe horizontally to browse stories.`}
       >
