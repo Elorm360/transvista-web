@@ -138,13 +138,17 @@ export function StorySlideshow({
   return (
     <div
       role="region"
-      aria-label={`${label}. Hover, focus or tap to pause.`}
+      aria-label={`${label}. Swipe to browse on touch screens; hover, focus or tap to pause on desktop.`}
       className="relative"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setHovered(true)}
       onBlurCapture={() => setHovered(false)}
-      onClick={() => setTapPaused((value) => !value)}
+      onClick={() => {
+        if (!window.matchMedia("(hover: none)").matches) {
+          setTapPaused((value) => !value);
+        }
+      }}
     >
       {/* Touch-first devices get a native, momentum-scrolling rail with snap points. */}
       <div className="hidden [@media(hover:none)]:flex overflow-x-auto snap-x snap-mandatory gap-5 px-6 pb-4 [scrollbar-width:thin] [overscroll-behavior-x:contain]">
