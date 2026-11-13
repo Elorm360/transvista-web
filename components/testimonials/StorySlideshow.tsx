@@ -139,15 +139,23 @@ export function StorySlideshow({
     <div
       role="region"
       aria-label={`${label}. Hover, focus or tap to pause.`}
-      className="relative overflow-hidden"
+      className="relative"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setHovered(true)}
       onBlurCapture={() => setHovered(false)}
       onClick={() => setTapPaused((value) => !value)}
     >
+      {/* Touch-first devices get a native, momentum-scrolling rail with snap points. */}
+      <div className="hidden [@media(hover:none)]:flex overflow-x-auto snap-x snap-mandatory gap-5 px-6 pb-4 [scrollbar-width:thin] [overscroll-behavior-x:contain]">
+        {stories.map((story) => (
+          <div key={story.key} className="w-[82vw] max-w-sm shrink-0 snap-start">
+            <ReviewCard story={story} />
+          </div>
+        ))}
+      </div>
       <div
-        className="flex w-max items-start"
+        className="flex w-max items-start [@media(hover:none)]:hidden"
         style={{
           animation: `marquee ${Math.max(stories.length * secondsPerCard, 30)}s linear infinite`,
           animationPlayState: paused ? "paused" : "running",
@@ -165,12 +173,12 @@ export function StorySlideshow({
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 w-10 md:w-24"
+        className="pointer-events-none absolute inset-y-0 left-0 w-10 md:w-24 [@media(hover:none)]:hidden"
         style={{ background: `linear-gradient(to right, ${fadeFrom}, transparent)` }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 w-10 md:w-24"
+        className="pointer-events-none absolute inset-y-0 right-0 w-10 md:w-24 [@media(hover:none)]:hidden"
         style={{ background: `linear-gradient(to left, ${fadeFrom}, transparent)` }}
       />
       {tapPaused && (
