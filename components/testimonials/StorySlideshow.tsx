@@ -110,7 +110,6 @@ export function StorySlideshow({
   fadeFrom?: string;
   label?: string;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (!stories.length) return null;
@@ -135,14 +134,14 @@ export function StorySlideshow({
       {/* Desktop: a composed, three-column editorial layout with deliberate controls. */}
       <div className="hidden md:block">
         <div className="grid grid-cols-3 items-stretch gap-5">
-          {visibleStories.map((story, offset) =>
+          {visibleStories.map((story) =>
             card(story, `desktop-${story.key}-${activeIndex}`, "min-w-0"),
           )}
         </div>
         {stories.length > visibleCount && (
           <div className="mt-7 flex items-center justify-between">
             <p className="text-sm text-slate-500" aria-live="polite">
-              Showing {activeIndex + 1}–{Math.min(activeIndex + visibleCount, stories.length)} of {stories.length} stories
+              Starting with story {activeIndex + 1} · {stories.length} stories
             </p>
             <div className="flex items-center gap-2">
               <button
