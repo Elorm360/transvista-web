@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import type { StoryItem } from "@/lib/reviews/getStories";
 import { ADINKRA_AVATARS, AdinkraAvatar } from "@/components/reviews/AdinkraAvatars";
 
@@ -97,99 +97,87 @@ export function ReviewCard({ story }: { story: StoryItem }) {
 }
 
 /**
- * Continuously gliding row of story cards (slow and calm).
- * Pauses on hover, keyboard focus or tap. Shows a still, swipeable row
- * for visitors who prefer reduced motion.
+ * Traveller stories: a calm editorial grid on desktop and a native swipe rail
+ * on touch-first devices. Desktop visitors move through stories at their own pace.
  */
 export function StorySlideshow({
   stories,
-  secondsPerCard = 8,
   fadeFrom = "#ffffff",
   label = "Traveller stories",
 }: {
   stories: StoryItem[];
-  /** Higher = slower. */
-  secondsPerCard?: number;
-  /** Background colour behind the row, used for the soft edge fades. */
+  /** Background colour behind the row. */
   fadeFrom?: string;
   label?: string;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  const [hovered, setHovered] = useState(false);
-  const [tapPaused, setTapPaused] = useState(false);
-  const paused = hovered || tapPaused;
+  const [activeIndex, setActiveIndex] = useState(0);
 
   if (!stories.length) return null;
 
-  const card = (story: StoryItem, key: string) => (
-    <div key={key} className="w-[80vw] max-w-sm shrink-0 md:w-[360px]">
+  const visibleCount = Math.min(3, stories.length);
+  const visibleStories = Array.from({ length: visibleCount }, (_, offset) =>
+    stories[(activeIndex + offset) % stories.length],
+  );
+
+  const move = (direction: -1 | 1) => {
+    setActiveIndex((current) => (current + direction + stories.length) % stories.length);
+  };
+
+  const card = (story: StoryItem, key: string, className = "") => (
+    <div key={key} className={className}>
       <ReviewCard story={story} />
     </div>
   );
 
-  if (reducedMotion) {
-    return (
-      <div role="region" aria-label={label} className="overflow-x-auto pb-2 [scrollbar-width:thin]">
-        <div className="flex w-max gap-5 px-6 lg:px-8">{stories.map((s) => card(s, s.key))}</div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      role="region"
-      aria-label={`${label}. Swipe to browse on touch screens; hover, focus or tap to pause on desktop.`}
-      className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setHovered(true)}
-      onBlurCapture={() => setHovered(false)}
-      onClick={() => {
-        if (!window.matchMedia("(hover: none)").matches) {
-          setTapPaused((value) => !value);
-        }
-      }}
-    >
-      {/* Touch-first devices get a native, momentum-scrolling rail with snap points. */}
-      <div className="hidden [@media(hover:none)]:flex overflow-x-auto snap-x snap-mandatory gap-5 px-6 pb-4 [scrollbar-width:thin] [overscroll-behavior-x:contain]">
+    <section aria-label={label} className="w-full">
+      {/* Desktop: a composed, three-column editorial layout with deliberate controls. */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-3 items-stretch gap-5">
+          {visibleStories.map((story, offset) =>
+            card(story, `desktop-${story.key}-${activeIndex}`, "min-w-0"),
+          )}
+        </div>
+        {stories.length > visibleCount && (
+          <div className="mt-7 flex items-center justify-between">
+            <p className="text-sm text-slate-500" aria-live="polite">
+              Showing {activeIndex + 1}–{Math.min(activeIndex + visibleCount, stories.length)} of {stories.length} stories
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => move(-1)}
+                aria-label="Previous traveller stories"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:border-brand-orange-500 hover:text-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+              >
+                <ChevronLeft aria-hidden="true" className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => move(1)}
+                aria-label="Next traveller stories"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:border-brand-orange-500 hover:text-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
+              >
+                <ChevronRight aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Phones and touch tablets: native momentum scrolling with clear snap points. */}
+      <div
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-4 md:hidden [scrollbar-width:thin] [overscroll-behavior-x:contain]"
+        role="region"
+        aria-label={`${label}. Swipe horizontally to browse stories.`}
+      >
         {stories.map((story) => (
-          <div key={story.key} className="w-[82vw] max-w-sm shrink-0 snap-start">
+          <div key={story.key} className="w-[84vw] max-w-sm shrink-0 snap-start">
             <ReviewCard story={story} />
           </div>
         ))}
       </div>
-      <div
-        className="flex w-max items-start [@media(hover:none)]:hidden"
-        style={{
-          animation: `marquee ${Math.max(stories.length * secondsPerCard, 30)}s linear infinite`,
-          animationPlayState: paused ? "paused" : "running",
-        }}
-      >
-        {["primary", "duplicate"].map((group) => (
-          <div
-            key={group}
-            className="flex shrink-0 items-start gap-5 pr-5"
-            aria-hidden={group === "duplicate" ? true : undefined}
-          >
-            {stories.map((story) => card(story, `${group}-${story.key}`))}
-          </div>
-        ))}
-      </div>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 w-10 md:w-24 [@media(hover:none)]:hidden"
-        style={{ background: `linear-gradient(to right, ${fadeFrom}, transparent)` }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 w-10 md:w-24 [@media(hover:none)]:hidden"
-        style={{ background: `linear-gradient(to left, ${fadeFrom}, transparent)` }}
-      />
-      {tapPaused && (
-        <p className="pointer-events-none absolute right-4 top-3 rounded-full bg-slate-900/75 px-3 py-1 text-xs font-medium text-white">
-          Paused · tap to continue
-        </p>
-      )}
-    </div>
+    </section>
   );
 }
