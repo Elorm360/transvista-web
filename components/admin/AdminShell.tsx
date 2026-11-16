@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, MessageSquareText,
-  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell, CalendarDays, Star,
+  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell, CalendarDays, Star, CalendarPlus,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
@@ -15,6 +15,7 @@ const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard;
   { label: "Notifications", href: "/admin/notifications", icon: Bell, area: "dashboard", group: "WORKSPACE" },
   { label: "Booking requests", href: "/admin/requests", icon: ClipboardList, area: "requests", group: "OPERATIONS" },
   { label: "Trip operations", href: "/admin/trips", icon: CalendarDays, area: "requests", group: "OPERATIONS" },
+  { label: "Event management", href: "/admin/events", icon: CalendarPlus, area: "events", group: "OPERATIONS" },
   { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments", group: "OPERATIONS" },
   { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests", group: "OPERATIONS" },
   { label: "Community", href: "/admin/community", icon: Users, area: "community", group: "PEOPLE" },
@@ -29,6 +30,7 @@ const pageNames: Record<string, string> = {
   "/admin/notifications": "Notifications",
   "/admin/requests": "Booking requests",
   "/admin/trips": "Trip Operations & Calendar",
+  "/admin/events": "Event Management Centre",
   "/admin/payments": "Payments",
   "/admin/messages": "Messages",
   "/admin/community": "Community",
