@@ -10,7 +10,8 @@ export type AdminArea =
   | "requests"
   | "payments"
   | "analytics"
-  | "settings";
+  | "settings"
+  | "events";
 
 /**
  * Check whether a role can access a particular admin area.
@@ -44,6 +45,9 @@ export function canAccess(
 
     case "settings":
       return role === "owner";
+
+    case "events":
+      return role === "owner" || role === "admin";
 
     default:
       return false;
