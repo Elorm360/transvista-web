@@ -187,6 +187,20 @@ test("sitemap and robots use the www host", async ({ request }) => {
   expect(robots).toContain("https://www.transvistaafrica.com/sitemap.xml");
 });
 
+test.describe("Managed event publishing", () => {
+  test("keeps the public upcoming page in planning mode when no event is published", async ({ page }) => {
+    await page.goto("/trips", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: "Our next group experience is being planned." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore Past Events" })).toBeVisible();
+  });
+
+  test("shows completed managed events in the archive", async ({ page }) => {
+    await page.goto("/past-events", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: "Central Region Heritage & Adventure Day Trip" })).toBeVisible();
+    await expect(page.getByText("Central Region · Completed")).toBeVisible();
+  });
+});
+
 test.describe("Past event archive", () => {
   const pastEventPath = "/past-events/central-region-heritage-adventure-2026";
   const legacyTripPath = "/trips/central-region-heritage-adventure-2026";
