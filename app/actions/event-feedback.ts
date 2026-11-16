@@ -67,10 +67,10 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   const { data: matches, error: bookingError } = await bookingQuery.limit(2);
 
   if (bookingError || !matches?.length) {
-    return { success: false, message: "We could not find a registration using those details. Check the email or phone number you entered when registering, or contact the TransVista team for help." };
+    return { success: false, message: "We could not match those details to a single registration. Check the contact detail you entered when registering, or contact the TransVista team for help." };
   }
   if (matches.length > 1) {
-    return { success: false, message: "We found more than one registration using those details. Please contact the TransVista team so we can help identify the right booking." };
+    return { success: false, message: "We could not match those details to a single registration. Check the contact detail you entered when registering, or contact the TransVista team for help." };
   }
 
   const booking = matches[0];
