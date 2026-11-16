@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, MessageCircle } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +19,8 @@ type EventRow = {
 };
 
 async function getEvent(slug: string) {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("travel_events").select("*").eq("slug", slug)
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("travel_events").select("*").eq("slug", slug)
     .in("status", ["published", "registration_closed"]).maybeSingle();
   if (error) console.error("[PublicEventPage]", error);
   return data as EventRow | null;
