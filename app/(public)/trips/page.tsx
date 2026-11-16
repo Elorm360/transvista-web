@@ -44,7 +44,13 @@ export default async function TripsPage() {
       <PageHeader eyebrow="Group experiences" title="Travel Ghana together." lead="Our group experiences bring people together to discover Ghana through thoughtfully coordinated journeys." />
       <section className="py-12 lg:py-16">
         <Container>
-          {events.length ? (
+          {error ? (
+            <div role="status" className="mx-auto max-w-3xl rounded-[28px] border border-amber-200 bg-amber-50 px-7 py-12 text-center">
+              <h2 className="font-display text-2xl font-semibold text-slate-900">Upcoming experiences are temporarily unavailable.</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600">Please check back shortly or follow our official WhatsApp updates for confirmed announcements.</p>
+              <a href="https://whatsapp.com/channel/0029VbBchTr0G0XluVpGfy2q" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-orange-600 px-5 text-sm font-semibold text-white">Follow WhatsApp updates</a>
+            </div>
+          ) : events.length ? (
             <div className="grid gap-6 md:grid-cols-2">
               {events.map((event) => (
                 <article key={event.slug} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
