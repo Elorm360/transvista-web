@@ -14,7 +14,7 @@ one line of data. No component code needs to change.
 |---|---|---|
 | Destination pages and cards | `public/images/destinations/` | `constants/data/destinations.ts` → `image`, `imageAlt` |
 | Experience pages and cards | `public/images/experiences/` | `constants/data/experiences.ts` → `image`, `imageAlt` |
-| Group trip (page, pop-up, share preview) | `public/images/experiences/` | `lib/travel/packages.ts` → `image`, `imageAlt` |
+| Past-event and group-trip pages | `public/images/experiences/` | Event and package records → `image`, `imageAlt` |
 | Homepage hero slideshow | `public/images/hero/` | `components/sections/home/hero/HeroVisual.tsx` → `heroImages` |
 | Traveller stories | `public/images/testimonials/` | `content/testimonials.ts` |
 
