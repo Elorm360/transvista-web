@@ -26,10 +26,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${seoConfig.url}/trips/central-region-heritage-adventure-2026`,
+      url: `${seoConfig.url}/past-events`,
       lastModified,
-      changeFrequency: "weekly",
-      priority: 0.9,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${seoConfig.url}/past-events/central-region-heritage-adventure-2026`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     ...["/destinations", "/trips", "/contact", "/privacy", "/terms"].map(
       (path) => ({
