@@ -18,13 +18,12 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { track } from "@/lib/analytics";
 import { destinations } from "@/constants/data/destinations";
 import { experiences } from "@/constants/data/experiences";
-import { centralRegionPackage } from "@/lib/travel/packages";
 
 function pageMessage(pathname: string) {
   const [, section, slug] = pathname.split("/");
 
   if (section === "trips") {
-    return `Hi TransVista Africa, I'm interested in the ${centralRegionPackage.title} (${centralRegionPackage.displayDate}).`;
+    return "Hi TransVista Africa, I'm interested in future group experiences and would like to hear when the next departure is announced.";
   }
   if (section === "destinations") {
     const destination = destinations.find((item) => item.slug === slug);
@@ -52,10 +51,10 @@ type Topic = {
 const topics: Topic[] = [
   {
     id: "group-trip",
-    label: "Upcoming group trip",
-    hint: centralRegionPackage.displayDate,
+    label: "Upcoming group experiences",
+    hint: "Ask about future departures",
     icon: Users,
-    message: `Hi TransVista Africa, I have a question about the ${centralRegionPackage.title} (${centralRegionPackage.displayDate}).`,
+    message: "Hi TransVista Africa, please let me know when the next TransVista group experience is announced.",
   },
   {
     id: "custom-trip",
