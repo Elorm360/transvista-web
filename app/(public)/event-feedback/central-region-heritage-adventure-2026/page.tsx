@@ -4,11 +4,14 @@ import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EventFeedbackForm } from "@/components/events/EventFeedbackForm";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Central Region Event Feedback",
-  description: "Share private feedback about the TransVista Central Region Heritage & Adventure Day Trip.",
-  path: "/event-feedback/central-region-heritage-adventure-2026",
-});
+export const metadata: Metadata = {
+  ...pageMetadata({
+    title: "Central Region Event Feedback",
+    description: "Share private feedback about the TransVista Central Region Heritage & Adventure Day Trip.",
+    path: "/event-feedback/central-region-heritage-adventure-2026",
+  }),
+  robots: { index: false, follow: false },
+};
 
 export default function CentralRegionEventFeedbackPage() {
   return (
