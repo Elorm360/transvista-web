@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Star } from "lucide-react";
 import { submitEventFeedback } from "@/app/actions/event-feedback";
 
 const ratingFields = [
@@ -21,6 +22,7 @@ export function EventFeedbackForm() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [invitePublicStory, setInvitePublicStory] = useState(false);
 
   function handleSubmit(formData: FormData) {
     setError("");
@@ -33,7 +35,10 @@ export function EventFeedbackForm() {
     }
     startTransition(async () => {
       const result = await submitEventFeedback(formData);
-      if (result.success) setDone(true);
+      if (result.success) {
+        setInvitePublicStory(Boolean(result.invitePublicStory));
+        setDone(true);
+      }
       else setError(result.message || "We could not submit your feedback. Please try again.");
     });
   }
@@ -44,6 +49,22 @@ export function EventFeedbackForm() {
         <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" aria-hidden="true" />
         <h2 className="font-display mt-4 text-2xl font-semibold text-slate-900">Thank you for your feedback.</h2>
         <p className="mx-auto mt-2 max-w-lg text-sm leading-7 text-slate-600">Your response has been received privately. Our team will use it to improve future TransVista experiences.</p>
+        {invitePublicStory && (
+          <div className="mx-auto mt-6 max-w-lg rounded-2xl border border-brand-orange-200 bg-white p-5 text-left">
+            <p className="text-sm font-semibold text-slate-900">It sounds like you had a wonderful time!</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Would you like to share a short public story? It helps other travellers discover Ghana with confidence.
+              (Your private feedback above stays private.)
+            </p>
+            <Link
+              href="/stories#share-your-story"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-orange-700"
+            >
+              Share your story publicly
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </div>
     );
   }
@@ -53,7 +74,6 @@ export function EventFeedbackForm() {
       <div className="hidden" aria-hidden="true">
         <label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
       </div>
-
       <section>
         <h2 className="font-display text-xl font-semibold text-slate-900">Find your registration</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">Enter the email address or phone number you used when registering. We will match it to your registration—no booking reference needed.</p>
@@ -64,7 +84,6 @@ export function EventFeedbackForm() {
           <p className="mt-2 text-xs leading-5 text-slate-500">Use the same contact detail you provided on your registration form. Your contact details are kept private.</p>
         </div>
       </section>
-
       <section>
         <h2 className="font-display text-xl font-semibold text-slate-900">Rate your experience</h2>
         <p className="mt-2 text-sm text-slate-600">1 = Needs improvement · 5 = Excellent</p>
@@ -85,7 +104,6 @@ export function EventFeedbackForm() {
           ))}
         </div>
       </section>
-
       <section>
         <label className={labelClass}>How likely are you to recommend TransVista to a friend? *
           <select name="recommendationScore" required defaultValue="" className={fieldClass}>
@@ -115,7 +133,6 @@ export function EventFeedbackForm() {
           </label>
         </div>
       </section>
-
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <div className="border-t border-slate-200 pt-6">
         <p className="text-xs leading-6 text-slate-500">Your answers are private and used for service improvement. They will not be published as a testimonial. If you would like to share a public story separately, you can do so through Traveller Stories.</p>
