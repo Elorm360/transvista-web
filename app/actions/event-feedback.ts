@@ -2,12 +2,14 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type EventFeedbackResult = { success: boolean; message?: string };
+export type EventFeedbackResult = { success: boolean; message?: string; invitePublicStory?: boolean };
 
 const EVENT_SLUG = "central-region-heritage-adventure-2026";
+
 const EVENT_TITLE = "Central Region Heritage & Adventure Day Trip";
+
+// Only travellers who paid (and so could have travelled) may leave feedback.
 const ALLOWED_BOOKING_STATUSES = [
-  "confirmed-awaiting-deposit",
   "deposit-paid",
   "paid",
   "in-progress",
@@ -18,6 +20,19 @@ function clean(value: unknown, max: number) {
   return String(value ?? "").trim().replace(/\s+/g, " ").slice(0, max);
 }
 
+/**
+ * Compare Ghanaian phone numbers regardless of how they were typed:
+ * "024 123 4567", "0241234567", "+233 24 123 4567" and "00233241234567" all match.
+ * Uses the last 9 digits (the subscriber number without the leading 0 or 233).
+ */
+function phoneKey(value: unknown): string | null {
+  let digits = String(value ?? "").replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("233")) digits = digits.slice(3);
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  return digits.length >= 9 ? digits.slice(-9) : null;
+}
+
 function rating(value: unknown, min: number, max: number) {
   if (value === null || value === undefined || String(value).trim() === "") return null;
   const number = Number(value);
@@ -26,7 +41,6 @@ function rating(value: unknown, min: number, max: number) {
 
 export async function submitEventFeedback(form: FormData): Promise<EventFeedbackResult> {
   if (clean(form.get("website"), 200)) return { success: true };
-
   const contact = clean(form.get("contact"), 254);
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
   const isPhone = /^[+\d][\d\s()-]{6,24}$/.test(contact);
@@ -53,24 +67,24 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   }
 
   const admin = createAdminClient();
-  let bookingQuery = admin
+  const { data: candidates, error: bookingError } = await admin
     .from("package_reservations")
-    .select("reference, full_name, email, package_title")
+    .select("reference, full_name, email, phone, package_title")
     .eq("package_slug", EVENT_SLUG)
     .in("status", ALLOWED_BOOKING_STATUSES)
-    .is("archived_at", null);
+    .is("archived_at", null)
+    .limit(1000);
 
-  bookingQuery = isEmail
-    ? bookingQuery.eq("email", contact.toLowerCase())
-    : bookingQuery.eq("phone", contact);
+  const wantedPhone = isEmail ? null : phoneKey(contact);
+  const matches = (candidates ?? []).filter((row) =>
+    isEmail
+      ? String(row.email ?? "").trim().toLowerCase() === contact.toLowerCase()
+      : wantedPhone !== null && phoneKey(row.phone) === wantedPhone,
+  );
 
-  const { data: matches, error: bookingError } = await bookingQuery.limit(2);
-
-  if (bookingError || !matches?.length) {
-    return { success: false, message: "We could not match those details to a single registration. Check the contact detail you entered when registering, or contact the TransVista team for help." };
-  }
-  if (matches.length > 1) {
-    return { success: false, message: "We could not match those details to a single registration. Check the contact detail you entered when registering, or contact the TransVista team for help." };
+  if (bookingError || matches.length !== 1) {
+    if (bookingError) console.error("[submitEventFeedback] lookup failed:", bookingError);
+    return { success: false, message: "We could not match those details to a single paid registration. Check the contact detail you entered when registering, or contact the TransVista team for help." };
   }
 
   const booking = matches[0];
@@ -101,5 +115,7 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
     return { success: false, message: "We could not save your feedback just now. Please try again shortly." };
   }
 
-  return { success: true };
+  // Delighted travellers are invited to share a public story as well.
+  const invitePublicStory = (recommendationScore ?? 0) >= 9 && (overallRating ?? 0) >= 4;
+  return { success: true, invitePublicStory };
 }
