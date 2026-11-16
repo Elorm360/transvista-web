@@ -27,8 +27,9 @@ function rating(value: unknown, min: number, max: number) {
 export async function submitEventFeedback(form: FormData): Promise<EventFeedbackResult> {
   if (clean(form.get("website"), 200)) return { success: true };
 
-  const bookingReference = clean(form.get("bookingReference"), 40).toUpperCase();
-  const email = clean(form.get("email"), 254).toLowerCase();
+  const contact = clean(form.get("contact"), 254);
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+  const isPhone = /^[+\d][\d\s()-]{6,24}$/.test(contact);
   const overallRating = rating(form.get("overallRating"), 1, 5);
   const transportRating = rating(form.get("transportRating"), 1, 5);
   const organisationRating = rating(form.get("organisationRating"), 1, 5);
@@ -41,8 +42,8 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   const improvementSuggestion = clean(form.get("improvementSuggestion"), 1200);
   const nextDestinationInterest = clean(form.get("nextDestinationInterest"), 240);
 
-  if (bookingReference.length < 3 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { success: false, message: "Enter the booking reference and email address used to register." };
+  if (!isEmail && !isPhone) {
+    return { success: false, message: "Enter the email address or phone number you used when registering." };
   }
   if ([overallRating, transportRating, organisationRating, itineraryRating, guideRating, valueRating, recommendationScore].some((value) => value === null)) {
     return { success: false, message: "Please complete all ratings and the recommendation score." };
@@ -52,26 +53,33 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   }
 
   const admin = createAdminClient();
-  const { data: booking, error: bookingError } = await admin
+  let bookingQuery = admin
     .from("package_reservations")
     .select("reference, full_name, email, package_title")
-    .eq("reference", bookingReference)
-    .eq("email", email)
     .eq("package_slug", EVENT_SLUG)
     .in("status", ALLOWED_BOOKING_STATUSES)
-    .is("archived_at", null)
-    .maybeSingle();
+    .is("archived_at", null);
 
-  if (bookingError || !booking) {
-    return { success: false, message: "We could not verify that booking. Check the reference and email on your confirmation, or contact the TransVista team for help." };
+  bookingQuery = isEmail
+    ? bookingQuery.eq("email", contact.toLowerCase())
+    : bookingQuery.eq("phone", contact);
+
+  const { data: matches, error: bookingError } = await bookingQuery.limit(2);
+
+  if (bookingError || !matches?.length) {
+    return { success: false, message: "We could not find a registration using those details. Check the email or phone number you entered when registering, or contact the TransVista team for help." };
+  }
+  if (matches.length > 1) {
+    return { success: false, message: "We found more than one registration using those details. Please contact the TransVista team so we can help identify the right booking." };
   }
 
+  const booking = matches[0];
   const { error } = await admin.from("event_feedback").insert({
     event_slug: EVENT_SLUG,
     event_title: EVENT_TITLE,
-    booking_reference: bookingReference,
+    booking_reference: booking.reference,
     full_name: booking.full_name,
-    email,
+    email: booking.email,
     overall_rating: overallRating,
     transport_rating: transportRating,
     organisation_rating: organisationRating,
@@ -86,7 +94,7 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   });
 
   if (error?.code === "23505") {
-    return { success: false, message: "Feedback has already been submitted for this booking. Thank you for taking the time to help us improve." };
+    return { success: false, message: "Feedback has already been submitted for this registration. Thank you for taking the time to help us improve." };
   }
   if (error) {
     console.error("[submitEventFeedback]", error);
