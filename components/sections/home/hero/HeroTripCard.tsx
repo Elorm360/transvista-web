@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays } from "lucide-react";
 import { pastEvents } from "@/lib/events/past-events";
