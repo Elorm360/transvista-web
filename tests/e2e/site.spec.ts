@@ -68,12 +68,12 @@ test("all WhatsApp links use the official number", async ({ page }) => {
 });
 
 test("WhatsApp menu offers topics and a page-specific first option", async ({ page }) => {
-  await page.goto("/trips/central-region-heritage-adventure-2026", { waitUntil: "networkidle" });
+  await page.goto("/trips", { waitUntil: "networkidle" });
   const toggle = page.getByRole("button", { name: "Chat with TransVista Africa on WhatsApp" });
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
   const first = page.getByRole("link", { name: "About this page" });
-  expect(decodeURIComponent((await first.getAttribute("href")) ?? "")).toContain("Central Region Heritage");
+  expect(decodeURIComponent((await first.getAttribute("href")) ?? "")).toContain("future group experiences");
   for (const name of ["Plan a custom trip", "Airport pickup & transport", "My booking or payment", "Partner with us"]) {
     await expect(page.getByRole("link", { name })).toHaveAttribute("href", /wa\.me\/233248442916/);
   }
@@ -97,12 +97,11 @@ test("homepage links to all destinations", async ({ page }) => {
   await expect(page.getByRole("link", { name: "See all 6 destinations" })).toHaveAttribute("href", "/destinations");
 });
 
-test("trip page shares its own preview", async ({ page }) => {
-  await page.goto("/trips/central-region-heritage-adventure-2026");
+test("past event page has accurate social metadata", async ({ page }) => {
+  await page.goto("/past-events/central-region-heritage-adventure-2026");
   const ogTitle = await page.locator('meta[property="og:title"]').getAttribute("content");
-  const ogImage = await page.locator('meta[property="og:image"]').getAttribute("content");
   expect(ogTitle).toContain("Central Region");
-  expect(ogImage).toContain("https://www.transvistaafrica.com/images/experiences/");
+  await expect(page.getByRole("link", { name: /Share event feedback/ })).toHaveAttribute("href", /event-feedback/);
 });
 
 test.describe("Plan form", () => {
@@ -154,28 +153,17 @@ test.describe("Plan form", () => {
   });
 });
 
-test.describe("Trip announcement", () => {
-  test("does not cover the page on mobile first load", async ({ page, isMobile }) => {
-    test.skip(!isMobile, "mobile behaviour");
-    await page.goto("/stories");
-    await page.waitForTimeout(2000);
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Open upcoming trip details" })).toBeVisible();
-  });
-
-  test("homepage shows the next trip in the hero instead of the pill", async ({ page }) => {
+test.describe("Past event and group trip messaging", () => {
+  test("does not show the completed event as an upcoming announcement", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page.getByRole("link", { name: /Next group trip/ })).toBeVisible();
+    await page.waitForTimeout(1200);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Open upcoming trip details" })).toHaveCount(0);
   });
 
-  test("opens on desktop only after scrolling", async ({ page, isMobile }) => {
-    test.skip(isMobile, "desktop behaviour");
-    await page.goto("/");
-    await page.waitForTimeout(1500);
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await page.mouse.wheel(0, 6000);
-    await expect(page.getByRole("dialog")).toBeVisible();
+  test("homepage hero links to the latest past event", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.getByRole("link", { name: /Recent TransVista experience/ })).toHaveAttribute("href", /past-events/);
   });
 });
 
@@ -196,46 +184,31 @@ test("sitemap and robots use the www host", async ({ request }) => {
   expect(robots).toContain("https://www.transvistaafrica.com/sitemap.xml");
 });
 
-test.describe("Group trip page", () => {
-  const tripPath = "/trips/central-region-heritage-adventure-2026";
+test.describe("Past event archive", () => {
+  const pastEventPath = "/past-events/central-region-heritage-adventure-2026";
+  const legacyTripPath = "/trips/central-region-heritage-adventure-2026";
 
-  test("shows countdown, map, calendar and share actions", async ({ page }) => {
-    await page.goto(tripPath, { waitUntil: "networkidle" });
-    await expect(page.getByText(/Registration (closes|has closed)/).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Pickup on Google Maps" })).toHaveAttribute("href", /google\.com\/maps/);
-    await expect(page.getByRole("link", { name: "Add to Google Calendar" })).toHaveAttribute("href", /dates=20261114T053000Z\/20261114T190000Z/);
-    await expect(page.getByRole("button", { name: "Share with a friend" })).toBeVisible();
+  test("shows the completed itinerary and private feedback link", async ({ page }) => {
+    await page.goto(pastEventPath, { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: /Central Region Heritage & Adventure/ })).toBeVisible();
+    await expect(page.getByText("Saturday, 14 November 2026")).toBeVisible();
+    await expect(page.getByText("Kakum National Park")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Share event feedback/ })).toHaveAttribute("href", /event-feedback/);
   });
 
-  test("calendar file downloads as iCalendar", async ({ request }) => {
-    const response = await request.get(`${tripPath}/calendar.ics`);
+  test("legacy trip URL redirects to the past event record", async ({ page }) => {
+    await page.goto(legacyTripPath, { waitUntil: "networkidle" });
+    await expect(page).toHaveURL(new RegExp(pastEventPath.replaceAll("/", "\\/") + "$"));
+    await expect(page.getByRole("link", { name: /Share event feedback/ })).toBeVisible();
+  });
+
+  test("calendar file remains available for previous registrants", async ({ request }) => {
+    const response = await request.get(`${legacyTripPath}/calendar.ics`);
     expect(response.status()).toBe(200);
     expect(response.headers()["content-type"]).toContain("text/calendar");
     const body = await response.text();
     expect(body).toContain("DTSTART:20261114T053000Z");
     expect(body).toContain("LOCATION:Accra Mall\\, Accra\\, Ghana");
-  });
-
-  test("FAQ expands and Event + FAQ schema are present", async ({ page }) => {
-    await page.goto(tripPath);
-    await page.getByText("Do I pay anything when I register?").click();
-    await expect(page.getByText(/Registration is free/)).toBeVisible();
-    const schemas = await page
-      .locator('script[type="application/ld+json"]')
-      .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
-    const joined = schemas.join("\n");
-    expect(joined).toContain('"@type":"Event"');
-    expect(joined).toContain('"@type":"FAQPage"');
-  });
-
-  test("sticky reserve bar appears on mobile after scrolling", async ({ page, isMobile }) => {
-    test.skip(!isMobile, "mobile only");
-    await page.goto(tripPath, { waitUntil: "networkidle" });
-    const bar = page.getByText("No payment now", { exact: true });
-    await expect(bar).not.toBeInViewport();
-    await page.mouse.wheel(0, 1400);
-    await page.evaluate(() => window.scrollTo(0, 1400));
-    await expect(bar).toBeInViewport();
   });
 });
 
