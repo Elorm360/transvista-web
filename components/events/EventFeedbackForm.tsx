@@ -55,15 +55,13 @@ export function EventFeedbackForm() {
       </div>
 
       <section>
-        <h2 className="font-display text-xl font-semibold text-slate-900">Verify your booking</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Use the booking reference and email address provided when you registered. One response is accepted per booking.</p>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <label className={labelClass}>Booking reference *
-            <input name="bookingReference" required maxLength={40} autoComplete="off" className={fieldClass} placeholder="e.g. TVA-..." />
+        <h2 className="font-display text-xl font-semibold text-slate-900">Find your registration</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">Enter the email address or phone number you used when registering. We will match it to your registration—no booking reference needed.</p>
+        <div className="mt-5">
+          <label className={labelClass}>Registration email or phone number *
+            <input name="contact" required maxLength={254} autoComplete="off" className={fieldClass} placeholder="Email address or phone number" />
           </label>
-          <label className={labelClass}>Booking email *
-            <input name="email" type="email" required maxLength={254} autoComplete="email" className={fieldClass} placeholder="The email used to register" />
-          </label>
+          <p className="mt-2 text-xs leading-5 text-slate-500">Use the same contact detail you provided on your registration form. Your contact details are kept private.</p>
         </div>
       </section>
 
