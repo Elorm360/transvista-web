@@ -24,7 +24,7 @@ async function getEvent(): Promise<{ event: EventRecord | null; allowStaticFallb
     return { event: null, allowStaticFallback: true };
   }
   // No visible row may mean the event is no longer public under RLS; do not revive it.
-  if (data.status !== "completed") return { event: null, allowStaticFallback: false };
+  if (!data || data.status !== "completed") return { event: null, allowStaticFallback: false };
   return { event: data as EventRecord, allowStaticFallback: false };
 }
 function dateLabel(value: string) {
