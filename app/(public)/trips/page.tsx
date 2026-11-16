@@ -5,7 +5,7 @@ import { ArrowRight, CalendarDays, Compass, MapPin } from "lucide-react";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -30,8 +30,8 @@ function money(value: number | string, currency: string) {
 }
 
 export default async function TripsPage() {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("travel_events")
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("travel_events")
     .select("slug,title,region,summary,start_date,end_date,registration_deadline,price_amount,currency,pickup_location,image_path,image_alt,status,featured")
     .in("status", ["published", "registration_closed"])
     .order("featured", { ascending: false })
