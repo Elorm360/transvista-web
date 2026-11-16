@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export type TravelEventActionState = { success: boolean; message: string };
 
@@ -86,7 +86,7 @@ export async function createTravelEvent(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
-  const { user } = await requireAdminArea("events");
+  await requireAdminArea("events");
   try {
     if (process.env.VERCEL_ENV === "preview") {
       return { success: false, message: "This preview is read-only because it shares live TransVista data." };
@@ -94,11 +94,10 @@ export async function createTravelEvent(
     const values = parseEvent(form);
     const slug = slugify(field(form, "slug", 120) || values.title);
     if (slug.length < 3) return { success: false, message: "Enter a valid event URL slug." };
-    const admin = createAdminClient();
-    const { error } = await admin.from("travel_events").insert({
+    const supabase = await createClient();
+    const { error } = await supabase.from("travel_events").insert({
       ...values, slug,
       published_at: ["published", "registration_closed"].includes(values.status) ? new Date().toISOString() : null,
-      created_by: user.id, updated_by: user.id,
     });
     if (error?.code === "23505") return { success: false, message: "That event URL is already in use. Choose a different slug." };
     if (error) {
@@ -124,13 +123,12 @@ export async function updateTravelEvent(
     const id = field(form, "eventId", 40);
     if (!/^[0-9a-f-]{36}$/i.test(id)) return { success: false, message: "The event could not be identified." };
     const values = parseEvent(form);
-    const admin = createAdminClient();
-    const { data: current, error: readError } = await admin.from("travel_events").select("published_at").eq("id", id).maybeSingle();
+    const supabase = await createClient();
+    const { data: current, error: readError } = await supabase.from("travel_events").select("published_at").eq("id", id).maybeSingle();
     if (readError || !current) return { success: false, message: "This event could not be found. Refresh the page and try again." };
-    const { error } = await admin.from("travel_events").update({
+    const { error } = await supabase.from("travel_events").update({
       ...values,
       published_at: current.published_at ?? (["published", "registration_closed"].includes(values.status) ? new Date().toISOString() : null),
-      updated_by: user.id,
       updated_at: new Date().toISOString(),
     }).eq("id", id);
     if (error) {
