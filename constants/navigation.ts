@@ -16,6 +16,10 @@ export const navigation = [
     href: "/#why-transvista",
   },
   {
+    label: "Past Events",
+    href: "/past-events",
+  },
+  {
     label: "Stories",
     href: "/stories",
   },
