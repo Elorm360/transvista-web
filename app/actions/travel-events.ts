@@ -19,7 +19,10 @@ function slugify(value: string) {
 }
 
 function validDate(value: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(value + "T12:00:00Z").getTime());
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
 }
 
 function parseEvent(form: FormData) {
@@ -30,7 +33,8 @@ function parseEvent(form: FormData) {
   const startDate = field(form, "startDate", 10);
   const endDate = field(form, "endDate", 10);
   const registrationDeadline = field(form, "registrationDeadline", 10);
-  const priceAmount = Number(field(form, "priceAmount", 20));
+  const priceText = field(form, "priceAmount", 20);
+  const priceAmount = Number(priceText);
   const currency = field(form, "currency", 3);
   const capacityText = field(form, "capacity", 8);
   const capacity = capacityText ? Number(capacityText) : null;
@@ -53,7 +57,7 @@ function parseEvent(form: FormData) {
   }
   if (endDate && endDate < startDate) throw new Error("The end date cannot be earlier than the start date.");
   if (registrationDeadline && registrationDeadline > startDate) throw new Error("The registration deadline must be on or before the event start date.");
-  if (!Number.isFinite(priceAmount) || priceAmount < 0 || priceAmount > 10000000) throw new Error("Enter a valid event price.");
+  if (!priceText || !Number.isFinite(priceAmount) || priceAmount < 0 || priceAmount > 10000000) throw new Error("Enter a valid event price.");
   if (!(CURRENCIES as readonly string[]).includes(currency)) throw new Error("Choose a supported currency.");
   if (capacity !== null && (!Number.isInteger(capacity) || capacity < 1 || capacity > 10000)) throw new Error("Enter a valid capacity or leave it blank.");
   if (!(STATUSES as readonly string[]).includes(status)) throw new Error("Choose a valid event status.");
