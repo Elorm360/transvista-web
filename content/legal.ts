@@ -57,7 +57,7 @@ export const privacyPolicy: {
       id: "cookies",
       title: "6. Cookies and local storage",
       paragraphs: [
-        "The public website does not use advertising or tracking cookies. We use Vercel Web Analytics, which counts page visits and actions such as sending a trip request without cookies and without identifying you personally. We use your browser’s local storage to remember small preferences, such as having closed the upcoming-trip announcement. Staff sign-in to the admin area uses essential authentication cookies.",
+        "The public website does not use advertising or tracking cookies. We use Vercel Web Analytics, which counts page visits and actions such as sending a trip request without cookies and without identifying you personally. We use your browser’s local storage to remember small site preferences and keep your experience consistent. Staff sign-in to the admin area uses essential authentication cookies.",
       ],
     },
     {

@@ -2,7 +2,6 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
-import { UpcomingEventSpotlight } from "@/components/layout/UpcomingEventSpotlight";
 
 export default function PublicLayout({
   children,
@@ -24,7 +23,6 @@ export default function PublicLayout({
       {children}
       <Footer />
       <WhatsAppButton />
-      <UpcomingEventSpotlight />
     </>
   );
 }

@@ -1,94 +1,53 @@
-import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, MapPin, Camera, ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarDays, Compass } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
-import { buttonVariants } from "@/components/ui/button";
-import { centralRegionPackage } from "@/lib/travel/packages";
-import { cn } from "@/lib/utils";
+import { pastEvents } from "@/lib/events/past-events";
 
 export function FeaturedTrip() {
-  const trip = centralRegionPackage;
+  const latestEvent = pastEvents[0];
 
   return (
     <Section id="featured-trip" className="bg-white">
       <Container>
         <Reveal>
           <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-[#fffdfa] shadow-[0_24px_80px_-45px_rgba(15,23,42,0.4)]">
-            <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-              <div className="relative min-h-[320px]">
-                <Image
-                  src={trip.image}
-                  alt={trip.imageAlt}
-                  fill
-                  quality={80}
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                <span className="absolute left-6 top-6 rounded-full bg-brand-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
-                  Upcoming group trip
+            <div className="grid lg:grid-cols-[0.8fr_1.2fr]">
+              <div className="flex min-h-[280px] flex-col justify-between bg-brand-blue-950 p-8 text-white sm:p-10">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange-500 text-white">
+                  <Compass className="h-6 w-6" aria-hidden="true" />
                 </span>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-300">TransVista experiences</p>
+                  <p className="font-display mt-3 text-3xl font-semibold">Journeys worth remembering.</p>
+                </div>
               </div>
 
               <div className="p-7 sm:p-10 lg:p-12">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-orange-700">
-                  Central Region · One day
+                  {latestEvent ? "Our latest past event" : "Our event archive"}
                 </p>
                 <h2 className="font-display mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                  Heritage, rainforest, and moments worth capturing.
+                  {latestEvent ? latestEvent.title : "Explore TransVista past events"}
                 </h2>
-                <p className="mt-4 text-base leading-7 text-slate-600">
-                  Join TransVista for Kakum National Park, Cape Coast Castle,
-                  Elmina Castle, Hans Cottage Botel, food, and a guided photo
-                  and video experience.
+                <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
+                  {latestEvent
+                    ? "Explore the route, destinations and details from our completed Central Region group experience. Attendees can also share private feedback to help us improve."
+                    : "Explore completed group experiences organised by TransVista across Ghana."}
                 </p>
-
-                <dl className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
-                      <CalendarDays className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
-                      Date
-                    </dt>
-                    <dd className="mt-1 pl-8 text-sm text-slate-600">{trip.displayDate}</dd>
+                {latestEvent && (
+                  <div className="mt-7 flex items-center gap-3 text-sm text-slate-700">
+                    <CalendarDays className="h-5 w-5 text-brand-blue-700" aria-hidden="true" />
+                    {latestEvent.dateLabel}
                   </div>
-                  <div>
-                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
-                      <MapPin className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
-                      Pickup
-                    </dt>
-                    <dd className="mt-1 pl-8 text-sm text-slate-600">
-                        {trip.pickupLocation}, {trip.departureTime}
-                      </dd>
-                  </div>
-                  <div>
-                    <dt className="flex items-center gap-3 text-sm font-semibold text-slate-900">
-                      <Camera className="h-5 w-5 shrink-0 text-brand-blue-700" aria-hidden="true" />
-                      Included
-                    </dt>
-                    <dd className="mt-1 pl-8 text-sm text-slate-600">
-                        Meals, photos, video, transport
-                      </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-semibold text-slate-900">Price</dt>
-                    <dd className="mt-1 text-2xl font-bold text-brand-blue-900">
-                      {trip.currencySymbol}{trip.pricePerPerson}
-                      <span className="ml-1 text-sm font-medium text-slate-500">per person</span>
-                    </dd>
-                  </div>
-                </dl>
-
+                )}
                 <Link
-                  href={`/trips/${trip.slug}`}
-                  className={cn(
-                    buttonVariants({ variant: "default", size: "lg" }),
-                    "mt-8 rounded-full",
-                  )}
+                  href="/past-events"
+                  className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-brand-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-500 focus-visible:ring-offset-2"
                 >
-                  View trip and register
-                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                  Explore Past Events
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
             </div>

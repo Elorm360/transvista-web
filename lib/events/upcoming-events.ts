@@ -1,5 +1,3 @@
-import { centralRegionPackage } from "@/lib/travel/packages";
-
 export type UpcomingEvent = {
   id: string;
   title: string;
@@ -14,19 +12,8 @@ export type UpcomingEvent = {
   imageAlt: string;
 };
 
-export const upcomingEvents: UpcomingEvent[] = [
-  {
-    id: centralRegionPackage.slug,
-    title: centralRegionPackage.title,
-    eyebrow: "Upcoming group trip",
-    dateLabel: centralRegionPackage.displayDate,
-    registrationDeadline: centralRegionPackage.registrationDeadline,
-    registrationDeadlineIso: centralRegionPackage.registrationDeadlineIso,
-    priceLabel: `${centralRegionPackage.currencySymbol}${centralRegionPackage.pricePerPerson} per person`,
-    summary:
-      "Kakum National Park, Hans Cottage Botel, Cape Coast Castle and Elmina Castle—with meals, transport, photography and a short-form video experience.",
-    href: `/trips/${centralRegionPackage.slug}`,
-    image: centralRegionPackage.image,
-    imageAlt: centralRegionPackage.imageAlt,
-  },
-];
+/**
+ * Only confirmed, approved departures belong here.
+ * Completed events are recorded in lib/events/past-events.ts instead.
+ */
+export const upcomingEvents: UpcomingEvent[] = [];
