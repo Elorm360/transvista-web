@@ -56,10 +56,10 @@ export function EventFeedbackForm() {
 
       <section>
         <h2 className="font-display text-xl font-semibold text-slate-900">Find your registration</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Enter the email address or phone number you used when registering. We will securely match it to your booking—no booking reference needed.</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">Enter the email address or phone number you used when registering. We will match it to your registration—no booking reference needed.</p>
         <div className="mt-5">
           <label className={labelClass}>Registration email or phone number *
-            <input name="contact" required maxLength={254} autoComplete="email tel" className={fieldClass} placeholder="Email address or phone number" />
+            <input name="contact" required maxLength={254} autoComplete="off" className={fieldClass} placeholder="Email address or phone number" />
           </label>
           <p className="mt-2 text-xs leading-5 text-slate-500">Use the same contact detail you provided on your registration form. Your contact details are kept private.</p>
         </div>
