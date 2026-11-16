@@ -2,14 +2,14 @@ import { CalendarPlus } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import EventManagementCentre from "@/components/admin/EventManagementCentre";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminEventsPage() {
   await requireAdminArea("events");
-  const admin = createAdminClient();
-  const { data, error } = await admin
+  const supabase = await createClient();
+  const { data, error } = await supabase
     .from("travel_events")
     .select("*")
     .order("start_date", { ascending: false });
