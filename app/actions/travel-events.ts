@@ -115,7 +115,7 @@ export async function updateTravelEvent(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
-  const { user } = await requireAdminArea("events");
+  await requireAdminArea("events");
   try {
     if (process.env.VERCEL_ENV === "preview") {
       return { success: false, message: "This preview is read-only because it shares live TransVista data." };
