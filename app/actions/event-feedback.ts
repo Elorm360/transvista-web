@@ -19,6 +19,7 @@ function clean(value: unknown, max: number) {
 }
 
 function rating(value: unknown, min: number, max: number) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
   const number = Number(value);
   return Number.isInteger(number) && number >= min && number <= max ? number : null;
 }
