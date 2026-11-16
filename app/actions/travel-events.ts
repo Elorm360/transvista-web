@@ -112,11 +112,11 @@ export async function updateTravelEvent(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
+  const { user } = await requireAdminArea("events");
   try {
     if (process.env.VERCEL_ENV === "preview") {
       return { success: false, message: "This preview is read-only because it shares live TransVista data." };
     }
-    const { user } = await requireAdminArea("events");
     const id = field(form, "eventId", 40);
     if (!/^[0-9a-f-]{36}$/i.test(id)) return { success: false, message: "The event could not be identified." };
     const values = parseEvent(form);
