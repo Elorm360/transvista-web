@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { pastEvents } from "@/lib/events/past-events";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -29,8 +29,8 @@ function money(value: number | string, currency: string) {
 }
 
 export default async function PastEventsPage() {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("travel_events")
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("travel_events")
     .select("slug,title,region,summary,start_date,price_amount,currency,pickup_location,itinerary")
     .eq("status", "completed").order("start_date", { ascending: false });
   if (error) console.error("[PastEventsPage]", error);
