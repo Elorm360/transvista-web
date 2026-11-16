@@ -86,7 +86,7 @@ export default function EventManagementCentre({ events, readOnly }: { events: Ev
                 <h3 className="mt-2 text-base font-bold text-slate-950">{event.title}</h3>
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.region}</span><span className="inline-flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" />{dateLabel(event.start_date)}</span><span>{money(event.price_amount, event.currency)}</span></div>
               </div>
-              <a href={event.status === "completed" ? "/past-events/" + event.slug : "/trips/" + event.slug} className="text-xs font-semibold text-blue-800 underline underline-offset-4" target="_blank" rel="noreferrer">View public page</a>
+              {event.status === "completed" || event.status === "published" || event.status === "registration_closed" ? <a href={(event.status === "completed" ? "/past-events/" : "/trips/") + event.slug} className="text-xs font-semibold text-blue-800 underline underline-offset-4" target="_blank" rel="noreferrer">View public page</a> : <span className="text-xs font-medium text-slate-400">Not publicly listed</span>}
             </div>
             <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50/60">
               <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-700">Edit event details</summary>
