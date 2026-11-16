@@ -36,10 +36,10 @@ export default async function PastEventsPage() {
   if (error) console.error("[PastEventsPage]", error);
   const records = allEvents ?? [];
   const managed = records.filter((event) => event.status === "completed") as ArchiveEvent[];
-  const knownSlugs = new Set(records.map((event) => event.slug));
-  // A database record is authoritative for lifecycle status. Use static content only
-  // when the database is unavailable or the corresponding seed has not been installed.
-  const fallback = error ? pastEvents : pastEvents.filter((event) => !knownSlugs.has(event.slug));
+  // Public RLS intentionally hides drafts and cancelled records. Therefore a successful
+  // query is authoritative: never restore static records that could now be non-public.
+  // Static content is used only during a database outage.
+  const fallback = error ? pastEvents : [];
 
   return (
     <main id="main-content" className="bg-[#fffdfa]">
