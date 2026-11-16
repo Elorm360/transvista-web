@@ -82,11 +82,11 @@ export async function createTravelEvent(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
+  const { user } = await requireAdminArea("events");
   try {
     if (process.env.VERCEL_ENV === "preview") {
       return { success: false, message: "This preview is read-only because it shares live TransVista data." };
     }
-    const { user } = await requireAdminArea("events");
     const values = parseEvent(form);
     const slug = slugify(field(form, "slug", 120) || values.title);
     if (slug.length < 3) return { success: false, message: "Enter a valid event URL slug." };
