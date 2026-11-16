@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { pastEvents } from "@/lib/events/past-events";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +16,8 @@ type EventRecord = {
 };
 
 async function getEvent(): Promise<EventRecord | null> {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("travel_events").select("title,region,summary,description,start_date,pickup_location,price_amount,currency,itinerary")
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("travel_events").select("title,region,summary,description,start_date,pickup_location,price_amount,currency,itinerary")
     .eq("slug", "central-region-heritage-adventure-2026").eq("status", "completed").maybeSingle();
   if (error) console.error("[CentralRegionPastEvent]", error);
   return data as EventRecord | null;
