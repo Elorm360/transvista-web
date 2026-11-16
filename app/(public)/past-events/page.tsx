@@ -30,13 +30,16 @@ function money(value: number | string, currency: string) {
 
 export default async function PastEventsPage() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("travel_events")
-    .select("slug,title,region,summary,start_date,price_amount,currency,pickup_location,itinerary")
-    .eq("status", "completed").order("start_date", { ascending: false });
+  const { data: allEvents, error } = await supabase.from("travel_events")
+    .select("slug,status,title,region,summary,start_date,price_amount,currency,pickup_location,itinerary")
+    .order("start_date", { ascending: false });
   if (error) console.error("[PastEventsPage]", error);
-  const managed = (data ?? []) as ArchiveEvent[];
-  const managedSlugs = new Set(managed.map((event) => event.slug));
-  const fallback = error || managed.length === 0 ? pastEvents : pastEvents.filter((event) => !managedSlugs.has(event.slug));
+  const records = allEvents ?? [];
+  const managed = records.filter((event) => event.status === "completed") as ArchiveEvent[];
+  const knownSlugs = new Set(records.map((event) => event.slug));
+  // A database record is authoritative for lifecycle status. Use static content only
+  // when the database is unavailable or the corresponding seed has not been installed.
+  const fallback = error ? pastEvents : pastEvents.filter((event) => !knownSlugs.has(event.slug));
 
   return (
     <main id="main-content" className="bg-[#fffdfa]">
