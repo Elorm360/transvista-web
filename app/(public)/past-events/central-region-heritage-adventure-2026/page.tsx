@@ -15,12 +15,17 @@ type EventRecord = {
   currency: string; itinerary: Array<{ title: string; detail: string }>;
 };
 
-async function getEvent(): Promise<EventRecord | null> {
+async function getEvent(): Promise<{ event: EventRecord | null; allowStaticFallback: boolean }> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("travel_events").select("title,region,summary,description,start_date,pickup_location,price_amount,currency,itinerary")
-    .eq("slug", "central-region-heritage-adventure-2026").eq("status", "completed").maybeSingle();
-  if (error) console.error("[CentralRegionPastEvent]", error);
-  return data as EventRecord | null;
+  const { data, error } = await supabase.from("travel_events").select("status,title,region,summary,description,start_date,pickup_location,price_amount,currency,itinerary")
+    .eq("slug", "central-region-heritage-adventure-2026").maybeSingle();
+  if (error) {
+    console.error("[CentralRegionPastEvent]", error);
+    return { event: null, allowStaticFallback: true };
+  }
+  if (!data) return { event: null, allowStaticFallback: true };
+  if (data.status !== "completed") return { event: null, allowStaticFallback: false };
+  return { event: data as EventRecord, allowStaticFallback: false };
 }
 function dateLabel(value: string) {
   return new Date(value + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -30,7 +35,8 @@ function money(value: number | string, currency: string) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const event = await getEvent();
+  const { event, allowStaticFallback } = await getEvent();
+  if (!event && !allowStaticFallback) return pageMetadata({ title: "Event unavailable", description: "This event is not currently listed in the public archive.", path: "/past-events" });
   return pageMetadata({
     title: (event?.title ?? "Central Region Heritage & Adventure") + " — Past Event",
     description: event?.summary ?? "A look back at TransVista's Central Region Heritage & Adventure Day Trip on 14 November 2026.",
@@ -39,7 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CentralRegionPastEventPage() {
-  const event = await getEvent();
+  const { event, allowStaticFallback } = await getEvent();
+  if (!event && !allowStaticFallback) notFound();
   const fallback = pastEvents[0];
   const title = event?.title ?? fallback.title;
   const summary = event?.summary ?? fallback.summary;
