@@ -35,7 +35,7 @@ const pageNames: Record<string, string> = {
   "/admin/messages": "Messages",
   "/admin/community": "Community",
   "/admin/reviews": "Traveller reviews",
-  "/admin/event-feedback": "Event feedback",
+  "/admin/event-feedback": "Event feedback dashboard",
   "/admin/analytics": "Business intelligence",
   "/admin/settings": "Settings",
 };
