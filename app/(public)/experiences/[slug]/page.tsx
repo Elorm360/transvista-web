@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
+import { JsonLd, breadcrumbSchema, experienceSchema } from "@/lib/seo/jsonLd";
 import { notFound } from "next/navigation";
 import { ExperienceDetail } from "@/components/experiences/ExperienceDetail";
 import {
@@ -50,6 +51,18 @@ export default async function ExperiencePage({
   const destination = getDestinationById(experience.destinationId);
 
   return (
-    <ExperienceDetail experience={experience} destination={destination} />
+    <>
+      <JsonLd
+        data={[
+          experienceSchema(experience, destination),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Experiences", path: "/experiences" },
+            { name: experience.name, path: `/experiences/${experience.slug}` },
+          ]),
+        ]}
+      />
+      <ExperienceDetail experience={experience} destination={destination} />
+    </>
   );
 }

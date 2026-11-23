@@ -249,7 +249,7 @@ function DepartureCard({
             </div>
             <label className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
               <input type="checkbox" name="driverVerified" value="true" defaultChecked={departure.driverVerified} className="mt-0.5" />
-              <span><strong>Driver details vetted by TransVista staff.</strong><br />Only select this after the driver's identity, licence and required documents have been checked. There are currently no driver applications recorded in the system.</span>
+              <span><strong>Driver details vetted by TransVista staff.</strong><br />Only select this after the driver&apos;s identity, licence and required documents have been checked. There are currently no driver applications recorded in the system.</span>
             </label>
             <Field label="Operations briefing / notes"><textarea name="operationsNotes" rows={3} maxLength={3000} defaultValue={departure.operationsNotes} className={inputClass + " h-auto py-3"} /></Field>
             {state.message && <p aria-live="polite" className={"rounded-lg px-3 py-2 text-xs font-semibold " + (state.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800")}>{state.message}</p>}

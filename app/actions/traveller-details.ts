@@ -26,7 +26,7 @@ export async function updateTravellerSubmittedDetails(_previous:TravellerDetails
   const table=kind==="custom"?"trip_requests":"package_reservations";
   const {data:currentData,error:lookupError}=await supabase.from(table).select("*").eq("id",id).maybeSingle();
   if(lookupError||!currentData)return{success:false,message:"The booking could not be loaded. Refresh and try again."};
-  const current=currentData as unknown as Record<string,any>;
+  const current=currentData as unknown as Record<string,unknown>;
   let updates:Record<string,unknown>;
   let beforeSummary="";
   let afterSummary="";

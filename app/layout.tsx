@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Geist, Fraunces } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
+import { JsonLd, websiteSchema } from "@/lib/seo/jsonLd";
 import { seoConfig } from "@/constants/config/seo";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -86,6 +87,7 @@ export default function RootLayout({
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${jakarta.variable} ${fraunces.variable} antialiased`}>
         <OrganizationSchema />
+        <JsonLd data={websiteSchema()} />
         {children}
         <Analytics />
       </body>

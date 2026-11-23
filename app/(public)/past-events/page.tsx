@@ -5,9 +5,10 @@ import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { pastEvents } from "@/lib/events/past-events";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
-export const dynamic = "force-dynamic";
+// Cached and refreshed every 5 minutes; admin event changes refresh it immediately.
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Past Events",
@@ -29,7 +30,7 @@ function money(value: number | string, currency: string) {
 }
 
 export default async function PastEventsPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: allEvents, error } = await supabase.from("travel_events")
     .select("slug,status,title,region,summary,start_date,price_amount,currency,pickup_location,itinerary")
     .order("start_date", { ascending: false });
