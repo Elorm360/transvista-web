@@ -30,7 +30,7 @@ export function ExperienceGrid({ limit }: ExperienceGridProps) {
           </h2>
 
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
-            Discover experiences that help you connect with Ghana's culture,
+            Discover experiences that help you connect with Ghana&apos;s culture,
             nature, history, food, and local life.
           </p>
         </div>

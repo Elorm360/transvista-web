@@ -16,6 +16,6 @@ export default function TeamOnboardingGuide(){
    <div className="rounded-xl bg-slate-50 p-4"><ShieldCheck className="h-5 w-5 text-slate-600"/><h3 className="mt-3 text-sm font-bold text-slate-900">3. Review access</h3><p className="mt-1 text-sm leading-6 text-slate-600">Confirm they can see only the areas needed for their work. Deactivate access when someone leaves; their activity history is retained.</p></div>
   </div>
   <div className="mt-5"><h3 className="text-sm font-bold text-slate-900">Role and access guide</h3><div className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200">{roles.map(role=><div key={role.name} className="grid gap-1 px-4 py-3 sm:grid-cols-[170px_1fr]"><p className="text-sm font-semibold text-slate-900">{role.name}</p><p className="text-sm leading-6 text-slate-600">{role.access}</p></div>)}</div></div>
-  <p className="mt-4 text-xs leading-5 text-slate-500">Good practice: use each person's own account, grant the least access needed, and review team membership regularly.</p>
+  <p className="mt-4 text-xs leading-5 text-slate-500">Good practice: use each person&apos;s own account, grant the least access needed, and review team membership regularly.</p>
  </section>
 }

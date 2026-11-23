@@ -115,7 +115,13 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
         phone: form.phone.trim(),
         country: form.country.trim(),
         interest: resolvedInterest,
+        website: String(new FormData(e.currentTarget).get("website") || ""),
       });
+
+      if ("rateLimited" in result && result.rateLimited) {
+        setSubmitError(waitlistContent.error.rateLimited);
+        return;
+      }
 
       setJoinedInterest(resolvedInterest);
 
@@ -176,6 +182,15 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
         noValidate
         autoComplete="on"
       >
+        {/* Honeypot: hidden from people; bots that fill every field reveal themselves. */}
+        <input
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          className="hidden"
+          aria-hidden="true"
+        />
+
         <fieldset>
           <legend className="mb-1.5 block text-sm font-medium text-slate-200">
             {waitlistContent.form.intentLabel}

@@ -36,27 +36,35 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [totalResult, countriesResult, interestsResult, weekResult] =
-    await Promise.all([
-      supabase.from("leads").select("*", { count: "exact", head: true }),
-      supabase
-        .from("leads")
-        .select("country", { count: "exact", head: true })
-        .not("country", "is", null),
-      supabase
-        .from("leads")
-        .select("interest", { count: "exact", head: true })
-        .not("interest", "is", null),
-      supabase
-        .from("leads")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", sevenDaysAgo),
-    ]);
+  // PostgREST has no COUNT(DISTINCT …), so fetch just the two short
+  // columns and de-duplicate here. Fine at waitlist scale (Supabase caps a
+  // single select at 1,000 rows by default); move to an SQL view or RPC
+  // before the waitlist grows past that.
+  const [totalResult, segmentsResult, weekResult] = await Promise.all([
+    supabase.from("leads").select("*", { count: "exact", head: true }),
+    supabase.from("leads").select("country, interest"),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", sevenDaysAgo),
+  ]);
+
+  if (segmentsResult.error) {
+    console.error("[getDashboardStats] Supabase error:", segmentsResult.error);
+  }
+
+  const rows = segmentsResult.data ?? [];
+  const distinct = (values: (string | null)[]) =>
+    new Set(
+      values
+        .map((value) => value?.trim().toLowerCase())
+        .filter((value): value is string => Boolean(value)),
+    ).size;
 
   return {
     totalMembers: totalResult.count ?? 0,
-    distinctCountries: countriesResult.count ?? 0,
-    distinctInterests: interestsResult.count ?? 0,
+    distinctCountries: distinct(rows.map((row) => row.country)),
+    distinctInterests: distinct(rows.map((row) => row.interest)),
     joinedThisWeek: weekResult.count ?? 0,
   };
 }

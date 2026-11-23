@@ -25,7 +25,6 @@ import {
   Send,
   Trash2,
   UserRoundCheck,
-  Users,
   X,
 } from "lucide-react";
 import {
@@ -150,7 +149,9 @@ export default function TravelRequestsList({
   operators: RequestOperator[];
   adminRole: string;
 }) {
-  const [selected, setSelected] = useState<TravelRequestRecord | null>(null);
+  const [selectedSnapshot, setSelected] = useState<TravelRequestRecord | null>(null);
+  // Reference time for "overdue" checks, fixed when the page loads so renders stay pure.
+  const [now] = useState(() => Date.now());
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -161,7 +162,7 @@ export default function TravelRequestsList({
   const [tripDateTo, setTripDateTo] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState("active");
   const [savedView, setSavedView] = useState("all");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [rawSelectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkAssignee, setBulkAssignee] = useState("");
   const [bulkMessage, setBulkMessage] = useState("");
 
@@ -188,19 +189,17 @@ export default function TravelRequestsList({
         (savedView === "awaiting-payment" && !["cancelled", "closed", "completed"].includes(request.status) &&
           ["not-requested", "payment-requested", "deposit-requested"].includes(request.paymentStatus)) ||
         (savedView === "confirmed" && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(request.status)) ||
-        (savedView === "overdue" && Boolean(request.followUpAt && Date.parse(request.followUpAt) < Date.now()));
+        (savedView === "overdue" && Boolean(request.followUpAt && Date.parse(request.followUpAt) < now));
       return matchesQuery && matchesKind && matchesStatus && matchesPriority && matchesPayment &&
         matchesAssignee && matchesTripDate && matchesVisibility && matchesSavedView;
     });
-  }, [assigneeFilter, kindFilter, paymentFilter, priorityFilter, query, requests, savedView, statusFilter, tripDateFrom, tripDateTo, visibilityFilter]);
+  }, [assigneeFilter, kindFilter, paymentFilter, priorityFilter, query, requests, now, savedView, statusFilter, tripDateFrom, tripDateTo, visibilityFilter]);
 
-  useEffect(() => {
+  // Only rows still visible under the current filters count as selected.
+  const selectedIds = useMemo(() => {
     const visibleIds = new Set(filteredRequests.map((request) => request.id));
-    setSelectedIds((current) => {
-      const next = current.filter((id) => visibleIds.has(id));
-      return next.length === current.length ? current : next;
-    });
-  }, [filteredRequests]);
+    return rawSelectedIds.filter((id) => visibleIds.has(id));
+  }, [filteredRequests, rawSelectedIds]);
 
   const activeRequests = useMemo(
     () => requests.filter((request) => !request.archivedAt),
@@ -235,13 +234,14 @@ export default function TravelRequestsList({
     [activeRequests],
   );
 
-  useEffect(() => {
-    if (!selected) return;
-    const refreshed = requests.find((request) => request.id === selected.id);
-    if (refreshed && refreshed.updatedAt !== selected.updatedAt) {
-      setSelected(refreshed);
-    }
-  }, [requests, selected]);
+  // Always show the latest copy of the open request after a refresh.
+  const selected = useMemo(
+    () =>
+      selectedSnapshot
+        ? requests.find((request) => request.id === selectedSnapshot.id) ?? selectedSnapshot
+        : null,
+    [requests, selectedSnapshot],
+  );
 
   useEffect(() => {
     if (!selected) return;
@@ -328,7 +328,7 @@ export default function TravelRequestsList({
             ["new", "New requests", requests.filter((r) => !r.archivedAt && ["new", "pending-review"].includes(r.status)).length],
             ["awaiting-payment", "Awaiting payment", requests.filter((r) => !r.archivedAt && !["cancelled", "closed", "completed"].includes(r.status) && ["not-requested", "payment-requested", "deposit-requested"].includes(r.paymentStatus)).length],
             ["confirmed", "Confirmed trips", requests.filter((r) => !r.archivedAt && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(r.status)).length],
-            ["overdue", "Overdue follow-ups", requests.filter((r) => !r.archivedAt && Boolean(r.followUpAt && Date.parse(r.followUpAt) < Date.now())).length],
+            ["overdue", "Overdue follow-ups", requests.filter((r) => !r.archivedAt && Boolean(r.followUpAt && Date.parse(r.followUpAt) < now)).length],
           ].map(([value, title, count]) => (
             <button key={value} type="button" onClick={() => setSavedView(String(value))}
               className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${savedView === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}>

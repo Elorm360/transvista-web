@@ -78,7 +78,11 @@ function parseEvent(form: FormData) {
 function refreshEventPaths() {
   revalidatePath("/admin/events");
   revalidatePath("/trips");
+  revalidatePath("/trips/[slug]", "page");
   revalidatePath("/past-events");
+  revalidatePath("/past-events/[slug]", "page");
+  revalidatePath("/past-events/central-region-heritage-adventure-2026");
+  revalidatePath("/sitemap.xml");
   revalidatePath("/");
 }
 

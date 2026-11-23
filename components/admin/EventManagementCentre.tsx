@@ -127,7 +127,7 @@ function EventForm({ event, action, readOnly, submitLabel }: {
       <label className={labelClass}>Short summary<textarea name="summary" required minLength={20} maxLength={500} defaultValue={event?.summary ?? ""} className={areaClass} placeholder="A clear summary for the public event listing." /></label>
       <label className={labelClass}>Full description<textarea name="description" maxLength={5000} defaultValue={event?.description ?? ""} className={areaClass} placeholder="More detail about the experience, destinations and what guests can expect." /></label>
       <div className="grid gap-4 md:grid-cols-2">
-        <label className={labelClass}>What's included <span className="font-normal text-slate-400">(one item per line)</span><textarea name="inclusions" defaultValue={event?.inclusions?.join("\n") ?? ""} className={areaClass} placeholder={"Transport\nMeals\nGuided experience"} /></label>
+        <label className={labelClass}>What&apos;s included <span className="font-normal text-slate-400">(one item per line)</span><textarea name="inclusions" defaultValue={event?.inclusions?.join("\n") ?? ""} className={areaClass} placeholder={"Transport\nMeals\nGuided experience"} /></label>
         <label className={labelClass}>Itinerary <span className="font-normal text-slate-400">(one stop per line: place | detail)</span><textarea name="itinerary" defaultValue={itineraryText} className={areaClass} placeholder={"Kakum National Park | Canopy walkway experience\nHans Cottage Botel | Lunch and nature stop"} /></label>
       </div>
       <div className="flex flex-wrap items-end gap-4">
