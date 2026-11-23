@@ -58,7 +58,7 @@ export default function TravellerDetailsEditor({request}:Props){
    <Field label="Reason for correction (required)"><input required name="correctionReason" minLength={5} maxLength={500} placeholder="e.g. Traveller confirmed the correct group size is one person." className={input}/></Field>
    {state.message?<p aria-live="polite" className={`rounded-xl px-3 py-2.5 text-sm font-semibold ${state.success?"bg-emerald-50 text-emerald-800":"bg-rose-50 text-rose-800"}`}>{state.message}</p>:null}
    <button type="submit" disabled={pending} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50"><Save className="h-4 w-4"/>{pending?"Saving corrected details…":"Save corrected traveller details"}</button>
-   <p className="text-xs leading-5 text-slate-500">Every correction is recorded in the booking activity history. Group-trip pricing is recalculated using the package's existing per-person rates. Verified payments already received are not changed.</p>
+   <p className="text-xs leading-5 text-slate-500">Every correction is recorded in the booking activity history. Group-trip pricing is recalculated using the package&apos;s existing per-person rates. Verified payments already received are not changed.</p>
   </form>
  </details>;
 }

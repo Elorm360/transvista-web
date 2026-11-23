@@ -5,10 +5,11 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 
-export const dynamic = "force-dynamic";
+// Cached and refreshed every 5 minutes; admin event changes refresh it immediately.
+export const revalidate = 300;
 
 type EventRow = {
   slug: string; title: string; region: string; summary: string; description: string | null;
@@ -17,8 +18,19 @@ type EventRow = {
   inclusions: string[]; itinerary: Array<{ title: string; detail: string }>;
 };
 
+/** Pre-build every completed event at deploy time; new ones render on first visit. */
+export async function generateStaticParams() {
+  const { data, error } = await createPublicClient().from("travel_events").select("slug")
+    .eq("status", "completed");
+  if (error) console.error("[PastEventDetail] generateStaticParams", error);
+  return (data ?? [])
+    // This slug has its own hand-built page under /past-events.
+    .filter(({ slug }) => slug !== "central-region-heritage-adventure-2026")
+    .map(({ slug }) => ({ slug }));
+}
+
 async function getEvent(slug: string) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("travel_events").select("*").eq("slug", slug).eq("status", "completed").maybeSingle();
   if (error) console.error("[PastEventDetail]", error);
   return data as EventRow | null;

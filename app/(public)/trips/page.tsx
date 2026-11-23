@@ -5,9 +5,10 @@ import { ArrowRight, CalendarDays, Compass, MapPin } from "lucide-react";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
-export const dynamic = "force-dynamic";
+// Cached and refreshed every 5 minutes; admin event changes refresh it immediately.
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Upcoming Group Trips",
@@ -30,7 +31,7 @@ function money(value: number | string, currency: string) {
 }
 
 export default async function TripsPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("travel_events")
     .select("slug,title,region,summary,start_date,end_date,registration_deadline,price_amount,currency,pickup_location,image_path,image_alt,status,featured")
     .in("status", ["published", "registration_closed"])

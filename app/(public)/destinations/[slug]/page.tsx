@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo/pageMetadata";
+import { JsonLd, breadcrumbSchema, destinationSchema } from "@/lib/seo/jsonLd";
 import { DestinationDetail } from "@/components/destinations/DestinationDetail";
 import {
   destinations,
@@ -46,5 +47,19 @@ export default async function DestinationPage({
     notFound();
   }
 
-  return <DestinationDetail destination={destination} />;
+  return (
+    <>
+      <JsonLd
+        data={[
+          destinationSchema(destination),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Destinations", path: "/destinations" },
+            { name: destination.name, path: `/destinations/${destination.slug}` },
+          ]),
+        ]}
+      />
+      <DestinationDetail destination={destination} />
+    </>
+  );
 }

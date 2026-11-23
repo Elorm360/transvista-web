@@ -43,8 +43,8 @@ export function Reveal({
     // IntersectionObserver — show the content immediately so it is never
     // stuck invisible/unusable.
     if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
+      const frame = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(frame);
     }
 
     const observer = new IntersectionObserver(

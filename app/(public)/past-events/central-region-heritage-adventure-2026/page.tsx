@@ -6,9 +6,10 @@ import { pageMetadata } from "@/lib/seo/pageMetadata";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { pastEvents } from "@/lib/events/past-events";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
-export const dynamic = "force-dynamic";
+// Cached and refreshed every 5 minutes; admin event changes refresh it immediately.
+export const revalidate = 300;
 
 type EventRecord = {
   title: string; region: string; summary: string; description: string | null;
@@ -17,7 +18,7 @@ type EventRecord = {
 };
 
 async function getEvent(): Promise<{ event: EventRecord | null; allowStaticFallback: boolean }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("travel_events").select("status,title,region,summary,description,start_date,pickup_location,price_amount,currency,itinerary")
     .eq("slug", "central-region-heritage-adventure-2026").maybeSingle();
   if (error) {
