@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { allowFormSubmission } from "@/lib/security/rateLimit";
 import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 import { sendAdminNotification } from "@/lib/email/sendAdminNotification";
 
@@ -64,7 +65,14 @@ export async function joinWaitlist(data: {
   phone?: string;
   country: string;
   interest: string;
+  /** Honeypot: hidden from people, so any value means a bot. */
+  website?: string;
 }) {
+  // Bots fill every field; quietly pretend it worked and save nothing.
+  if (data.website?.trim()) {
+    return { success: true, duplicate: false, emailSent: true, adminNotified: false };
+  }
+
   const fullName = data.fullName.trim();
   const normalizedEmail = data.email.trim().toLowerCase();
   const phone = data.phone?.trim() || null;
@@ -90,6 +98,17 @@ export async function joinWaitlist(data: {
 
   if (!interest) {
     throw new Error("Interest is required.");
+  }
+
+  /* ── Step 0: Rate limit (returned as a flag; thrown errors are masked in production) ── */
+  if (!(await allowFormSubmission("waitlist", { email: normalizedEmail }))) {
+    return {
+      success: false,
+      duplicate: false,
+      rateLimited: true,
+      emailSent: false,
+      adminNotified: false,
+    };
   }
 
   /* ── Step 1: Insert into Supabase ── */

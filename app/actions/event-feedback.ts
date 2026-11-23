@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { allowFormSubmission, RATE_LIMIT_MESSAGE } from "@/lib/security/rateLimit";
 
 export type EventFeedbackResult = { success: boolean; message?: string; invitePublicStory?: boolean };
 
@@ -64,6 +65,10 @@ export async function submitEventFeedback(form: FormData): Promise<EventFeedback
   }
   if (!["yes", "maybe", "no"].includes(wouldTravelAgain)) {
     return { success: false, message: "Please tell us whether you would travel with TransVista again." };
+  }
+
+  if (!(await allowFormSubmission("event_feedback"))) {
+    return { success: false, message: RATE_LIMIT_MESSAGE };
   }
 
   const admin = createAdminClient();
