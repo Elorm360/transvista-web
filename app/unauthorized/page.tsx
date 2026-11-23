@@ -34,7 +34,7 @@ export default function UnauthorizedPage() {
         {/* Return to Home */}
         <Link
           href="/"
-          className="mt-8 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600"
+          className="mt-8 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue-600 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-brand-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600"
         >
           <Home className="h-4 w-4" aria-hidden="true" />
           Return to Home

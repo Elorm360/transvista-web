@@ -91,7 +91,7 @@ export function PackageReservationForm({
 
   if (!registrationOpen) {
     return (
-      <section id="register" role="status" className="rounded-[24px] border border-slate-200 bg-[#f8f7f3] p-7 text-center sm:p-9">
+      <section id="register" role="status" className="rounded-[24px] border border-slate-200 bg-sand p-7 text-center sm:p-9">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Registration closed</p>
         <h3 className="font-display mt-3 text-2xl font-semibold text-slate-900">We are no longer accepting registrations</h3>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600">Registration for the Central Region Heritage &amp; Adventure Day Trip closed on Thursday, 12 November 2026 at 11:59 p.m. Ghana time. Thank you for your interest. Follow TransVista for details of our next experience.</p>

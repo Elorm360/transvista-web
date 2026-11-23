@@ -1,38 +1,51 @@
 # Replacing placeholder photos with TransVista originals
 
-Many destination and experience images are temporary placeholders, or show
-"Photo coming soon". To swap in an original photo, add the file and update
-one line of data. No component code needs to change.
+Several destination and experience pages have no photo yet, or use an
+illustrative one.
 
-## 1. Prepare the photo
-- Landscape, at least **1600 px wide**; JPG or WebP; ideally under 500 KB.
-  Next.js resizes it and converts it to AVIF/WebP automatically.
-- Use lowercase file names with hyphens, e.g. `accra-jamestown-lighthouse.jpg`.
+## Destinations and experiences: drop in and run one command
 
-## 2. Put it in the right folder
-| What | Folder | Data file / field |
+1. Save the original photo as `photos/destinations/<slug>.jpg` or
+   `photos/experiences/<slug>.jpg`. The full list of names is in
+   [`photos/README.md`](../photos/README.md).
+2. Optional: put a one-line description in `<slug>.txt` next to it (alt text).
+3. Run `npm run photos`.
+
+`scripts/optimize-photos.mjs` then:
+
+- applies the camera's rotation and strips all metadata, including GPS;
+- resizes to at most 1600 px wide and saves a compressed JPEG to
+  `public/images/destinations/<slug>.jpg` or
+  `public/images/experiences/<slug>-original.jpg`;
+- records it in `constants/data/photos.generated.json`.
+
+The data modules overlay that file onto `constants/data/destinations.ts` and
+`experiences.ts` (via `constants/data/photos.ts`). That means cards, detail
+pages and link previews all switch to the original photo, and the caption
+changes to "Original TransVista photography.", without editing any code.
+
+The script stops with a message for: unknown names (typos), HEIC files,
+portrait photos (they get cropped on wide layouts) and photos under 1200 px
+wide.
+
+Commit the new files in `public/images/` and `photos.generated.json`. The
+originals in `photos/` are git-ignored.
+
+To remove an original photo, delete its file in `public/images/` and run
+`npm run photos` again.
+
+## Everything else (manual)
+
+| What | Folder | Where it is referenced |
 |---|---|---|
-| Destination pages and cards | `public/images/destinations/` | `constants/data/destinations.ts` → `image`, `imageAlt` |
-| Experience pages and cards | `public/images/experiences/` | `constants/data/experiences.ts` → `image`, `imageAlt` |
-| Past-event and group-trip pages | `public/images/experiences/` | Event and package records → `image`, `imageAlt` |
-| Homepage hero slideshow | `public/images/hero/` | `components/sections/home/hero/HeroVisual.tsx` → `heroImages` |
+| Past-event and group-trip pages | `public/images/experiences/` | Event and package records → `image_path`, `image_alt` (admin) |
+| Homepage hero slideshow | `public/images/hero/` | `components/sections/home/hero/` |
 | Traveller stories | `public/images/testimonials/` | `content/testimonials.ts` |
 
-## 3. Update the data
-Example for Accra in `constants/data/destinations.ts`:
+For these, prepare the photo yourself: landscape, about 1600 px wide,
+JPG or WebP, ideally under 500 KB.
 
-```ts
-image: "/images/destinations/accra-jamestown-lighthouse.jpg",
-imageAlt: "Jamestown lighthouse above the fishing harbour in Accra",
-```
+## Check
 
-`image: null` shows the branded "Photo coming soon" panel. Setting a path
-replaces it everywhere: cards, the destination page, and the link preview
-when someone shares the page on WhatsApp or Facebook.
-
-Write `imageAlt` as a short description of what the photo shows. Screen
-readers and Google use it.
-
-## 4. Check
 Run `npm run build`, then open the page. Push the branch and check the
 Vercel preview before merging.

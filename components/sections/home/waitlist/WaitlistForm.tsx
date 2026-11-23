@@ -381,7 +381,7 @@ export function WaitlistForm({ variant = "full" }: WaitlistFormProps) {
           type="submit"
           size="lg"
           disabled={isSubmitting}
-          className="w-full bg-accent text-base hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full bg-accent text-base hover:bg-brand-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting
             ? waitlistContent.form.submittingLabel

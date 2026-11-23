@@ -16,7 +16,7 @@ export function PolicyDocument({
   sections,
 }: PolicyDocumentProps) {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader eyebrow="TransVista Africa Ltd" title={title}>
         <p className="mt-4 text-sm font-medium text-slate-500">{effectiveLabel}</p>
         <p className="mt-6 max-w-3xl text-base leading-7 text-slate-600">{introduction}</p>

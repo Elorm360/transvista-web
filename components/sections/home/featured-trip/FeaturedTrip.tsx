@@ -12,7 +12,7 @@ export function FeaturedTrip() {
     <Section id="featured-trip" className="bg-white">
       <Container>
         <Reveal>
-          <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-[#fffdfa] shadow-[0_24px_80px_-45px_rgba(15,23,42,0.4)]">
+          <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-canvas shadow-[0_24px_80px_-45px_rgba(15,23,42,0.4)]">
             <div className="grid lg:grid-cols-[0.8fr_1.2fr]">
               <div className="flex min-h-[280px] flex-col justify-between bg-brand-blue-950 p-8 text-white sm:p-10">
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange-500 text-white">

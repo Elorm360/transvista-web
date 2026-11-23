@@ -1,3 +1,5 @@
+import { withOriginalPhoto } from "./photos";
+
 export type Destination = {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ export type Destination = {
   featured: boolean;
 };
 
-export const destinations: Destination[] = [
+const destinationsData: Destination[] = [
   {
     id: "accra",
     name: "Accra",
@@ -219,6 +221,11 @@ export const destinations: Destination[] = [
     photoNote: "Original TransVista photography coming soon.",
   },
 ];
+
+/** Data above, with any original photos from `npm run photos` applied. */
+export const destinations: Destination[] = destinationsData.map((item) =>
+  withOriginalPhoto("destinations", item),
+);
 
 export function getDestinationBySlug(slug: string) {
   return destinations.find((item) => item.slug === slug);

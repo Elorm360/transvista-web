@@ -44,6 +44,16 @@
   --color-brand-orange-900: #78380e;
   --color-brand-orange-950: #401d07;
 
+  /* ── Page surfaces (use instead of hard-coded hex) ── */
+  --color-canvas: #fffdfa; /* warm off-white page background */
+  --color-sand: #f7f5f1; /* section / header band background */
+
+  /* ── WhatsApp brand (contact buttons and links only) ── */
+  --color-whatsapp: #25d366;
+  --color-whatsapp-light: #6ee7a1;
+  --color-whatsapp-dark: #1da851;
+  --color-whatsapp-darker: #128c7e;
+
   /* ── Design System (tv-*) Tokens ── */
   --color-tv-primary: var(--tv-primary);
   --color-tv-primary-light: var(--tv-primary-light);

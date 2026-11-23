@@ -142,7 +142,7 @@ export function WhatsAppButton() {
         }`}
       >
         <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366]/10 text-[#1DA851]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-whatsapp/10 text-whatsapp-dark">
             <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
@@ -189,7 +189,7 @@ export function WhatsAppButton() {
         aria-controls="whatsapp-menu"
         aria-label="Chat with TransVista Africa on WhatsApp"
         title="Chat on WhatsApp"
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_28px_-8px_rgba(37,211,102,0.55)] ring-1 ring-black/5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_-8px_rgba(37,211,102,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-[0_10px_28px_-8px_rgba(37,211,102,0.55)] ring-1 ring-black/5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_14px_32px_-8px_rgba(37,211,102,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2"
       >
         <FaWhatsapp
           className={`absolute h-7 w-7 transition duration-200 ${open ? "rotate-90 scale-50 opacity-0" : "opacity-100"}`}

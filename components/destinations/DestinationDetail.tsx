@@ -16,7 +16,7 @@ export function DestinationDetail({ destination }: DestinationDetailProps) {
   const otherDestinations = destinations.filter((item) => item.id !== destination.id);
 
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow={
           <>
@@ -89,7 +89,7 @@ export function DestinationDetail({ destination }: DestinationDetailProps) {
                 <Link
                   key={experience.id}
                   href={`/experiences/${experience.slug}`}
-                  className="group rounded-2xl border border-slate-200 bg-[#fffdfa] p-6 transition-colors hover:border-slate-300 sm:p-8"
+                  className="group rounded-2xl border border-slate-200 bg-canvas p-6 transition-colors hover:border-slate-300 sm:p-8"
                 >
                   <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
                     {experience.category}

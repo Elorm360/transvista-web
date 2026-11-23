@@ -10,7 +10,7 @@ type PageHeaderProps = {
 /** Shared header for inner pages: quiet eyebrow, large display title, lead. */
 export function PageHeader({ eyebrow, title, lead, children }: PageHeaderProps) {
   return (
-    <header className="border-b border-slate-200/80 bg-[#f7f5f1] pb-12 pt-14 lg:pb-16 lg:pt-20">
+    <header className="border-b border-slate-200/80 bg-sand pb-12 pt-14 lg:pb-16 lg:pt-20">
       <Container>
         <div className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-orange-600">
           {eyebrow}

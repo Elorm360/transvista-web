@@ -211,7 +211,7 @@ export function ReviewForm() {
         )}
         {mode === "photo" && photoPreview && (
           <label className="mt-4 flex items-start gap-3 text-sm text-slate-700">
-            <input name="photoConsent" type="checkbox" required className="mt-1 h-4 w-4 accent-[#F47B20]" />
+            <input name="photoConsent" type="checkbox" required className="mt-1 h-4 w-4 accent-brand-orange-600" />
             <span>This is a photo of me, and I&apos;m happy for it to appear on the TransVista website. Photos are checked by our team before they appear.</span>
           </label>
         )}
@@ -276,7 +276,7 @@ export function ReviewForm() {
       </div>
 
       <label className="flex items-start gap-3 text-sm text-slate-700">
-        <input name="consent" type="checkbox" required className="mt-1 h-4 w-4 accent-[#F47B20]" />
+        <input name="consent" type="checkbox" required className="mt-1 h-4 w-4 accent-brand-orange-600" />
         <span>I agree that TransVista Africa may show my name, rating and review on its website.</span>
       </label>
 

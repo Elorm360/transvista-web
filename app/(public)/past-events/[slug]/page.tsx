@@ -54,7 +54,7 @@ export default async function PastEventDetailPage({ params }: { params: Promise<
   const event = await getEvent(slug);
   if (!event) notFound();
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader eyebrow={event.region + " · Completed experience"} title={event.title} lead={event.summary} />
       <section className="py-10 lg:py-14"><Container>
         <Link href="/past-events" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-800 hover:text-brand-orange-700"><ArrowLeft className="h-4 w-4" />All past events</Link>

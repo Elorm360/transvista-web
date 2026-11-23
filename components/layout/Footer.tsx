@@ -15,8 +15,8 @@ const SOCIAL_ICONS: Partial<Record<SocialPlatformKey, IconType>> = {
 };
 
 const SOCIAL_HOVER: Record<SocialPlatformKey, string> = {
-  linkedin: "hover:text-blue-500",
-  facebook: "hover:text-blue-500",
+  linkedin: "hover:text-brand-blue-500",
+  facebook: "hover:text-brand-blue-500",
   instagram: "hover:text-pink-500",
   tiktok: "hover:text-white",
 };
@@ -43,7 +43,7 @@ export function Footer() {
         <div className="mb-12 overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] shadow-2xl shadow-slate-950/20 backdrop-blur-sm lg:mb-16">
           <div className="grid items-center gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:gap-10 lg:p-10">
             <div className="flex items-start gap-4 sm:gap-5">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20 sm:h-14 sm:w-14">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-whatsapp text-white shadow-lg shadow-whatsapp/20 sm:h-14 sm:w-14">
                 <FaWhatsapp className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden="true" />
               </span>
               <div>
@@ -66,7 +66,7 @@ export function Footer() {
               aria-label="Follow the official TransVista Africa WhatsApp Channel"
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-blue-950 transition duration-200 hover:-translate-y-0.5 hover:bg-brand-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-blue-950"
             >
-              <FaWhatsapp className="h-5 w-5 text-[#128C7E]" aria-hidden="true" />
+              <FaWhatsapp className="h-5 w-5 text-whatsapp-darker" aria-hidden="true" />
               {footerContent.community.cta}
               <span aria-hidden="true">↗</span>
             </a>
@@ -132,7 +132,7 @@ export function Footer() {
                   href={footerContent.contact.whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-[#6ee7a1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366]"
+                  className="flex items-center gap-3 rounded-full text-sm text-slate-400 transition-colors duration-200 ease-out hover:text-whatsapp-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-whatsapp"
                 >
                   <FaWhatsapp className="h-4 w-4" aria-hidden="true" />
                   WhatsApp support

@@ -26,18 +26,18 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
           )}
 
           {experience.featured && (
-            <span className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-xs font-semibold text-amber-700 shadow-sm">
+            <span className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-xs font-semibold text-brand-orange-800 shadow-sm">
               Featured
             </span>
           )}
         </div>
 
         <div className="p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-blue-700">
             {experience.category}
           </p>
 
-          <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 transition-colors group-hover:text-blue-700">
+          <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 transition-colors group-hover:text-brand-blue-700">
             {experience.name}
           </h3>
 
@@ -45,7 +45,7 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
             {experience.description}
           </p>
 
-          <span className="mt-5 inline-flex items-center text-sm font-semibold text-blue-700">
+          <span className="mt-5 inline-flex items-center text-sm font-semibold text-brand-blue-700">
             Explore experience
             <span
               aria-hidden="true"

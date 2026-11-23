@@ -19,7 +19,13 @@ export function FeatureImage({
 }) {
   return (
     <figure>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-slate-100 sm:aspect-[16/8]">
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-3xl bg-slate-100",
+          // Without a photo, keep the panel short so the page does not open on empty space.
+          image ? "aspect-[4/3] sm:aspect-[16/8]" : "h-28 sm:h-32",
+        )}
+      >
         {image ? (
           <Image
             src={image}
@@ -31,7 +37,7 @@ export function FeatureImage({
             className="object-cover"
           />
         ) : (
-          <PhotoPlaceholder />
+          <PhotoPlaceholder className="min-h-0" />
         )}
       </div>
       {image && (
@@ -83,7 +89,7 @@ export function PlanAside({
             rel="noopener noreferrer"
             className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full rounded-full")}
           >
-            <FaWhatsapp className="mr-2 h-4 w-4 text-[#25D366]" aria-hidden="true" />
+            <FaWhatsapp className="mr-2 h-4 w-4 text-whatsapp" aria-hidden="true" />
             Ask on WhatsApp
           </a>
         </div>

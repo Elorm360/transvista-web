@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function DestinationsPage() {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow="Explore Ghana"
         title="Places worth discovering."

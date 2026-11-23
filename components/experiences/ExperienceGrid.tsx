@@ -18,7 +18,7 @@ export function ExperienceGrid({ limit }: ExperienceGridProps) {
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange-700">
             Curated experiences
           </p>
 
