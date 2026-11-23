@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { allowFormSubmission, RATE_LIMIT_MESSAGE } from "@/lib/security/rateLimit";
 import { roleFor } from "@/lib/auth/isAdmin";
 import { canAccess } from "@/lib/auth/permissions";
 import { isAdinkraId } from "@/components/reviews/AdinkraAvatars";
@@ -124,6 +125,10 @@ export async function submitReview(form: FormData): Promise<ReviewResult> {
   }
   if (hasPhoto && !photoConsent) {
     return { success: false, message: "Please confirm the photo is of you and can be shown on our website." };
+  }
+
+  if (!(await allowFormSubmission("review"))) {
+    return { success: false, message: RATE_LIMIT_MESSAGE };
   }
 
   const admin = createAdminClient();

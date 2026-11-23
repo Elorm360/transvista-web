@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { sendRequestEmails } from "@/lib/email/sendRequestEmails";
+import { allowFormSubmission, RATE_LIMIT_MESSAGE } from "@/lib/security/rateLimit";
 import {
   bookingPolicyVersion,
   centralRegionPackage,
@@ -94,6 +95,10 @@ export async function submitTripRequest(
   const children = Math.min(Math.max(Number(input.children) || 0, 0), 50);
   const requestReference = reference("TVR");
   const acceptedAt = new Date().toISOString();
+  if (!(await allowFormSubmission("trip_request", { email }))) {
+    return { success: false, message: RATE_LIMIT_MESSAGE };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.from("trip_requests").insert({
@@ -201,6 +206,10 @@ export async function submitPackageReservation(
 
   const requestReference = reference("TVP");
   const acceptedAt = new Date().toISOString();
+  if (!(await allowFormSubmission("package_reservation", { email }))) {
+    return { success: false, message: RATE_LIMIT_MESSAGE };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.from("package_reservations").insert({
     reference: requestReference,

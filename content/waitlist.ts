@@ -52,6 +52,7 @@ export interface WaitlistContent {
   };
   error: {
     unknown: string;
+    rateLimited: string;
   };
 }
 
@@ -135,5 +136,7 @@ export const waitlistContent: WaitlistContent = {
   error: {
     unknown:
       "We couldn’t complete your request at the moment. Please try again in a few moments.",
+    rateLimited:
+      "You’ve sent several sign-ups in a short time. Please wait a few minutes and try again.",
   },
 };
