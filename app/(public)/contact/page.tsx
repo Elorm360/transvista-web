@@ -42,7 +42,7 @@ const channels = [
 
 export default function ContactPage() {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow="Contact"
         title="Talk to a real person."

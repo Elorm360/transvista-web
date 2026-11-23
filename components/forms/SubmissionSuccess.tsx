@@ -70,7 +70,7 @@ export function SubmissionSuccess({
           )}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 text-sm font-semibold text-white transition hover:brightness-95"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-whatsapp px-6 text-sm font-semibold text-white transition hover:brightness-95"
         >
           <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
           Chat with us about {reference}

@@ -40,12 +40,12 @@ export default async function TripsPage() {
   const events = (data ?? []) as PublicEvent[];
 
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader eyebrow="Group experiences" title="Travel Ghana together." lead="Our group experiences bring people together to discover Ghana through thoughtfully coordinated journeys." />
       <section className="py-12 lg:py-16">
         <Container>
           {error ? (
-            <div role="status" className="mx-auto max-w-3xl rounded-[28px] border border-amber-200 bg-amber-50 px-7 py-12 text-center">
+            <div role="status" className="mx-auto max-w-3xl rounded-[28px] border border-brand-orange-200 bg-brand-orange-50 px-7 py-12 text-center">
               <h2 className="font-display text-2xl font-semibold text-slate-900">Upcoming experiences are temporarily unavailable.</h2>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600">Please check back shortly or follow our official WhatsApp updates for confirmed announcements.</p>
               <a href="https://whatsapp.com/channel/0029VbBchTr0G0XluVpGfy2q" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-orange-600 px-5 text-sm font-semibold text-white">Follow WhatsApp updates</a>
@@ -56,7 +56,7 @@ export default async function TripsPage() {
                 <article key={event.slug} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
                   {event.image_path ? <div className="relative aspect-[16/9] bg-slate-100"><Image src={event.image_path} alt={event.image_alt || event.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" /></div> : <div className="flex aspect-[16/9] items-center justify-center bg-brand-blue-950 text-white"><Compass className="h-10 w-10 text-brand-orange-300" aria-hidden="true" /></div>}
                   <div className="p-6 sm:p-8">
-                    <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-brand-orange-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-orange-800">{event.region}</span>{event.status === "registration_closed" && <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-600">Registration closed</span>}{event.featured && <span className="rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold text-blue-800">Featured</span>}</div>
+                    <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-brand-orange-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-orange-800">{event.region}</span>{event.status === "registration_closed" && <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-600">Registration closed</span>}{event.featured && <span className="rounded-full bg-brand-blue-50 px-3 py-1 text-[10px] font-bold text-brand-blue-800">Featured</span>}</div>
                     <h2 className="font-display mt-4 text-2xl font-semibold leading-tight text-slate-900">{event.title}</h2>
                     <p className="mt-3 text-sm leading-6 text-slate-600">{event.summary}</p>
                     <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500"><span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-brand-orange-600" />{dateLabel(event.start_date)}{event.end_date && event.end_date !== event.start_date ? " – " + dateLabel(event.end_date) : ""}</span>{event.pickup_location && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-brand-orange-600" />{event.pickup_location}</span>}</div>

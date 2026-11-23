@@ -57,7 +57,7 @@ export default async function CentralRegionPastEventPage() {
   const price = event ? money(event.price_amount, event.currency) + " per person" : fallback.originalPriceLabel;
 
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader eyebrow={"Past event · " + (event?.region ?? fallback.region)} title={title} lead={event?.description ?? "A day of rainforest discovery, coastal heritage and shared experiences, organised by TransVista Africa."}>
         <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate-700">
           <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-brand-orange-600" />{date}</span>
@@ -81,7 +81,7 @@ export default async function CentralRegionPastEventPage() {
             <Link href="/past-events" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-800 hover:text-brand-orange-700"><ArrowLeft className="h-4 w-4" />Back to Past Events</Link>
           </aside>
         </div>
-        <div className="mt-12 rounded-3xl border border-dashed border-slate-300 bg-[#f7f5f1] p-7 sm:p-9"><h2 className="font-display text-2xl font-semibold text-slate-900">Event photographs</h2><p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">The team will add selected photographs and video highlights here after reviewing the event media and confirming the necessary permissions. No attendee images are displayed until they have been cleared for publication.</p></div>
+        <div className="mt-12 rounded-3xl border border-dashed border-slate-300 bg-sand p-7 sm:p-9"><h2 className="font-display text-2xl font-semibold text-slate-900">Event photographs</h2><p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">The team will add selected photographs and video highlights here after reviewing the event media and confirming the necessary permissions. No attendee images are displayed until they have been cleared for publication.</p></div>
       </Container></section>
     </main>
   );

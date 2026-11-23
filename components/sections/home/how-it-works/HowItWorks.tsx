@@ -6,7 +6,7 @@ import { howItWorksContent } from "@/content/how-it-works";
 
 export function HowItWorks() {
   return (
-    <Section id="how-it-works" className="bg-[#f7f5f1]">
+    <Section id="how-it-works" className="bg-sand">
       <Container>
         <Reveal>
           <SectionHeader
@@ -27,7 +27,7 @@ export function HowItWorks() {
           {howItWorksContent.steps.map((step, i) => (
             <li key={step.title} className="relative">
               <Reveal delay={i * 80} className="grid grid-cols-[32px_1fr] gap-5 lg:block">
-                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-[#f7f5f1] text-xs font-semibold text-slate-700">
+                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-sand text-xs font-semibold text-slate-700">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="lg:mt-6 lg:pr-4">

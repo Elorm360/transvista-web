@@ -48,7 +48,7 @@ export default async function PublicEventPage({ params }: { params: Promise<{ sl
   const whatsappHref = "https://wa.me/233248442916?text=" + message;
 
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader eyebrow={event.region + " · Group experience"} title={event.title} lead={event.summary} />
       <section className="py-10 lg:py-14">
         <Container>
@@ -69,7 +69,7 @@ export default async function PublicEventPage({ params }: { params: Promise<{ sl
                 {event.pickup_location && <div className="flex gap-3"><MapPin className="h-4 w-4 shrink-0 text-brand-orange-600" /><div><dt className="text-xs text-slate-500">Meeting point</dt><dd className="mt-1 font-semibold text-slate-800">{event.pickup_location}</dd></div></div>}
                 {event.capacity && <div><dt className="text-xs text-slate-500">Available capacity</dt><dd className="mt-1 font-semibold text-slate-800">{event.capacity} places maximum</dd></div>}
               </dl>
-              {event.status === "registration_closed" ? <div className="mt-6 rounded-xl bg-amber-50 p-4 text-sm font-semibold text-amber-900">Registration for this event has closed.</div> : <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-700"><MessageCircle className="h-4 w-4" />Enquire about this event</a>}
+              {event.status === "registration_closed" ? <div className="mt-6 rounded-xl bg-brand-orange-50 p-4 text-sm font-semibold text-brand-orange-900">Registration for this event has closed.</div> : <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-orange-700"><MessageCircle className="h-4 w-4" />Enquire about this event</a>}
               <p className="mt-4 text-xs leading-5 text-slate-500">An enquiry is not a confirmed booking. The TransVista team will explain availability, arrangements and payment steps before any payment is requested.</p>
             </aside>
           </div>

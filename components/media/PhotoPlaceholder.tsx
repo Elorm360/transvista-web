@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 /**
  * Branded stand-in until original TransVista photography is added
  * (see docs/PHOTOS.md). Deliberately calm: deep brand blue, a faint
@@ -6,12 +8,19 @@
 export function PhotoPlaceholder({
   label = "Original photography coming soon",
   caption,
+  className,
 }: {
   label?: string;
   caption?: string;
+  className?: string;
 }) {
   return (
-    <div className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-brand-blue-800 via-brand-blue-900 to-brand-blue-950 p-5">
+    <div
+      className={cn(
+        "relative flex h-full min-h-[240px] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-brand-blue-800 via-brand-blue-900 to-brand-blue-950 p-5",
+        className,
+      )}
+    >
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-[0.18] [background-image:repeating-radial-gradient(circle_at_70%_30%,transparent_0,transparent_14px,rgba(255,255,255,0.55)_15px,transparent_16px)]"

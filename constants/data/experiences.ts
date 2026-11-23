@@ -1,3 +1,5 @@
+import { withOriginalPhoto } from "./photos";
+
 export type Experience = {
   id: string;
   name: string;
@@ -15,7 +17,7 @@ export type Experience = {
   featured: boolean;
 };
 
-export const experiences: Experience[] = [
+const experiencesData: Experience[] = [
   {
     id: "accra-city-culture",
     name: "Accra City & Culture",
@@ -188,6 +190,11 @@ export const experiences: Experience[] = [
     photoNote: "Original TransVista photography coming soon.",
   },
 ];
+
+/** Data above, with any original photos from `npm run photos` applied. */
+export const experiences: Experience[] = experiencesData.map((item) =>
+  withOriginalPhoto("experiences", item),
+);
 
 export function getExperienceBySlug(slug: string) {
   return experiences.find((item) => item.slug === slug);

@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function ExperiencesPage() {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow="Experiences"
         title="Moments worth travelling for."

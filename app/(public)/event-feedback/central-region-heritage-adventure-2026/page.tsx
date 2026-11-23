@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function CentralRegionEventFeedbackPage() {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow="Your feedback matters"
         title="Help us make the next journey better."

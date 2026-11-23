@@ -41,7 +41,7 @@ export default async function PlanPage({ searchParams }: PlanPageProps) {
     : "";
 
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow="Plan your trip"
         title="Tell us what you know. We’ll help shape the rest."

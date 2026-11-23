@@ -53,7 +53,7 @@ export default function SetPasswordForm() {
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
                 disabled={isPending}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:opacity-60"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-600/20 disabled:opacity-60"
               />
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function SetPasswordForm() {
                 autoComplete="new-password"
                 placeholder="Repeat your password"
                 disabled={isPending}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:opacity-60"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-600/20 disabled:opacity-60"
               />
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function SetPasswordForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:pointer-events-none disabled:opacity-60"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue-600 px-6 text-sm font-semibold text-white shadow-md transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-brand-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-blue-600 disabled:pointer-events-none disabled:opacity-60"
           >
             {isPending ? (
               <>

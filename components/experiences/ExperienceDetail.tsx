@@ -12,7 +12,7 @@ type ExperienceDetailProps = {
 
 export function ExperienceDetail({ experience, destination }: ExperienceDetailProps) {
   return (
-    <main id="main-content" className="bg-[#fffdfa]">
+    <main id="main-content" className="bg-canvas">
       <PageHeader
         eyebrow={
           <>

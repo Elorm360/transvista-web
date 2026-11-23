@@ -15,7 +15,7 @@ export async function Testimonials() {
   const stories = await getStories();
 
   return (
-    <Section id="traveller-stories" className="bg-[#f7f5f1]">
+    <Section id="traveller-stories" className="bg-sand">
       <Container>
         <Reveal>
           <FeaturedStoryRotator stories={spotlight} intervalMs={7000} />
