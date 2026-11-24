@@ -28,6 +28,7 @@ import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 import type { CustomRole } from "@/lib/dashboard/getRoles";
 import { StatusBadge } from "@/components/admin/ui";
 import { Avatar } from "@/components/admin/Avatar";
+import { effectiveAreas, GRANTABLE_AREAS } from "@/lib/auth/permissions";
 
 interface TeamMembersTableProps {
   members: TeamMember[];
@@ -37,6 +38,7 @@ interface TeamMembersTableProps {
 type BaseRole = "admin" | "community_manager" | "support";
 
 function formatRole(role: string): string {
+  if (role === "owner") return "Super Admin";
   return role
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -64,16 +66,34 @@ export default function TeamMembersTable({ members, roles }: TeamMembersTablePro
   const roleLabelFor = (member: TeamMember) =>
     (member.customRoleKey && roles.find((r) => r.key === member.customRoleKey)?.name) || formatRole(member.role);
   const customOptions = roles.length ? (
-    <optgroup label="Custom roles">
+    <optgroup label="Team roles">
       {roles.map((r) => <option key={r.key} value={`custom:${r.key}`}>{r.name}</option>)}
     </optgroup>
   ) : null;
+  /** Plain-language summary of what a role choice can open, shown under the role picker. */
+  const accessPreview = (choice: string) => {
+    const custom = choice.startsWith("custom:") ? roles.find((r) => r.key === choice.slice(7)) : undefined;
+    const areas = custom ? effectiveAreas(custom.baseRole, custom.permissions) : effectiveAreas(choice as BaseRole, null);
+    const sections = GRANTABLE_AREAS.filter((item) => areas.includes(item.area));
+    return (
+      <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-xs leading-5 text-slate-600">
+        {custom?.description && <p className="mb-2 text-slate-700">{custom.description}</p>}
+        <p className="font-semibold text-slate-800">They&apos;ll be able to open:</p>
+        <ul className="mt-1 space-y-0.5">
+          <li>Overview</li>
+          {sections.map((item) => <li key={item.area}><span className="font-medium text-slate-800">{item.label}</span> · {item.description}</li>)}
+        </ul>
+        {!areas.includes("payments") && <p className="mt-2 text-slate-500">Money figures and the payment ledger stay hidden.</p>}
+      </div>
+    );
+  };
   const router = useRouter();
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<string>("community_manager");
+  const defaultRoleChoice = roles.length ? `custom:${roles[0].key}` : "community_manager";
+  const [role, setRole] = useState<string>(defaultRoleChoice);
 
   const [isInviting, setIsInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -127,7 +147,7 @@ export default function TeamMembersTable({ members, roles }: TeamMembersTablePro
 
       setFullName("");
       setEmail("");
-      setRole("community_manager");
+      setRole(defaultRoleChoice);
       router.refresh();
     } catch (error) {
       setInviteError(
@@ -281,19 +301,14 @@ export default function TeamMembersTable({ members, roles }: TeamMembersTablePro
                   onChange={(e) => setRole(e.target.value)}
                   className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-600/20"
                 >
-                  <option value="community_manager">
-                    Community Manager
-                  </option>
-
-                  <option value="admin">
-                    Admin
-                  </option>
-
-                  <option value="support">
-                    Support
-                  </option>
                   {customOptions}
+                  <optgroup label="General access levels">
+                    <option value="admin">Admin</option>
+                    <option value="support">Support</option>
+                    <option value="community_manager">Community Manager</option>
+                  </optgroup>
                 </select>
+                {accessPreview(role)}
               </div>
             </div>
 
@@ -487,7 +502,8 @@ export default function TeamMembersTable({ members, roles }: TeamMembersTablePro
             <div className="mt-5 space-y-4">
               <label className="block text-sm font-semibold text-slate-700">Full name<input value={editName} onChange={e=>setEditName(e.target.value)} maxLength={120} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 px-3 font-normal"/></label>
               <label className="block text-sm font-semibold text-slate-700">Email / login address<input value={editTarget.email} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 font-normal text-slate-500"/><span className="mt-1 block text-xs font-normal text-slate-500">Login email is protected here to avoid accidentally locking the person out.</span></label>
-              <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal"><option value="support">Support</option><option value="community_manager">Community Manager</option><option value="admin">Admin</option>{customOptions}</select></label>
+              <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal">{customOptions}<optgroup label="General access levels"><option value="admin">Admin</option><option value="support">Support</option><option value="community_manager">Community Manager</option></optgroup></select></label>
+              {editRole !== "owner" && accessPreview(editRole)}
               <div className="rounded-xl border border-slate-200 px-3 py-3">
                 <p className="text-sm font-semibold text-slate-700">Two-step sign-in</p>
                 <p className="mt-0.5 text-xs text-slate-500">If they lost the phone with their authenticator app, reset it so they can sign in with their password and set it up again.</p>

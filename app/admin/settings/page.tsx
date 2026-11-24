@@ -25,7 +25,7 @@ export default async function AdminSettingsPage() {
       <div className="mt-6 space-y-6">
         <TeamMembersTable members={members} roles={roles} />
         <RolesManager roles={roles} />
-        <TeamOnboardingGuide />
+        <TeamOnboardingGuide roles={roles} />
       </div>
     </div>
   );

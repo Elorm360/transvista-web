@@ -134,12 +134,15 @@ export default function TravelRequestsList({
   requests,
   operators,
   adminRole,
+  canManagePayments = false,
   initialOpenId,
   initialView,
 }: {
   requests: TravelRequestRecord[];
   operators: RequestOperator[];
   adminRole: string;
+  /** May change amounts received (Payments section). */
+  canManagePayments?: boolean;
   /** Open this booking on load (e.g. from an Overview action link). */
   initialOpenId?: string;
   /** Start on this saved view (e.g. "past-open"). */
@@ -450,6 +453,7 @@ export default function TravelRequestsList({
           request={selected}
           operators={operators}
           adminRole={adminRole}
+          canManagePayments={canManagePayments}
           onClose={() => setSelected(null)}
         />
       )}
@@ -463,11 +467,13 @@ function RequestDrawer({
   request,
   operators,
   adminRole,
+  canManagePayments,
   onClose,
 }: {
   request: TravelRequestRecord;
   operators: RequestOperator[];
   adminRole: string;
+  canManagePayments: boolean;
   onClose: () => void;
 }) {
   const archived = Boolean(request.archivedAt);
@@ -601,7 +607,7 @@ function RequestDrawer({
               <section className="rounded-xl border border-slate-200 bg-white p-5">
                 <h3 className="text-sm font-semibold text-slate-900">Status, owner and follow-up</h3>
                 <p className="mt-0.5 text-sm text-slate-500">Changes are logged in Activity. Tick &ldquo;Email this update&rdquo; to tell the traveller.</p>
-                <BookingOperationsForm request={request} operators={operators} />
+                <BookingOperationsForm request={request} operators={operators} canManagePayments={canManagePayments} />
               </section>
               <RequestRetentionPanel request={request} adminRole={adminRole} onClose={onClose} />
             </>
@@ -818,9 +824,11 @@ function RequestRetentionPanel({
 function BookingOperationsForm({
   request,
   operators,
+  canManagePayments,
 }: {
   request: TravelRequestRecord;
   operators: RequestOperator[];
+  canManagePayments: boolean;
 }) {
   const router = useRouter();
   const initialState: BookingOperationState = { success: false, message: "" };
@@ -929,7 +937,7 @@ function BookingOperationsForm({
               className={inputClass}
             />
           </Field>
-          {request.source === "custom" ? (
+          {request.source === "custom" && canManagePayments ? (
             <>
               <Field label="Amount received">
                 <input
@@ -969,8 +977,8 @@ function BookingOperationsForm({
               </Field>
             </>
           ) : (
-            // Group-trip payments live in the verified payment ledger; editing
-            // them here was silently ignored, so show them read-only instead.
+            // Read-only: group-trip payments live in the verified ledger, and only
+            // the Payments section (Finance, Super Admin) may change custom-trip amounts.
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 sm:col-span-2">
               <p>
                 <span className="font-semibold text-slate-900">
@@ -979,10 +987,18 @@ function BookingOperationsForm({
                 · {label(request.paymentStatus)}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Group-trip payments are recorded in the payment ledger.{" "}
-                <a href="/admin/payments" className="font-semibold text-brand-blue-700 underline-offset-2 hover:underline">
-                  Record a payment
-                </a>
+                {request.source === "custom" ? (
+                  "Payments are recorded by Finance. Ask them if this needs updating."
+                ) : canManagePayments ? (
+                  <>
+                    Group-trip payments are recorded in the payment ledger.{" "}
+                    <a href="/admin/payments" className="font-semibold text-brand-blue-700 underline-offset-2 hover:underline">
+                      Record a payment
+                    </a>
+                  </>
+                ) : (
+                  "Group-trip payments are recorded in the payment ledger by Finance."
+                )}
               </p>
             </div>
           )}

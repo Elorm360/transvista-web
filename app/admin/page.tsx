@@ -7,6 +7,7 @@ import { buttonClass, Card, EmptyState, StatCard, StatusBadge } from "@/componen
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 import { loadTravelRequests, type TravelRequestRecord } from "@/lib/dashboard/getTravelRequests";
+import YourAccessCard from "@/components/admin/YourAccessCard";
 import { attentionReasons, balanceDue, bookingTotals, RESPONSE_WINDOW_MS } from "@/lib/admin/bookingHealth";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ type ActionSummary = { urgent: number; paymentOverdue: number; unassigned: numbe
 const ACTION_LIMIT = 8;
 
 /** One queue entry per reason a booking needs attention (rules live in lib/admin/bookingHealth). */
-function buildActionItems(records: TravelRequestRecord[], now: Date): { items: ActionItem[]; summary: ActionSummary } {
+function buildActionItems(records: TravelRequestRecord[], now: Date, showMoney: boolean): { items: ActionItem[]; summary: ActionSummary } {
   const items: ActionItem[] = [];
   const nowMs = now.getTime();
 
@@ -42,7 +43,7 @@ function buildActionItems(records: TravelRequestRecord[], now: Date): { items: A
       } else if (reason === "follow-up-overdue") {
         items.push({ ...base, key: `${r.id}-followup`, reason: "Scheduled follow-up is overdue", severity: "urgent", dueAt: r.followUpAt ?? r.createdAt, action: "Follow up", icon: CalendarClock });
       } else if (reason === "payment-overdue") {
-        items.push({ ...base, key: `${r.id}-payment`, reason: `Payment deadline passed · ${r.quoteCurrency ?? "GHS"} ${balanceDue(r).toFixed(2)} outstanding`, severity: "attention", dueAt: r.paymentDueAt ?? r.createdAt, action: "Review payment", icon: CreditCard });
+        items.push({ ...base, key: `${r.id}-payment`, reason: showMoney ? `Payment deadline passed · ${r.quoteCurrency ?? "GHS"} ${balanceDue(r).toFixed(2)} outstanding` : "Payment deadline passed", severity: "attention", dueAt: r.paymentDueAt ?? r.createdAt, action: "Review payment", icon: CreditCard });
       }
     }
   }
@@ -65,6 +66,8 @@ export default async function AdminDashboardPage() {
   const canSeeOperations = access.areas.includes("requests");
   const canSeeCommunity = access.areas.includes("community");
   const canSeeAnalytics = access.areas.includes("analytics");
+  // Money figures follow the Payments permission (e.g. the COO and CTO roles don't see them).
+  const canSeeMoney = access.areas.includes("payments");
   const supabase = await createClient();
   let totals: ReturnType<typeof bookingTotals> | null = null;
   let latest: RecentBooking[] = [];
@@ -78,7 +81,7 @@ export default async function AdminDashboardPage() {
     const { requests, loadError: failed } = await loadTravelRequests();
     loadError = failed;
     if (!failed) totals = bookingTotals(requests, now);
-    ({ items: actionItems, summary: actionSummary } = buildActionItems(requests, now));
+    ({ items: actionItems, summary: actionSummary } = buildActionItems(requests, now, canSeeMoney));
     latest = requests
       .filter((r) => !r.archivedAt)
       .slice(0, 6)
@@ -110,11 +113,13 @@ export default async function AdminDashboardPage() {
     {loadError && <div role="alert" className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />Bookings could not be loaded right now, so these totals are unavailable. Refresh the page to try again.</div>}
     {totals && totals.stalePastTrips > 0 && <Link href="/admin/requests?view=past-open" className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition-colors hover:bg-slate-50"><CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" /><span><strong className="font-semibold text-slate-900">{totals.stalePastTrips} booking{totals.stalePastTrips === 1 ? " is" : "s are"} still open for trips that have already happened.</strong> Mark them completed or cancelled so they stop affecting your numbers. <span className="font-semibold text-brand-blue-700">Review them →</span></span></Link>}
 
-    {canSeeOperations && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {access.role !== "owner" && <YourAccessCard name={access.memberName} roleLabel={access.roleLabel} areas={access.areas} />}
+
+    {canSeeOperations && <div className={`grid gap-4 sm:grid-cols-2 ${canSeeMoney ? "lg:grid-cols-4" : ""}`}>
       <StatCard label="Needs attention" value={totals ? String(totals.needsAttention) : "—"} hint="Upcoming bookings with an open task" icon={Clock3} tone="orange" href="/admin/requests?view=attention" />
       <StatCard label="Upcoming trips" value={totals ? String(totals.open) : "—"} hint="Open bookings not yet travelled" icon={CalendarDays} tone="blue" href="/admin/requests" />
-      <StatCard label="Received" value={totals ? money(totals.receivedGhs) : "—"} hint="Recorded on bookings (GHS)" icon={Wallet} tone="green" href="/admin/payments" />
-      <StatCard label="Outstanding" value={totals ? money(totals.outstandingGhs) : "—"} hint="Still owed on upcoming trips" icon={CreditCard} tone="neutral" />
+      {canSeeMoney && <StatCard label="Received" value={totals ? money(totals.receivedGhs) : "—"} hint="Recorded on bookings (GHS)" icon={Wallet} tone="green" href="/admin/payments" />}
+      {canSeeMoney && <StatCard label="Outstanding" value={totals ? money(totals.outstandingGhs) : "—"} hint="Still owed on upcoming trips" icon={CreditCard} tone="neutral" />}
     </div>}
 
     <div className={canSeeOperations ? "grid gap-6 lg:grid-cols-3" : "grid gap-6 lg:grid-cols-2"}>
