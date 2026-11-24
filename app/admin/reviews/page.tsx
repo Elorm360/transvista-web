@@ -36,7 +36,7 @@ export default async function AdminReviewsPage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         icon={Star}
-        title="Traveller reviews"
+        title="Reviews"
         description="Verified reviews go live automatically. Approve or hide the rest. You can hide any review at any time."
       />
       <ReviewModeration reviews={reviews} />

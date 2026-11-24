@@ -52,7 +52,7 @@ export default async function AdminAnalyticsPage({
       : `${business.averageFirstResponseHours.toFixed(1)} hrs`;
 
   return <div className="mx-auto max-w-7xl">
-    <PageHeader icon={BarChart3} title="Business Intelligence" description="Understand booking performance, payment position, trip demand and team workload using TransVista's recorded data." />
+    <PageHeader icon={BarChart3} title="Reports" description="Understand booking performance, payment position, trip demand and team workload using TransVista's recorded data." />
 
     <form method="get" action="/admin/analytics" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4">
       <div><p className="text-sm font-bold text-slate-900">Reporting period</p><p className="mt-1 text-xs text-slate-500">Booking and operational metrics use the selected booking creation date range.</p></div>

@@ -49,7 +49,7 @@ export default async function AdminEventFeedbackPage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         icon={MessageSquareText}
-        title="Event feedback dashboard"
+        title="Feedback"
         description="Private feedback from verified, paid travellers. Use it to see what to improve and where to go next. Never published as testimonials."
       />
       {error ? (

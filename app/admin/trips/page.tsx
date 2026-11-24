@@ -17,12 +17,12 @@ export default async function AdminTripOperationsPage() {
     <div className="mx-auto max-w-[1500px]">
       <PageHeader
         icon={CalendarDays}
-        title="Trip Operations & Departures"
-        description="Manage shared departures, traveller manifests, transport arrangements and operational readiness."
+        title="Departures"
+        description="Group departures, traveller lists, transport and readiness checks."
       />
       <TripDepartureManager departures={departures} candidates={candidates} operators={operators} readOnly={process.env.VERCEL_ENV === "preview"} />
       <details className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-700">Legacy booking-level calendar and operational details</summary>
+        <summary className="cursor-pointer text-sm font-semibold text-slate-700">Calendar view of individual bookings</summary>
         <div className="mt-5"><TripOperationsCalendar trips={trips} operators={operators} /></div>
       </details>
     </div>

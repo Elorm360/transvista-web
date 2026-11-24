@@ -32,8 +32,8 @@ export default async function AdminMessagesPage() {
     <div className="mx-auto max-w-[1500px]">
       <PageHeader
         icon={MessageSquareText}
-        title="Traveller Messages"
-        description="Send controlled booking, payment, trip and pickup updates by SMS."
+        title="Messages"
+        description="Send booking, payment and pickup updates to travellers by SMS."
       />
       <SmsMessagingPanel
         contacts={contacts}

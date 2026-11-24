@@ -4,6 +4,7 @@ import {
   useActionState,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -11,20 +12,17 @@ import {
   AlertTriangle,
   Archive,
   ArchiveRestore,
-  CalendarClock,
-  CircleDollarSign,
   Download,
-  Eye,
   FileText,
-  Inbox,
   Mail,
   MessageSquareText,
   Phone,
   Save,
   Search,
+  SlidersHorizontal,
+  ChevronRight,
   Send,
   Trash2,
-  UserRoundCheck,
   X,
 } from "lucide-react";
 import {
@@ -39,6 +37,7 @@ import type {
   RequestOperator,
   TravelRequestRecord,
 } from "@/lib/dashboard/getTravelRequests";
+import { buttonClass, StatusBadge } from "@/components/admin/ui";
 import {
   attentionReasons,
   bookingTotals,
@@ -127,25 +126,7 @@ function money(currency: string | null, value: number) {
   })}`;
 }
 
-function statusClass(status: string) {
-  if (["completed", "paid", "confirmed"].includes(status)) {
-    return "bg-emerald-50 text-emerald-800";
-  }
-  if (["cancelled", "closed"].includes(status)) {
-    return "bg-slate-100 text-slate-600";
-  }
-  if (["in-progress", "deposit-paid"].includes(status)) {
-    return "bg-blue-50 text-blue-800";
-  }
-  return "bg-amber-50 text-amber-800";
-}
 
-function priorityClass(priority: string) {
-  if (priority === "urgent") return "bg-rose-100 text-rose-800";
-  if (priority === "high") return "bg-orange-100 text-orange-800";
-  if (priority === "low") return "bg-slate-100 text-slate-600";
-  return "bg-blue-50 text-blue-700";
-}
 
 const SAVED_VIEWS = new Set(["all", "attention", "new", "awaiting-payment", "confirmed", "overdue", "past-open"]);
 
@@ -184,6 +165,8 @@ export default function TravelRequestsList({
   const [rawSelectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkAssignee, setBulkAssignee] = useState("");
   const [bulkMessage, setBulkMessage] = useState("");
+  // Rarely used filters stay folded away until asked for.
+  const [showFilters, setShowFilters] = useState(false);
 
   const filteredRequests = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -288,80 +271,97 @@ export default function TravelRequestsList({
     URL.revokeObjectURL(url);
   }
 
+  const activeFilterCount = [
+    kindFilter !== "all",
+    statusFilter !== "all",
+    paymentFilter !== "all",
+    priorityFilter !== "all",
+    assigneeFilter !== "all",
+    Boolean(tripDateFrom),
+    Boolean(tripDateTo),
+    visibilityFilter !== "active",
+  ].filter(Boolean).length;
+
+  function clearFilters() {
+    setQuery(""); setKindFilter("all"); setStatusFilter("all"); setPriorityFilter("all"); setPaymentFilter("all");
+    setAssigneeFilter("all"); setTripDateFrom(""); setTripDateTo(""); setVisibilityFilter("active"); setSavedView("all");
+  }
+
+  const views: Array<readonly [string, string, number]> = [
+    ["all", "All", totals.active],
+    ["attention", "Needs attention", totals.needsAttention],
+    ["new", "New", requests.filter((r) => !r.archivedAt && ["new", "pending-review"].includes(r.status)).length],
+    ["awaiting-payment", "Awaiting payment", requests.filter((r) => !r.archivedAt && !["cancelled", "closed", "completed"].includes(r.status) && ["not-requested", "payment-requested", "deposit-requested"].includes(r.paymentStatus)).length],
+    ["confirmed", "Confirmed", requests.filter((r) => !r.archivedAt && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(r.status)).length],
+    ["overdue", "Overdue follow-ups", requests.filter((r) => attentionReasons(r, new Date(now)).includes("follow-up-overdue")).length],
+    ...(totals.stalePastTrips ? [["past-open", "Past trips still open", totals.stalePastTrips] as const] : []),
+  ];
+
   return (
     <>
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={Inbox} label="Active bookings" value={String(totals.active)} />
-        <Metric
-          icon={CalendarClock}
-          label="Needs attention"
-          value={String(totals.needsAttention)}
-          accent="orange"
-        />
-        <Metric
-          icon={UserRoundCheck}
-          label="Upcoming trips"
-          value={String(totals.open)}
-          accent="blue"
-        />
-        <Metric
-          icon={CircleDollarSign}
-          label="GHS received"
-          value={money("GHS", totals.receivedGhs)}
-          accent="green"
-        />
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <label className="relative flex-1">
+          <span className="sr-only">Search bookings</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, phone, email, reference or destination"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100" />
+        </label>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setShowFilters((open) => !open)} aria-expanded={showFilters} aria-controls="booking-filters"
+            className={buttonClass(activeFilterCount ? "primary" : "secondary", "h-10")}>
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+            Filters{activeFilterCount ? ` (${activeFilterCount})` : ""}
+          </button>
+          <button type="button" onClick={exportCsv} disabled={!filteredRequests.length} className={buttonClass("secondary", "h-10")}>
+            <Download className="h-4 w-4" aria-hidden="true" /> Export
+          </button>
+        </div>
       </div>
 
-      <div className="mb-5 space-y-3">
-        <div className="flex flex-wrap gap-2">
-          {[
-            ["all", "All bookings", totals.active],
-            ["attention", "Needs attention", totals.needsAttention],
-            ["new", "New requests", requests.filter((r) => !r.archivedAt && ["new", "pending-review"].includes(r.status)).length],
-            ["awaiting-payment", "Awaiting payment", requests.filter((r) => !r.archivedAt && !["cancelled", "closed", "completed"].includes(r.status) && ["not-requested", "payment-requested", "deposit-requested"].includes(r.paymentStatus)).length],
-            ["confirmed", "Confirmed trips", requests.filter((r) => !r.archivedAt && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(r.status)).length],
-            ["overdue", "Overdue follow-ups", requests.filter((r) => attentionReasons(r, new Date(now)).includes("follow-up-overdue")).length],
-            ...(totals.stalePastTrips ? [["past-open", "Past trips still open", totals.stalePastTrips] as const] : []),
-          ].map(([value, title, count]) => (
-            <button key={value} type="button" onClick={() => setSavedView(String(value))}
-              className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${savedView === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}>
-              {title} <span className={savedView === value ? "ml-1 opacity-80" : "ml-1 text-slate-400"}>{count}</span>
+      {showFilters && (
+        <div id="booking-filters" className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <FilterSelect label="Request type" value={kindFilter} onChange={setKindFilter}
+              options={[["all", "All request types"], ["custom", "Custom trips"], ["package", "Group trips"]]} />
+            <FilterSelect label="Booking status" value={statusFilter} onChange={setStatusFilter}
+              options={[["all", "All statuses"], ...Array.from(new Set(requests.map((r) => r.status))).sort().map((s) => [s, label(s)] as [string, string])]} />
+            <FilterSelect label="Payment status" value={paymentFilter} onChange={setPaymentFilter}
+              options={[["all", "All payment statuses"], ...Array.from(new Set(requests.map((r) => r.paymentStatus))).sort().map((s) => [s, label(s)] as [string, string])]} />
+            <FilterSelect label="Assigned to" value={assigneeFilter} onChange={setAssigneeFilter}
+              options={[["all", "Anyone"], ["unassigned", "Unassigned"], ...operators.map((o) => [o.id, o.fullName] as [string, string])]} />
+            <FilterSelect label="Priority" value={priorityFilter} onChange={setPriorityFilter}
+              options={[["all", "All priorities"], ["urgent", "Urgent"], ["high", "High"], ["normal", "Normal"], ["low", "Low"]]} />
+            <label><span className="mb-1 block text-xs font-medium text-slate-600">Trip date from</span>
+              <input type="date" value={tripDateFrom} onChange={(event) => setTripDateFrom(event.target.value)} className={inputClass} /></label>
+            <label><span className="mb-1 block text-xs font-medium text-slate-600">Trip date to</span>
+              <input type="date" value={tripDateTo} onChange={(event) => setTripDateTo(event.target.value)} className={inputClass} /></label>
+            <FilterSelect label="Show" value={visibilityFilter} onChange={setVisibilityFilter}
+              options={[["active", "Active bookings"], ["archived", "Archived only"], ["all", "Active and archived"]]} />
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button type="button" onClick={clearFilters} className={buttonClass("ghost")}>Clear all filters</button>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200" role="tablist" aria-label="Booking views">
+        {views.map(([value, title, count]) => {
+          const active = savedView === value;
+          return (
+            <button key={value} type="button" role="tab" aria-selected={active} onClick={() => setSavedView(value)}
+              className={`-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${active ? "border-brand-blue-600 text-brand-blue-700" : "border-transparent text-slate-500 hover:text-slate-800"}`}>
+              {title}
+              <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${active ? "bg-brand-blue-50 text-brand-blue-700" : "bg-slate-100 text-slate-500"}`}>{count}</span>
             </button>
-          ))}
-        </div>
-        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
-          <label className="relative sm:col-span-2 xl:col-span-1">
-            <span className="sr-only">Search bookings</span>
-            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, phone, email, reference or destination"
-              className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-          </label>
-          <FilterSelect label="Request type" value={kindFilter} onChange={setKindFilter}
-            options={[["all", "All request types"], ["custom", "Custom trips"], ["package", "Group trips"]]} />
-          <FilterSelect label="Booking status" value={statusFilter} onChange={setStatusFilter}
-            options={[["all", "All statuses"], ...Array.from(new Set(requests.map((r) => r.status))).sort().map((s) => [s, label(s)] as [string, string])]} />
-          <FilterSelect label="Payment status" value={paymentFilter} onChange={setPaymentFilter}
-            options={[["all", "All payment statuses"], ...Array.from(new Set(requests.map((r) => r.paymentStatus))).sort().map((s) => [s, label(s)] as [string, string])]} />
-          <FilterSelect label="Priority" value={priorityFilter} onChange={setPriorityFilter}
-            options={[["all", "All priorities"], ["urgent", "Urgent"], ["high", "High"], ["normal", "Normal"], ["low", "Low"]]} />
-          <FilterSelect label="Assigned team member" value={assigneeFilter} onChange={setAssigneeFilter}
-            options={[["all", "All team members"], ["unassigned", "Unassigned"], ...operators.map((o) => [o.id, o.fullName] as [string, string])]} />
-          <label><span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Trip date from</span>
-            <input type="date" value={tripDateFrom} onChange={(event) => setTripDateFrom(event.target.value)} className={inputClass} /></label>
-          <label><span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Trip date to</span>
-            <input type="date" value={tripDateTo} onChange={(event) => setTripDateTo(event.target.value)} className={inputClass} /></label>
-          <FilterSelect label="Queue" value={visibilityFilter} onChange={setVisibilityFilter}
-            options={[["active", "Active queue"], ["archived", "Archived"], ["all", "Active and archived"]]} />
-          <button type="button" onClick={() => { setQuery(""); setKindFilter("all"); setStatusFilter("all"); setPriorityFilter("all"); setPaymentFilter("all"); setAssigneeFilter("all"); setTripDateFrom(""); setTripDateTo(""); setVisibilityFilter("active"); setSavedView("all"); }}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Clear filters</button>
-          <button type="button" onClick={exportCsv} disabled={!filteredRequests.length}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"><Download className="h-4 w-4" /> Export results</button>
-        </div>
+          );
+        })}
       </div>
+
       {selectedIds.length > 0 && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-          <span className="text-sm font-bold text-blue-950">{selectedIds.length} selected</span>
-          <select value={bulkAssignee} onChange={(event) => setBulkAssignee(event.target.value)} required className="h-10 min-w-[220px] rounded-xl border border-blue-200 bg-white px-3 text-sm">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-brand-blue-200 bg-brand-blue-50 px-4 py-3">
+          <span className="text-sm font-semibold text-brand-blue-900">{selectedIds.length} selected</span>
+          <select value={bulkAssignee} onChange={(event) => setBulkAssignee(event.target.value)} required aria-label="Assign selected bookings to"
+            className="h-9 min-w-[220px] rounded-lg border border-brand-blue-200 bg-white px-3 text-sm">
             <option value="">Assign to team member…</option>
             {operators.map((operator) => <option key={operator.id} value={operator.id}>{operator.fullName} · {label(operator.role)}</option>)}
           </select>
@@ -370,120 +370,71 @@ export default function TravelRequestsList({
             const result = await assignSelectedBookings({ ids: selectedIds, assignedTo: bulkAssignee });
             setBulkMessage(result.message);
             if (result.success) { setSelectedIds([]); setBulkAssignee(""); }
-          }} className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">Apply assignment</button>
-          <button type="button" onClick={() => setSelectedIds([])} className="text-sm font-semibold text-blue-800">Clear selection</button>
-          {bulkMessage && <span aria-live="polite" className="w-full text-sm font-semibold text-blue-900">{bulkMessage}</span>}
+          }} className={buttonClass("primary", "h-9")}>Assign</button>
+          <button type="button" onClick={() => setSelectedIds([])} className={buttonClass("ghost", "h-9")}>Clear selection</button>
+          {bulkMessage && <span aria-live="polite" className="w-full text-sm font-medium text-brand-blue-900">{bulkMessage}</span>}
         </div>
       )}
 
       {requests.length === 0 ? (
         <EmptyMessage
-          title="No travel requests yet"
-          body="New custom-trip and package requests will appear here."
+          title="No bookings yet"
+          body="New custom trip requests and group-trip bookings will appear here."
         />
       ) : filteredRequests.length === 0 ? (
         <EmptyMessage
-          title="No requests match these filters"
-          body="Adjust the search or filters to see more bookings."
+          title="No bookings match"
+          body="Try another view, or clear the search and filters."
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1320px] text-left">
+            <table className="w-full min-w-[920px] text-left">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {[
-                    "",
-                    "Reference",
-                    "Traveller",
-                    "Request",
-                    "People",
-                    "Priority",
-                    "Status",
-                    "Assigned",
-                    "Payment",
-                    "Follow-up",
-                    "Received",
-                    "",
-                  ].map((heading, index) => (
-                    <th
-                      key={`${heading}-${index}`}
-                      className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500"
-                    >
-                      {heading}
-                    </th>
+                  <th className="w-10 px-4 py-3"><span className="sr-only">Select</span></th>
+                  {["Traveller", "Booking", "Trip date", "Status", "Payment", "Assigned", "Follow-up"].map((heading) => (
+                    <th key={heading} className="px-3 py-3 text-xs font-semibold text-slate-500">{heading}</th>
                   ))}
+                  <th className="w-10 px-3 py-3"><span className="sr-only">Open</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((request) => (
-                  <tr key={request.id} className="align-top hover:bg-slate-50/70">
-                    <td className="px-4 py-4">
+                  <tr key={request.id} onClick={() => setSelected(request)} className="cursor-pointer transition-colors hover:bg-slate-50">
+                    <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
                       <input type="checkbox" aria-label={`Select ${request.reference}`} checked={selectedIds.includes(request.id)}
                         onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, request.id] : current.filter((id) => id !== request.id))}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600" />
+                        className="h-4 w-4 rounded border-slate-300 text-brand-blue-600 focus:ring-brand-blue-600" />
                     </td>
-                    <td className="px-4 py-4 text-sm font-semibold text-blue-700">
-                      {request.reference}
-                      {request.archivedAt && (
-                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                          Archived
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="text-sm font-semibold text-slate-900">
+                    <td className="px-3 py-3">
+                      {/* The name is the keyboard-accessible way to open the booking. */}
+                      <button type="button" onClick={(event) => { event.stopPropagation(); setSelected(request); }}
+                        className="text-left text-sm font-medium text-slate-900 hover:text-brand-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600">
                         {request.fullName}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">{request.email}</p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {request.kind}
-                      </p>
-                      <p className="mt-1 max-w-[220px] text-sm text-slate-700">
-                        {request.summary}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-slate-700">
-                      {request.travellers}
-                    </td>
-                    <td className="px-4 py-4">
-                      <Badge className={priorityClass(request.priority)}>
-                        {request.priority}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4">
-                      <Badge className={statusClass(request.status)}>
-                        {label(request.status)}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-slate-600">
-                      {request.assigneeName ?? "Unassigned"}
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="text-sm font-semibold text-slate-800">
-                        {label(request.paymentStatus)}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {money(request.quoteCurrency, request.amountPaid)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-slate-600">
-                      {request.followUpAt ? formatDateTime(request.followUpAt) : "—"}
-                    </td>
-                    <td className="px-4 py-4 text-sm text-slate-500">
-                      {formatDate(request.createdAt)}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelected(request)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                      >
-                        <Eye className="h-4 w-4" /> Manage
                       </button>
+                      <p className="mt-0.5 text-xs text-slate-500">{request.reference}{request.archivedAt ? " · Archived" : ""}</p>
                     </td>
+                    <td className="max-w-[260px] px-3 py-3">
+                      <p className="truncate text-sm text-slate-700" title={request.summary}>{request.summary}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {request.source === "package" ? "Group trip" : "Custom trip"} · {request.travellers} {request.travellers === 1 ? "traveller" : "travellers"}
+                      </p>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{request.tripDate ? formatDate(request.tripDate) : "—"}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <StatusBadge status={request.status} />
+                        {["urgent", "high"].includes(request.priority) && <StatusBadge status="failed" label={label(request.priority)} />}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <p className="text-sm text-slate-700">{label(request.paymentStatus)}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{money(request.quoteCurrency, request.amountPaid)} received</p>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-slate-600">{request.assigneeName ?? <span className="text-brand-orange-800">Unassigned</span>}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{request.followUpAt ? formatDateTime(request.followUpAt) : "—"}</td>
+                    <td className="px-3 py-3 text-right text-slate-400"><ChevronRight className="ml-auto h-4 w-4" aria-hidden="true" /></td>
                   </tr>
                 ))}
               </tbody>
@@ -491,6 +442,7 @@ export default function TravelRequestsList({
           </div>
         </div>
       )}
+
 
       {selected && (
         <RequestDrawer
@@ -505,6 +457,8 @@ export default function TravelRequestsList({
   );
 }
 
+type DrawerTab = "details" | "manage" | "payment" | "activity";
+
 function RequestDrawer({
   request,
   operators,
@@ -516,9 +470,27 @@ function RequestDrawer({
   adminRole: string;
   onClose: () => void;
 }) {
+  const archived = Boolean(request.archivedAt);
+  const [tab, setTab] = useState<DrawerTab>("details");
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Keyboard: focus the panel on open, close with Escape.
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const tabs: Array<[DrawerTab, string]> = archived
+    ? [["details", "Details"], ["activity", "Activity"]]
+    : [["details", "Details"], ["manage", "Manage"], ["payment", "Payment"], ["activity", "Activity"]];
+
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end bg-slate-950/45"
+      className="fixed inset-0 z-50 flex justify-end bg-slate-950/40"
       role="dialog"
       aria-modal="true"
       aria-labelledby="request-detail-title"
@@ -526,133 +498,151 @@ function RequestDrawer({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="h-full w-full max-w-3xl overflow-y-auto bg-slate-50 shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-200 bg-white/95 px-6 py-5 backdrop-blur">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-700">
-                {request.kind}
+      <div className="flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-2xl">
+        <div className="border-b border-slate-200 bg-white px-6 pt-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-slate-500">
+                {request.source === "package" ? "Group trip" : "Custom trip"} · {request.reference}
               </p>
-              <Badge className={statusClass(request.status)}>
-                {label(request.status)}
-              </Badge>
-              <Badge className={priorityClass(request.priority)}>
-                {request.priority}
-              </Badge>
+              <h2 id="request-detail-title" className="mt-1 truncate text-xl font-semibold text-slate-900">
+                {request.fullName}
+              </h2>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <StatusBadge status={request.status} />
+                {archived && <StatusBadge status="archived" />}
+                {["urgent", "high"].includes(request.priority) && <StatusBadge status="failed" label={`${label(request.priority)} priority`} />}
+              </div>
             </div>
-            <h2 id="request-detail-title" className="mt-2 text-xl font-bold text-slate-950">
-              {request.fullName}
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
-              {request.reference}
-            </p>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600"
+              aria-label="Close booking"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-            aria-label="Close request details"
-          >
-            <X className="h-5 w-5" />
-          </button>
+
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+            <a href={`mailto:${request.email}`} className="inline-flex items-center gap-1.5 text-brand-blue-700 hover:underline">
+              <Mail className="h-4 w-4" aria-hidden="true" /> {request.email}
+            </a>
+            {request.phone && (
+              <a href={`tel:${request.phone}`} className="inline-flex items-center gap-1.5 text-brand-blue-700 hover:underline">
+                <Phone className="h-4 w-4" aria-hidden="true" /> {request.phone}
+              </a>
+            )}
+          </div>
+
+          <div className="mt-4 flex gap-1" role="tablist" aria-label="Booking sections">
+            {tabs.map(([value, title]) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={tab === value}
+                onClick={() => setTab(value)}
+                className={`-mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+                  tab === value ? "border-brand-blue-600 text-brand-blue-700" : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {title}
+                {value === "activity" && request.activity.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">{request.activity.length}</span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-6 p-6">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <a
-              href={`mailto:${request.email}`}
-              className="flex items-center gap-3 rounded-xl bg-blue-50 p-4 text-sm font-semibold text-blue-800"
-            >
-              <Mail className="h-4 w-4" /> {request.email}
-            </a>
-            <a
-              href={`tel:${request.phone}`}
-              className="flex items-center gap-3 rounded-xl bg-white p-4 text-sm font-semibold text-slate-800 ring-1 ring-slate-200"
-            >
-              <Phone className="h-4 w-4" /> {request.phone}
-            </a>
-          </div>
-
-          {!request.archivedAt && <TravellerDetailsEditor request={{source:request.source,sourceId:request.sourceId,fullName:request.fullName,email:request.email,phone:request.phone,submitted:request.submitted}} />}
-
-          <RequestRetentionPanel
-            request={request}
-            adminRole={adminRole}
-            onClose={onClose}
-          />
-
-          {!request.archivedAt && (
+        <div className="flex-1 space-y-5 overflow-y-auto p-6" role="tabpanel">
+          {tab === "details" && (
             <>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <Save className="h-5 w-5 text-blue-600" /> Booking operations
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Update ownership, workflow, quote, payment and the next follow-up.
-            </p>
-            <BookingOperationsForm request={request} operators={operators} />
-          </section>
+              {archived && <RequestRetentionPanel request={request} adminRole={adminRole} onClose={onClose} />}
 
-          <section className="rounded-2xl border border-orange-200 bg-white p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <FileText className="h-5 w-5 text-orange-600" /> Payment request
-            </h3>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
-              Email branded invoice and itinerary PDFs with the payment policy
-              and official Mobile Money details.
-            </p>
-            <PaymentRequestForm request={request} />
-          </section>
+              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-4">
+                {[
+                  ["Trip date", request.tripDate ? formatDate(request.tripDate) : "—"],
+                  ["Payment", `${money(request.quoteCurrency, request.amountPaid)} · ${label(request.paymentStatus)}`],
+                  ["Assigned", request.assigneeName ?? "Unassigned"],
+                  ["Follow-up", request.followUpAt ? formatDateTime(request.followUpAt) : "—"],
+                ].map(([term, value]) => (
+                  <div key={term} className="bg-white px-4 py-3">
+                    <dt className="text-xs font-medium text-slate-500">{term}</dt>
+                    <dd className="mt-0.5 text-sm font-medium text-slate-900">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <section className="rounded-xl border border-slate-200 bg-white">
+                <h3 className="border-b border-slate-100 px-5 py-3 text-sm font-semibold text-slate-900">What the traveller asked for</h3>
+                <dl className="divide-y divide-slate-100">
+                  {request.details.map((detail) => (
+                    <div key={detail.label} className="grid gap-1 px-5 py-3 sm:grid-cols-[11rem_1fr]">
+                      <dt className="text-sm text-slate-500">{detail.label}</dt>
+                      <dd className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-900">{detail.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+
+              {!archived && (
+                <TravellerDetailsEditor
+                  request={{ source: request.source, sourceId: request.sourceId, fullName: request.fullName, email: request.email, phone: request.phone, submitted: request.submitted }}
+                />
+              )}
             </>
           )}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="text-base font-bold text-slate-900">Traveller request</h3>
-            <dl className="mt-4 divide-y divide-slate-100 rounded-xl border border-slate-200">
-              {request.details.map((detail) => (
-                <div
-                  key={detail.label}
-                  className="grid gap-1 px-4 py-3 sm:grid-cols-[11rem_1fr]"
-                >
-                  <dt className="text-sm font-semibold text-slate-500">
-                    {detail.label}
-                  </dt>
-                  <dd className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-900">
-                    {detail.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
+          {tab === "manage" && !archived && (
+            <>
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="text-sm font-semibold text-slate-900">Status, owner and follow-up</h3>
+                <p className="mt-0.5 text-sm text-slate-500">Changes are logged in Activity. Tick &ldquo;Email this update&rdquo; to tell the traveller.</p>
+                <BookingOperationsForm request={request} operators={operators} />
+              </section>
+              <RequestRetentionPanel request={request} adminRole={adminRole} onClose={onClose} />
+            </>
+          )}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <MessageSquareText className="h-5 w-5 text-blue-600" /> Activity
-            </h3>
-            {request.activity.length ? (
-              <ol className="mt-4 space-y-4">
-                {request.activity.map((item) => (
-                  <li key={item.id} className="border-l-2 border-blue-100 pl-4">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span className="font-semibold capitalize text-blue-700">
-                        {label(item.type)}
-                      </span>
-                      <span>{item.authorName}</span>
-                      <span>·</span>
-                      <time>{formatDateTime(item.createdAt)}</time>
-                    </div>
-                    <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                      {item.summary}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="mt-3 text-sm text-slate-500">
-                Operational changes and internal notes will appear here.
+          {tab === "payment" && !archived && (
+            <section className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <FileText className="h-4 w-4 text-brand-orange-600" aria-hidden="true" /> Send a payment request
+              </h3>
+              <p className="mt-0.5 text-sm leading-6 text-slate-500">
+                Emails the traveller a branded invoice and itinerary PDF with the payment policy and Mobile Money details.
               </p>
-            )}
-          </section>
+              <PaymentRequestForm request={request} />
+            </section>
+          )}
+
+          {tab === "activity" && (
+            <section className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <MessageSquareText className="h-4 w-4 text-brand-blue-600" aria-hidden="true" /> Activity
+              </h3>
+              {request.activity.length ? (
+                <ol className="mt-4 space-y-4">
+                  {request.activity.map((item) => (
+                    <li key={item.id} className="border-l-2 border-slate-200 pl-4">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span className="font-medium text-slate-700">{label(item.type)}</span>
+                        <span>{item.authorName}</span>
+                        <span aria-hidden="true">·</span>
+                        <time>{formatDateTime(item.createdAt)}</time>
+                      </div>
+                      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">{item.summary}</p>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">Changes and internal notes will appear here.</p>
+              )}
+            </section>
+          )}
         </div>
       </div>
     </div>
@@ -1249,13 +1239,6 @@ function FilterSelect({
   );
 }
 
-function Badge({ children, className }: { children: React.ReactNode; className: string }) {
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${className}`}>
-      {children}
-    </span>
-  );
-}
 
 function EmptyMessage({ title, body }: { title: string; body: string }) {
   return (
@@ -1266,31 +1249,3 @@ function EmptyMessage({ title, body }: { title: string; body: string }) {
   );
 }
 
-function Metric({
-  icon: Icon,
-  label: metricLabel,
-  value,
-  accent = "slate",
-}: {
-  icon: typeof Inbox;
-  label: string;
-  value: string;
-  accent?: "slate" | "orange" | "blue" | "green";
-}) {
-  const styles = {
-    slate: "border-slate-200 bg-white text-slate-400",
-    orange: "border-orange-200 bg-orange-50 text-orange-600",
-    blue: "border-blue-200 bg-blue-50 text-blue-600",
-    green: "border-emerald-200 bg-emerald-50 text-emerald-600",
-  }[accent];
-
-  return (
-    <div className={`rounded-2xl border p-5 ${styles}`}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-slate-600">{metricLabel}</p>
-        <Icon className="h-5 w-5" />
-      </div>
-      <p className="mt-3 text-2xl font-bold text-slate-950">{value}</p>
-    </div>
-  );
-}

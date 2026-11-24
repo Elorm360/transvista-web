@@ -65,13 +65,18 @@ export default function EventManagementCentre({ events, readOnly }: { events: Ev
         <Metric label="Past events" value={completed} />
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
-          <div className="flex items-center gap-2"><Plus className="h-4 w-4 text-brand-orange-600" /><h2 className="text-base font-bold text-slate-950">Create an event</h2></div>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Start with a draft. Publish only when the itinerary, partners, dates and pricing have been confirmed.</p>
-        </div>
-        <div className="p-5 sm:p-6"><EventForm action={createTravelEvent} readOnly={readOnly} submitLabel="Create event" /></div>
-      </section>
+      {/* The long create form stays folded away until someone starts a new event. */}
+      <details className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" open={events.length === 0}>
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <span>
+            <span className="flex items-center gap-2 text-base font-semibold text-slate-900"><Plus className="h-4 w-4 text-brand-orange-600" aria-hidden="true" />New event</span>
+            <span className="mt-0.5 block text-sm text-slate-500">Start with a draft. Publish once the itinerary, partners, dates and price are confirmed.</span>
+          </span>
+          <span className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 group-open:hidden">Create</span>
+          <span className="hidden shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 group-open:inline">Close</span>
+        </summary>
+        <div className="border-t border-slate-100 p-5 sm:p-6"><EventForm action={createTravelEvent} readOnly={readOnly} submitLabel="Create event" /></div>
+      </details>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
@@ -93,7 +98,7 @@ export default function EventManagementCentre({ events, readOnly }: { events: Ev
               <div className="border-t border-slate-200 bg-white p-4 sm:p-5"><EventForm event={event} action={updateTravelEvent} readOnly={readOnly} submitLabel="Save changes" /></div>
             </details>
           </article>)}
-        </div> : <div className="px-5 py-14 text-center"><CalendarDays className="mx-auto h-8 w-8 text-slate-300" /><p className="mt-3 text-sm font-semibold text-slate-800">No events have been added yet</p><p className="mt-1 text-xs text-slate-500">Create a draft above when the team begins planning its next event.</p></div>}
+        </div> : <div className="px-5 py-14 text-center"><CalendarDays className="mx-auto h-8 w-8 text-slate-300" /><p className="mt-3 text-sm font-semibold text-slate-800">No events have been added yet</p><p className="mt-1 text-xs text-slate-500">Use “New event” above when the team starts planning the next trip.</p></div>}
       </section>
     </div>
   );

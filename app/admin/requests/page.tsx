@@ -29,8 +29,8 @@ export default async function AdminRequestsPage({
     <div className="mx-auto max-w-[1500px]">
       <PageHeader
         icon={ClipboardList}
-        title="Booking Operations"
-        description="Manage requests, assignments, quotes, payments, follow-ups and traveller communication."
+        title="Requests"
+        description="Custom trip requests and group-trip bookings in one place."
       />
       {loadError ? (
         <div
