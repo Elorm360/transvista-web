@@ -26,20 +26,32 @@ export type AdminArea =
   | "feedback"
   | "analytics"
   | "settings"
-  | "audit";
+  | "audit"
+  /** Own tasks and approval requests: everyone on the team. */
+  | "tasks"
+  /** See, assign and follow up everyone's tasks (COO). */
+  | "team_tasks"
+  /** Approve or reject requests, including payment corrections (CEO). */
+  | "approvals";
 
-/** What each base role can reach (its ceiling). */
+/** Always available to every active team member. */
+export const ALWAYS_AREAS: readonly AdminArea[] = ["dashboard", "tasks"];
+
+/**
+ * What each base role can reach (its ceiling). Keep "team_tasks" and
+ * "approvals" in step with private.member_has_area() in the database.
+ */
 export const BASE_ROLE_AREAS: Record<AdminRole, readonly AdminArea[]> = {
   owner: [
-    "dashboard", "requests", "departures", "messages", "payments", "events",
-    "community", "reviews", "feedback", "analytics", "settings", "audit",
+    "dashboard", "tasks", "requests", "departures", "messages", "payments", "events",
+    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals", "settings", "audit",
   ],
   admin: [
-    "dashboard", "requests", "departures", "messages", "payments", "events",
-    "community", "reviews", "feedback", "analytics",
+    "dashboard", "tasks", "requests", "departures", "messages", "payments", "events",
+    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals",
   ],
-  support: ["dashboard", "requests", "departures", "messages", "payments"],
-  community_manager: ["dashboard", "community", "reviews", "feedback"],
+  support: ["dashboard", "tasks", "requests", "departures", "messages", "payments"],
+  community_manager: ["dashboard", "tasks", "community", "reviews", "feedback"],
 };
 
 /** Sections a custom role can switch on or off (Settings and Audit stay owner-only). */
@@ -53,6 +65,8 @@ export const GRANTABLE_AREAS: Array<{ area: AdminArea; label: string; descriptio
   { area: "reviews", label: "Reviews", description: "Approve testimonials and traveller reviews", href: "/admin/reviews" },
   { area: "feedback", label: "Feedback", description: "Post-trip feedback and satisfaction scores", href: "/admin/event-feedback" },
   { area: "analytics", label: "Reports", description: "Booking performance, demand and team workload", href: "/admin/analytics" },
+  { area: "team_tasks", label: "All team tasks", description: "See, assign and follow up everyone's tasks and deadlines", href: "/admin/tasks?view=all" },
+  { area: "approvals", label: "Approve requests", description: "Approve or reject expenses, requests and payment corrections", href: "/admin/approvals" },
 ];
 
 /** Base levels a custom role can be built on (never the owner). */
@@ -72,8 +86,8 @@ export function effectiveAreas(role: AdminRole, customPermissions?: readonly str
   const base = BASE_ROLE_AREAS[role];
   if (!customPermissions) return [...base];
   const allowed = new Set(customPermissions);
-  // The Overview is always available; everything else must be granted and within the base.
-  return base.filter((area) => area === "dashboard" || allowed.has(area));
+  // The Overview and own tasks are always available; everything else must be granted and within the base.
+  return base.filter((area) => ALWAYS_AREAS.includes(area) || allowed.has(area));
 }
 
 export function formatAdminRole(role: AdminRole): string {

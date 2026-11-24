@@ -14,6 +14,8 @@ export type AuditEntry = {
 /** Areas of the log the page can filter by (prefix of the action name). */
 export const AUDIT_CATEGORIES = [
   { value: "team", label: "Team & access" },
+  { value: "approval", label: "Approvals" },
+  { value: "task", label: "Tasks" },
   { value: "role", label: "Roles" },
   { value: "payment", label: "Payments" },
   { value: "booking", label: "Bookings" },

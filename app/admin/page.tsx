@@ -1,13 +1,14 @@
 import Link from "next/link";
 import {
   ClipboardList, CreditCard, Users, Clock3, Wallet, CalendarDays, ChevronRight, CircleAlert,
-  AlertTriangle, UserRoundPlus, BellRing, ArrowRight, CalendarClock, BadgeCheck,
+  AlertTriangle, UserRoundPlus, BellRing, ArrowRight, CalendarClock, BadgeCheck, ListChecks, Stamp,
 } from "lucide-react";
 import { buttonClass, Card, EmptyState, StatCard, StatusBadge } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 import { loadTravelRequests, type TravelRequestRecord } from "@/lib/dashboard/getTravelRequests";
 import YourAccessCard from "@/components/admin/YourAccessCard";
+import { isOverdue, labelFor, TASK_STATUSES } from "@/lib/tasks/shared";
 import { attentionReasons, balanceDue, bookingTotals, RESPONSE_WINDOW_MS } from "@/lib/admin/bookingHealth";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,21 @@ export default async function AdminDashboardPage() {
     recentLeads = (data ?? []) as LeadRow[];
   }
 
+  // Team tasks assigned to me, and approvals waiting on me.
+  const canDecide = access.areas.includes("approvals");
+  const [myTasksResult, pendingApprovalsResult] = await Promise.all([
+    supabase.from("admin_tasks").select("id,title,priority,due_at,status,escalated_at")
+      .eq("assigned_to", access.memberId).neq("status", "done")
+      .order("due_at", { ascending: true, nullsFirst: false }).limit(5),
+    canDecide
+      ? supabase.from("approval_requests").select("id", { count: "exact", head: true })
+          .eq("status", "pending").neq("requested_by", access.memberId)
+      : Promise.resolve({ count: 0, error: null }),
+  ]);
+  if (myTasksResult.error) console.error("[AdminDashboard] My tasks unavailable:", myTasksResult.error);
+  const myTasks = (myTasksResult.data ?? []) as Array<{ id: number; title: string; priority: string; due_at: string | null; status: string; escalated_at: string | null }>;
+  const pendingApprovals = pendingApprovalsResult.count ?? 0;
+
   const today = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Africa/Accra" }).format(new Date());
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone: "Africa/Accra" }).format(new Date()));
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -113,6 +129,8 @@ export default async function AdminDashboardPage() {
     {loadError && <div role="alert" className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />Bookings could not be loaded right now, so these totals are unavailable. Refresh the page to try again.</div>}
     {totals && totals.stalePastTrips > 0 && <Link href="/admin/requests?view=past-open" className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition-colors hover:bg-slate-50"><CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" /><span><strong className="font-semibold text-slate-900">{totals.stalePastTrips} booking{totals.stalePastTrips === 1 ? " is" : "s are"} still open for trips that have already happened.</strong> Mark them completed or cancelled so they stop affecting your numbers. <span className="font-semibold text-brand-blue-700">Review them →</span></span></Link>}
 
+    {pendingApprovals > 0 && <Link href="/admin/approvals" className="flex items-start gap-3 rounded-xl border border-brand-orange-200 bg-brand-orange-50 px-4 py-3 text-sm text-brand-orange-900 shadow-sm transition-colors hover:bg-brand-orange-100/60"><Stamp className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /><span><strong className="font-semibold">{pendingApprovals} request{pendingApprovals === 1 ? " is" : "s are"} waiting for your approval.</strong> <span className="font-semibold underline-offset-2 hover:underline">Review now →</span></span></Link>}
+
     {access.role !== "owner" && <YourAccessCard name={access.memberName} roleLabel={access.roleLabel} areas={access.areas} />}
 
     {canSeeOperations && <div className={`grid gap-4 sm:grid-cols-2 ${canSeeMoney ? "lg:grid-cols-4" : ""}`}>
@@ -126,6 +144,17 @@ export default async function AdminDashboardPage() {
       {canSeeOperations && <div className="lg:col-span-2"><TaskList items={actionItems} summary={actionSummary} loadError={loadError} /></div>}
 
       <div className="space-y-6">
+        <Card title="My tasks" action={<Link href="/admin/tasks" className={buttonClass("ghost", "px-2 py-1")}>Open tasks</Link>} bodyClassName="divide-y divide-slate-100">
+          {myTasks.map((t) => {
+            const overdue = isOverdue({ dueAt: t.due_at, status: t.status });
+            return <Link key={t.id} href="/admin/tasks" className="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-slate-50">
+              <span className="min-w-0"><span className="block truncate text-sm font-medium text-slate-900">{t.title}</span><span className={`block truncate text-xs ${overdue ? "font-semibold text-red-600" : "text-slate-500"}`}>{t.due_at ? `${overdue ? "Overdue · " : "Due "}${new Date(t.due_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : "No due date"}{t.escalated_at ? " · Escalated" : ""}</span></span>
+              <StatusBadge status={t.status} label={labelFor(TASK_STATUSES, t.status)} />
+            </Link>;
+          })}
+          {!myTasks.length && <EmptyState icon={ListChecks} title="No open tasks" description="Tasks assigned to you will appear here." />}
+        </Card>
+
         {canSeeOperations && <Card title="Latest bookings" action={<Link href="/admin/requests" className={buttonClass("ghost", "px-2 py-1")}>View all</Link>} bodyClassName="divide-y divide-slate-100">
           {latest.map((b) => <Link key={b.id} href={`/admin/requests?open=${encodeURIComponent(b.id)}`} className="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-slate-50">
             <span className="min-w-0"><span className="block truncate text-sm font-medium text-slate-900">{b.full_name}</span><span className="block truncate text-xs text-slate-500">{b.description} · {new Date(b.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span></span>

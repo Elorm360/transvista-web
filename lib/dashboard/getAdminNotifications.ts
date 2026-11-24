@@ -144,6 +144,85 @@ export async function getAdminNotifications(
     });
   }
 
+  // Tasks and approvals: what's been handed to you, escalated to you, or decided for you.
+  if (selfMemberId) {
+    const canDecide = areas.includes("approvals");
+    const [tasksResult, approvalsResult, directoryResult] = await Promise.all([
+      supabase.from("admin_tasks")
+        .select("id,title,assigned_to,created_by,created_at,due_at,escalated_at,escalation_note")
+        .or(canDecide ? `assigned_to.eq.${selfMemberId},escalated_at.not.is.null` : `assigned_to.eq.${selfMemberId}`)
+        .neq("status", "done")
+        .gte("updated_at", cutoff)
+        .limit(100),
+      supabase.from("approval_requests")
+        .select("id,title,kind,status,requested_by,decided_by,created_at,decided_at")
+        .or(canDecide ? `status.eq.pending,requested_by.eq.${selfMemberId}` : `requested_by.eq.${selfMemberId}`)
+        .gte("updated_at", cutoff)
+        .limit(100),
+      supabase.rpc("list_team_directory"),
+    ]);
+    if (tasksResult.error) console.error("[getAdminNotifications] tasks:", tasksResult.error);
+    if (approvalsResult.error) console.error("[getAdminNotifications] approvals:", approvalsResult.error);
+    const names = new Map<string, string>(
+      (directoryResult.data ?? []).map((p: { id: string; full_name: string }) => [p.id, p.full_name]),
+    );
+
+    for (const row of tasksResult.data ?? []) {
+      if (row.assigned_to === selfMemberId && row.created_by !== selfMemberId && row.created_at >= cutoff) {
+        const due = row.due_at ? ` · due ${new Date(row.due_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : "";
+        events.push({
+          key: `task:assigned:${row.id}`,
+          title: "New task for you",
+          description: `${row.title}${due}`,
+          href: "/admin/tasks",
+          category: "team",
+          createdAt: row.created_at,
+          actor: names.get(row.created_by) ?? null,
+          read: false,
+        });
+      }
+      if (canDecide && row.escalated_at) {
+        events.push({
+          key: `task:escalated:${row.id}:${row.escalated_at}`,
+          title: "Task escalated to you",
+          description: `${row.title}${row.escalation_note ? ` · ${row.escalation_note.slice(0, 160)}` : ""}`,
+          href: "/admin/tasks?view=escalated",
+          category: "team",
+          createdAt: row.escalated_at,
+          actor: names.get(row.assigned_to) ?? null,
+          read: false,
+        });
+      }
+    }
+
+    for (const row of approvalsResult.data ?? []) {
+      if (canDecide && row.status === "pending" && row.requested_by !== selfMemberId) {
+        events.push({
+          key: `approval:new:${row.id}`,
+          title: row.kind === "payment_correction" ? "Payment correction needs your approval" : "Approval needed",
+          description: row.title,
+          href: "/admin/approvals",
+          category: row.kind === "payment_correction" ? "payment" : "team",
+          createdAt: row.created_at,
+          actor: names.get(row.requested_by) ?? null,
+          read: false,
+        });
+      }
+      if (row.requested_by === selfMemberId && (row.status === "approved" || row.status === "rejected") && row.decided_at) {
+        events.push({
+          key: `approval:decided:${row.id}`,
+          title: row.status === "approved" ? "Your request was approved" : "Your request was not approved",
+          description: row.title,
+          href: "/admin/approvals",
+          category: "team",
+          createdAt: row.decided_at,
+          actor: names.get(row.decided_by) ?? null,
+          read: false,
+        });
+      }
+    }
+  }
+
   events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const visibleEvents = events.slice(0, limit);
   const keys = visibleEvents.map((event) => event.key);

@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ClipboardList, CreditCard, MessageSquareText, CalendarDays, CalendarPlus,
   Users, Star, MessageSquareHeart, BarChart3, Settings, Menu, X, LogOut, Bell, Compass, ChevronRight,
   type LucideIcon,
-  Sun, Moon, Monitor, ScrollText,
+  Sun, Moon, Monitor, ScrollText, ListChecks, Stamp,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import type { AdminArea } from "@/lib/auth/permissions";
@@ -24,6 +24,13 @@ type NavSection = { title: string | null; items: NavItem[] };
  */
 const sections: NavSection[] = [
   { title: null, items: [{ label: "Overview", href: "/admin", icon: LayoutDashboard, area: "dashboard" }] },
+  {
+    title: "Team",
+    items: [
+      { label: "Tasks", href: "/admin/tasks", icon: ListChecks, area: "tasks" },
+      { label: "Approvals", href: "/admin/approvals", icon: Stamp, area: "tasks" },
+    ],
+  },
   {
     title: "Bookings",
     items: [
