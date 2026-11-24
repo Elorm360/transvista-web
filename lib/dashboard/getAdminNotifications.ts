@@ -195,6 +195,47 @@ export async function getAdminNotifications(
       }
     }
 
+    // Tasks you handed to someone else that they've finished.
+    const [completedResult, teamResult] = await Promise.all([
+      supabase.from("admin_tasks")
+        .select("id,title,assigned_to,completed_at,due_at")
+        .eq("created_by", selfMemberId).neq("assigned_to", selfMemberId)
+        .eq("status", "done").gte("completed_at", cutoff)
+        .limit(100),
+      areas.includes("team_activity") ? supabase.rpc("get_team_activity") : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (completedResult.error) console.error("[getAdminNotifications] completed tasks:", completedResult.error);
+    for (const row of completedResult.data ?? []) {
+      if (!row.completed_at) continue;
+      const late = row.due_at && new Date(row.completed_at) > new Date(row.due_at);
+      events.push({
+        key: `task:completed:${row.id}:${row.completed_at}`,
+        title: late ? "Task completed late" : "Task completed",
+        description: row.title,
+        href: "/admin/tasks?view=done",
+        category: "team",
+        createdAt: row.completed_at,
+        actor: names.get(row.assigned_to) ?? null,
+        read: false,
+      });
+    }
+
+    // New team members accepting their invite.
+    if (teamResult.error) console.error("[getAdminNotifications] team activity:", teamResult.error);
+    for (const row of (teamResult.data ?? []) as Array<{ member_id: string; full_name: string; first_signed_in_at: string | null }>) {
+      if (row.member_id === selfMemberId || !row.first_signed_in_at || new Date(row.first_signed_in_at) < new Date(cutoff)) continue;
+      events.push({
+        key: `team:joined:${row.member_id}`,
+        title: "Invite accepted",
+        description: `${row.full_name} accepted their invite and signed in for the first time`,
+        href: "/admin/team-activity",
+        category: "team",
+        createdAt: row.first_signed_in_at,
+        actor: row.full_name,
+        read: false,
+      });
+    }
+
     for (const row of approvalsResult.data ?? []) {
       if (canDecide && row.status === "pending" && row.requested_by !== selfMemberId) {
         events.push({

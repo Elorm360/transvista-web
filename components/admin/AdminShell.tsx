@@ -7,11 +7,12 @@ import {
   LayoutDashboard, ClipboardList, CreditCard, MessageSquareText, CalendarDays, CalendarPlus,
   Users, Star, MessageSquareHeart, BarChart3, Settings, Menu, X, LogOut, Bell, Compass, ChevronRight,
   type LucideIcon,
-  Sun, Moon, Monitor, ScrollText, ListChecks, Stamp,
+  Sun, Moon, Monitor, ScrollText, ListChecks, Stamp, Activity,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import type { AdminArea } from "@/lib/auth/permissions";
 import { Avatar } from "@/components/admin/Avatar";
+import PresenceHeartbeat from "@/components/admin/PresenceHeartbeat";
 import { setMyTheme } from "@/app/actions/account";
 import { ADMIN_THEME_EVENT, isAdminTheme, type AdminTheme } from "@/lib/admin/theme";
 
@@ -29,6 +30,7 @@ const sections: NavSection[] = [
     items: [
       { label: "Tasks", href: "/admin/tasks", icon: ListChecks, area: "tasks" },
       { label: "Approvals", href: "/admin/approvals", icon: Stamp, area: "tasks" },
+      { label: "Team activity", href: "/admin/team-activity", icon: Activity, area: "team_activity" },
     ],
   },
   {
@@ -144,6 +146,7 @@ export default function AdminShell({ roleLabel, areas, children, unreadCount = 0
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      <PresenceHeartbeat />
       {sidebarOpen && (
         <button type="button" className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />
       )}
