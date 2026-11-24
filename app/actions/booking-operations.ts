@@ -111,7 +111,9 @@ export async function updateBookingOperation(
     }
     // Group-trip payments are recorded in the payment ledger (Payments page),
     // so payment fields are only accepted for custom trips.
-    if (kind === "custom" && !(paymentStatuses as readonly string[]).includes(paymentStatus)) {
+    // Changing what was received needs the Payments section (Finance, Super Admin).
+    const editsPayment = kind === "custom" && (await hasAdminArea("payments"));
+    if (editsPayment && !(paymentStatuses as readonly string[]).includes(paymentStatus)) {
       return { success: false, message: "Choose a valid payment status." };
     }
     if (
@@ -206,8 +208,8 @@ export async function updateBookingOperation(
 
     // What the traveller is told must match what is actually stored. For group
     // trips the form never changes payment, so use the recorded values.
-    const recordedPaymentStatus = kind === "custom" ? paymentStatus : String(current.payment_status ?? "");
-    const recordedAmountPaid = kind === "custom"
+    const recordedPaymentStatus = editsPayment ? paymentStatus : String(current.payment_status ?? "");
+    const recordedAmountPaid = editsPayment
       ? amountPaid ?? Number(current.amount_paid ?? 0)
       : Number(current.amount_paid ?? 0);
 
@@ -228,7 +230,7 @@ export async function updateBookingOperation(
         quoted_amount: quotedAmount,
         quote_currency: quoteCurrency,
         deposit_amount: depositAmount,
-        ...(kind === "custom" ? { ...(amountPaid !== null ? { amount_paid: amountPaid } : {}), payment_status: paymentStatus, payment_method: paymentMethod, payment_verified_at: paymentIsVerified ? now : null, payment_verified_by: paymentIsVerified ? member.id : null } : {}),
+        ...(editsPayment ? { ...(amountPaid !== null ? { amount_paid: amountPaid } : {}), payment_status: paymentStatus, payment_method: paymentMethod, payment_verified_at: paymentIsVerified ? now : null, payment_verified_by: paymentIsVerified ? member.id : null } : {}),
         updated_by: member.id,
         updated_at: now,
       })
@@ -246,7 +248,7 @@ export async function updateBookingOperation(
     if (current.assigned_to !== assignedTo) {
       changes.push(`Assigned to ${assigneeName}`);
     }
-    if (kind === "custom" && (current.payment_status !== paymentStatus || (amountPaid !== null && Number(current.amount_paid) !== amountPaid))) {
+    if (editsPayment && (current.payment_status !== paymentStatus || (amountPaid !== null && Number(current.amount_paid) !== amountPaid))) {
       changes.push(`Payment: ${label(paymentStatus)} · ${quoteCurrency ?? "GHS"} ${(amountPaid ?? 0).toFixed(2)} received`);
     }
     if (current.follow_up_at !== followUpAt) {

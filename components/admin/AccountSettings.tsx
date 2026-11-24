@@ -46,7 +46,7 @@ async function resizeToSquare(file: File, size = 256): Promise<Blob> {
 }
 
 const roleLabels: Record<string, string> = {
-  owner: "Owner",
+  owner: "Super Admin",
   admin: "Admin",
   support: "Support",
   community_manager: "Community Manager",

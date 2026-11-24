@@ -43,16 +43,16 @@ export const BASE_ROLE_AREAS: Record<AdminRole, readonly AdminArea[]> = {
 };
 
 /** Sections a custom role can switch on or off (Settings and Audit stay owner-only). */
-export const GRANTABLE_AREAS: Array<{ area: AdminArea; label: string; description: string }> = [
-  { area: "requests", label: "Requests", description: "Booking requests, quotes, status and follow-ups" },
-  { area: "departures", label: "Departures", description: "Group departures, transport and checklists" },
-  { area: "messages", label: "Messages", description: "SMS to travellers" },
-  { area: "payments", label: "Payments", description: "Payment ledger and receipts" },
-  { area: "events", label: "Events", description: "Create and publish group trips" },
-  { area: "community", label: "Community", description: "Waitlist and community members" },
-  { area: "reviews", label: "Reviews", description: "Moderate traveller reviews" },
-  { area: "feedback", label: "Feedback", description: "Post-trip feedback and NPS" },
-  { area: "analytics", label: "Reports", description: "Business reports and charts" },
+export const GRANTABLE_AREAS: Array<{ area: AdminArea; label: string; description: string; href: string }> = [
+  { area: "requests", label: "Requests", description: "Booking requests, quotes, assignments and follow-ups", href: "/admin/requests" },
+  { area: "departures", label: "Departures", description: "Trip schedules, transport, guides and checklists", href: "/admin/trips" },
+  { area: "messages", label: "Messages", description: "SMS to travellers", href: "/admin/messages" },
+  { area: "payments", label: "Payments", description: "Payment ledger, receipts, balances and money figures", href: "/admin/payments" },
+  { area: "events", label: "Events", description: "Create, price and publish group trips", href: "/admin/events" },
+  { area: "community", label: "Community", description: "Waitlist sign-ups and community members", href: "/admin/community" },
+  { area: "reviews", label: "Reviews", description: "Approve testimonials and traveller reviews", href: "/admin/reviews" },
+  { area: "feedback", label: "Feedback", description: "Post-trip feedback and satisfaction scores", href: "/admin/event-feedback" },
+  { area: "analytics", label: "Reports", description: "Booking performance, demand and team workload", href: "/admin/analytics" },
 ];
 
 /** Base levels a custom role can be built on (never the owner). */
@@ -79,7 +79,7 @@ export function effectiveAreas(role: AdminRole, customPermissions?: readonly str
 export function formatAdminRole(role: AdminRole): string {
   switch (role) {
     case "owner":
-      return "Owner";
+      return "Super Admin";
     case "admin":
       return "Admin";
     case "community_manager":

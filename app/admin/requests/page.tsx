@@ -18,7 +18,7 @@ export default async function AdminRequestsPage({
 }: {
   searchParams: Promise<{ open?: string | string[]; view?: string | string[] }>;
 }) {
-  const { role } = await requireAdminArea("requests");
+  const { role, access } = await requireAdminArea("requests");
   const params = await searchParams;
   const [{ requests, loadError }, operators] = await Promise.all([
     loadTravelRequests(),
@@ -50,6 +50,7 @@ export default async function AdminRequestsPage({
           requests={requests}
           operators={operators}
           adminRole={role}
+          canManagePayments={access.areas.includes("payments")}
           initialOpenId={firstParam(params.open)}
           initialView={firstParam(params.view)}
         />

@@ -32,7 +32,9 @@ export default async function AdminAnalyticsPage({
 }: {
   searchParams: Promise<{ range?: string }>;
 }) {
-  await requireAdminArea("analytics");
+  const { access } = await requireAdminArea("analytics");
+  // Money tables follow the Payments permission.
+  const canSeeMoney = access.areas.includes("payments");
   const params = await searchParams;
   const selectedRange = rangeOptions.find((option) => option.value === params.range) ?? rangeOptions[1];
   const days = selectedRange.days;
@@ -52,7 +54,7 @@ export default async function AdminAnalyticsPage({
       : `${business.averageFirstResponseHours.toFixed(1)} hrs`;
 
   return <div className="mx-auto max-w-7xl">
-    <PageHeader icon={BarChart3} title="Reports" description="Understand booking performance, payment position, trip demand and team workload using TransVista's recorded data." />
+    <PageHeader icon={BarChart3} title="Reports" description={canSeeMoney ? "Understand booking performance, payment position, trip demand and team workload using TransVista's recorded data." : "Understand booking performance, trip demand and team workload using TransVista's recorded data."} />
 
     <form method="get" action="/admin/analytics" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
       <div><p className="text-sm font-bold text-slate-900">Reporting period</p><p className="mt-1 text-xs text-slate-500">Booking and operational metrics use the selected booking creation date range.</p></div>
@@ -98,8 +100,8 @@ export default async function AdminAnalyticsPage({
       </ChartCard>
     </section>
 
-    <section className="mb-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <ChartCard title="Payment position by currency" subtitle="Cancelled and closed bookings are excluded from the outstanding balance.">
+    <section className={`mb-8 grid gap-6 ${canSeeMoney ? "xl:grid-cols-[1.1fr_0.9fr]" : ""}`}>
+      {canSeeMoney && <ChartCard title="Payment position by currency" subtitle="Cancelled and closed bookings are excluded from the outstanding balance.">
         {business.currencies.length ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[540px] text-left text-sm">
@@ -108,7 +110,7 @@ export default async function AdminAnalyticsPage({
             </table>
           </div>
         ) : <p className="py-12 text-center text-sm text-slate-400">No quoted booking values are available for this period.</p>}
-      </ChartCard>
+      </ChartCard>}
       <ChartCard title="Trip preparation" subtitle="Upcoming confirmed trips based on their recorded travel dates">
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Needs preparation</p><p className="mt-2 text-2xl font-bold text-amber-700">{business.tripsNeedingPreparation}</p></div>
@@ -119,7 +121,7 @@ export default async function AdminAnalyticsPage({
       </ChartCard>
     </section>
 
-    <section className="mb-8">
+    {canSeeMoney && <section className="mb-8">
       <ChartCard title="Group-trip payment reconciliation" subtitle="Compares booking-level amount received with verified ledger entries for the same group-trip bookings.">
         {business.paymentReconciliation.length ? (
           <div className="overflow-x-auto">
@@ -152,7 +154,7 @@ export default async function AdminAnalyticsPage({
           </div>
         ) : <p className="py-10 text-center text-sm text-slate-400">No group-trip payment ledger entries are available for this reporting period.</p>}
       </ChartCard>
-    </section>
+    </section>}
 
     <section className="mb-10">
       <ChartCard title="Team workload" subtitle="Booking ownership and confirmed bookings in the selected period">
