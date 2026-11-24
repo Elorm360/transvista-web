@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
+import { Avatar } from "@/components/admin/Avatar";
 
 type NavItem = { label: string; href: string; icon: LucideIcon; area: AdminArea };
 type NavSection = { title: string | null; items: NavItem[] };
@@ -51,6 +52,7 @@ const settingsItem: NavItem = { label: "Settings", href: "/admin/settings", icon
 /** Pages reachable outside the sidebar (e.g. from the bell). */
 const extraCrumbs: Record<string, { section: string | null; label: string }> = {
   "/admin/notifications": { section: null, label: "Notifications" },
+  "/admin/account": { section: null, label: "My account" },
 };
 
 function isActive(pathname: string, href: string) {
@@ -67,7 +69,7 @@ function breadcrumbFor(pathname: string): { section: string | null; label: strin
   return extra?.[1] ?? { section: null, label: "Admin" };
 }
 
-export default function AdminShell({ role, children, unreadCount = 0 }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number }>) {
+export default function AdminShell({ role, children, unreadCount = 0, me }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number; me: { name: string; avatarPath: string | null } }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const crumb = breadcrumbFor(pathname);
@@ -183,10 +185,19 @@ export default function AdminShell({ role, children, unreadCount = 0 }: Readonly
                 </span>
               )}
             </Link>
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 py-1 pl-1 pr-3">
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-orange-50 text-xs font-bold text-brand-orange-800">{roleLabel.charAt(0)}</span>
-              <span className="text-xs font-semibold text-slate-700">{roleLabel}</span>
-            </div>
+            <Link
+              href="/admin/account"
+              aria-label={`My account: ${me.name}, ${roleLabel}`}
+              className={`flex items-center gap-2 rounded-lg border py-1 pl-1 pr-1 transition-colors sm:pr-3 ${
+                isActive(pathname, "/admin/account") ? "border-brand-blue-200 bg-brand-blue-50" : "border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              <Avatar name={me.name} path={me.avatarPath} size="sm" />
+              <span className="hidden min-w-0 text-left leading-tight sm:block">
+                <span className="block max-w-[140px] truncate text-xs font-semibold text-slate-800">{me.name}</span>
+                <span className="block text-xs text-slate-500">{roleLabel}</span>
+              </span>
+            </Link>
           </div>
         </header>
 

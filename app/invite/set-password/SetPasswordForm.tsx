@@ -28,7 +28,7 @@ export default function SetPasswordForm() {
           imageClassName="h-20 w-auto"
         />
         <h1 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
-          Create your password
+          Choose your password
         </h1>
         <p className="mt-1 text-sm text-slate-500">
           Finish setting up your TransVista admin account.

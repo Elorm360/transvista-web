@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { toActionResult } from "@/lib/actions/result";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { AVATAR_BUCKET } from "@/lib/admin/avatars";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isOwner } from "@/lib/auth/isAdmin";
 import { formatAdminRole } from "@/lib/auth/permissions";
@@ -223,6 +224,14 @@ async function updateTeamMemberStatus(memberId: string, status: "active" | "inac
   if (member.user_id === user.id) throw new Error("You cannot change your own access.");
   const { error } = await adminSupabase.from("admin_team_members").update({status,updated_at:new Date().toISOString()}).eq("id",memberId);
   if (error) throw new Error("The team member's access could not be updated.");
+  // Also block (or restore) the login itself, so a removed member can't sign
+  // in again, and any session they still have stops refreshing.
+  if (member.user_id) {
+    const { error: banError } = await adminSupabase.auth.admin.updateUserById(member.user_id, {
+      ban_duration: status === "inactive" ? "876000h" : "none",
+    });
+    if (banError) console.error("[updateTeamMemberStatus] login ban update:", banError);
+  }
   return {success:true,member:{id:member.id,fullName:member.full_name,status}};
 }
 export async function removeTeamMember(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"inactive")); }
@@ -320,4 +329,83 @@ async function resendTeamInviteUnsafe(memberId: string) {
 
 export async function resendTeamInvite(memberId: string) {
   return toActionResult(() => resendTeamInviteUnsafe(memberId));
+}
+
+/**
+ * Permanently delete a team member (owner only, never the owner or yourself).
+ *
+ * - If they never acted in the admin, their team record and login are erased.
+ * - If bookings, payments or activity reference them, those links must stay
+ *   valid, so their record is anonymised ("Former team member", no email,
+ *   phone or photo) and their login is erased.
+ */
+async function deleteTeamMemberPermanentlyUnsafe(input: { memberId: string; confirmName: string }) {
+  if (!input.memberId) throw new Error("Team member id is required.");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !(await isOwner(user))) throw new Error("Only the TransVista owner can delete team members.");
+
+  const adminSupabase = createAdminClient();
+  const { data: member, error: lookupError } = await adminSupabase
+    .from("admin_team_members")
+    .select("id, user_id, full_name, role, avatar_path, status")
+    .eq("id", input.memberId)
+    .maybeSingle();
+  if (lookupError || !member || member.status === "removed") throw new Error("This team member could not be found.");
+  if (member.role === "owner") throw new Error("The owner account is protected.");
+  if (member.user_id === user.id) throw new Error("You cannot delete your own account.");
+  if (input.confirmName.trim().toLowerCase() !== member.full_name.trim().toLowerCase()) {
+    throw new Error("Type the team member's full name exactly to confirm.");
+  }
+
+  if (member.avatar_path) {
+    await adminSupabase.storage.from(AVATAR_BUCKET).remove([member.avatar_path]);
+  }
+
+  // 1. Try a full erase (works when nothing in the history points to them).
+  const { error: deleteError } = await adminSupabase.from("admin_team_members").delete().eq("id", member.id);
+  let outcome: "erased" | "anonymised" = "erased";
+
+  if (deleteError) {
+    if (deleteError.code !== "23503") {
+      console.error("[deleteTeamMember] delete:", deleteError);
+      throw new Error("This team member could not be deleted. Please try again.");
+    }
+    // 2. Referenced by history: anonymise instead, detaching the login first
+    //    (deleting the login would otherwise cascade to this row).
+    outcome = "anonymised";
+    const now = new Date().toISOString();
+    const { error: anonymiseError } = await adminSupabase
+      .from("admin_team_members")
+      .update({
+        full_name: "Former team member",
+        email: `removed+${member.id}@invalid.transvistaafrica.com`,
+        phone: null,
+        avatar_path: null,
+        status: "removed",
+        removed_at: now,
+        user_id: null,
+        updated_at: now,
+      })
+      .eq("id", member.id);
+    if (anonymiseError) {
+      console.error("[deleteTeamMember] anonymise:", anonymiseError);
+      throw new Error("This team member could not be deleted. Please try again.");
+    }
+  }
+
+  // 3. Erase the login.
+  if (member.user_id) {
+    const { error: authError } = await adminSupabase.auth.admin.deleteUser(member.user_id);
+    if (authError && authError.status !== 404) {
+      console.error("[deleteTeamMember] auth delete:", authError);
+      throw new Error("Their team record was removed, but their login could not be erased. Please contact support.");
+    }
+  }
+
+  return { outcome, fullName: member.full_name };
+}
+
+export async function deleteTeamMemberPermanently(input: { memberId: string; confirmName: string }) {
+  return toActionResult(() => deleteTeamMemberPermanentlyUnsafe(input));
 }

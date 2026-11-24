@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Shield,
-  UserRound,
   Mail,
   CheckCircle2,
   Plus,
@@ -13,17 +12,20 @@ import {
   Trash2,
   Pencil,
   Send,
+  UserX,
 } from "lucide-react";
 import {
   inviteTeamMember,
   removeTeamMember,
   reactivateTeamMember,
   resendTeamInvite,
+  deleteTeamMemberPermanently,
   updateTeamMemberDetails,
 } from "@/app/actions/team-members";
 import { unwrapActionResult } from "@/lib/actions/result";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 import { StatusBadge } from "@/components/admin/ui";
+import { Avatar } from "@/components/admin/Avatar";
 
 interface TeamMembersTableProps {
   members: TeamMember[];
@@ -65,6 +67,11 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [statusError, setStatusError] = useState<string | null>(null);
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  // Permanent delete (separate from Remove access).
+  const [permanentTarget, setPermanentTarget] = useState<TeamMember | null>(null);
+  const [confirmText, setConfirmText] = useState("");
+  const [permanentError, setPermanentError] = useState<string | null>(null);
+  const [isDeletingPermanently, setIsDeletingPermanently] = useState(false);
   const [editTarget, setEditTarget] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState<"admin" | "community_manager" | "support">("support");
@@ -366,9 +373,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                        <UserRound className="h-4 w-4 text-slate-500" />
-                      </div>
+                      <Avatar name={member.fullName} path={member.avatarPath} />
 
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-900">
@@ -405,7 +410,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                       <span className="text-xs text-slate-400">Protected</span>
                     ) : (
                       <div className="flex items-center justify-end gap-1">
-                        <button type="button" onClick={() => openEdit(member)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+                        <button type="button" onClick={() => openEdit(member)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
                           <Pencil className="h-4 w-4" /> Edit
                         </button>
                         {member.status === "active" && (
@@ -424,7 +429,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                               }
                             }}
                             aria-label={`Resend invitation to ${member.fullName}`}
-                            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-blue-700 transition-colors hover:bg-brand-blue-50 disabled:opacity-60"
+                            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-blue-700 transition-colors hover:bg-brand-blue-50 disabled:opacity-60"
                           >
                             <Send className="h-4 w-4" /> {resendingId === member.id ? "Sending…" : "Resend invite"}
                           </button>
@@ -432,11 +437,19 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                         <button
                           type="button"
                           onClick={async () => { if (member.status === "inactive") { setStatusError(null); try { unwrapActionResult(await reactivateTeamMember(member.id)); router.refresh(); } catch (error) { setStatusError(error instanceof Error ? error.message : "Could not reactivate this team member."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
-                          aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
-                          className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${member.status === "active" ? "text-red-600 hover:bg-red-50" : "text-brand-blue-700 hover:bg-brand-blue-50"}`}
+                          aria-label={`${member.status === "active" ? "Remove access for" : "Restore access for"} ${member.fullName}`}
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${member.status === "active" ? "text-slate-700 hover:bg-slate-100" : "text-brand-blue-700 hover:bg-brand-blue-50"}`}
                         >
-                          {member.status === "active" ? <Trash2 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                          {member.status === "active" ? "Deactivate" : "Reactivate"}
+                          {member.status === "active" ? <UserX className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                          {member.status === "active" ? "Remove access" : "Restore access"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setPermanentError(null); setConfirmText(""); setPermanentTarget(member); }}
+                          aria-label={`Delete ${member.fullName} permanently`}
+                          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" /> Delete
                         </button>
                       </div>
                     )}
@@ -480,20 +493,20 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
             aria-hidden="true"
           />
           <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
-              <Trash2 className="h-6 w-6 text-red-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+              <UserX className="h-6 w-6 text-slate-600" />
             </div>
             <h2
               id="remove-team-member-title"
               className="mt-4 text-lg font-semibold text-slate-900"
             >
-              Deactivate this team member?
+              Remove access for this team member?
             </h2>
             <p className="mt-1.5 text-sm text-slate-500">
               <span className="font-medium text-slate-700">
                 {deleteTarget.fullName}
               </span>{" "}
-              ({deleteTarget.email}) will lose admin access. Their account and activity history will be preserved, and you can reactivate them later.
+              ({deleteTarget.email}) will be signed out and can&apos;t sign in again. Their name stays on the bookings and payments they handled, and you can restore access later.
             </p>
 
             {removeError && (
@@ -517,10 +530,77 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 disabled={isRemoving}
                 className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
               >
-                {isRemoving ? "Deactivating…" : "Deactivate"}
+                {isRemoving ? "Removing…" : "Remove access"}
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {permanentTarget && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-team-member-title">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isDeletingPermanently && setPermanentTarget(null)} aria-hidden="true" />
+          <form
+            className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (isDeletingPermanently) return;
+              setIsDeletingPermanently(true);
+              setPermanentError(null);
+              try {
+                const result = unwrapActionResult(await deleteTeamMemberPermanently({ memberId: permanentTarget.id, confirmName: confirmText }));
+                setPermanentTarget(null);
+                setStatusError(null);
+                setStatusNotice(
+                  result.outcome === "erased"
+                    ? `${result.fullName} was deleted completely.`
+                    : `${result.fullName}'s login and personal details were deleted. Their past work now shows as "Former team member".`,
+                );
+                router.refresh();
+              } catch (error) {
+                setPermanentError(error instanceof Error ? error.message : "This team member could not be deleted.");
+              } finally {
+                setIsDeletingPermanently(false);
+              }
+            }}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+              <Trash2 className="h-6 w-6 text-red-600" />
+            </div>
+            <h2 id="delete-team-member-title" className="mt-4 text-lg font-semibold text-slate-900">
+              Delete {permanentTarget.fullName} permanently?
+            </h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+              <li>Their login, email, phone and photo are erased. <strong className="font-semibold text-slate-800">This can&apos;t be undone.</strong></li>
+              <li>Bookings, payments and notes they handled are kept, labelled &ldquo;Former team member&rdquo;.</li>
+              <li>To pause someone&apos;s access instead, use <strong className="font-semibold text-slate-800">Remove access</strong>.</li>
+            </ul>
+            <label className="mt-4 block text-sm font-medium text-slate-700">
+              Type <span className="font-semibold text-slate-900">{permanentTarget.fullName}</span> to confirm
+              <input
+                value={confirmText}
+                onChange={(event) => setConfirmText(event.target.value)}
+                autoComplete="off"
+                autoFocus
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100"
+              />
+            </label>
+            {permanentError && (
+              <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{permanentError}</p>
+            )}
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setPermanentTarget(null)} disabled={isDeletingPermanently} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-50">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isDeletingPermanently || confirmText.trim().toLowerCase() !== permanentTarget.fullName.trim().toLowerCase()}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeletingPermanently ? "Deleting…" : "Delete permanently"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

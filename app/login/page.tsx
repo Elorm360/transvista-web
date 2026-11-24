@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import { signIn, type SignInState } from "@/app/actions/auth";
@@ -63,6 +64,9 @@ export default function LoginPage() {
               >
                 Password
               </label>
+              <Link href="/forgot-password" className="text-sm font-medium text-brand-blue-700 hover:underline">
+                Forgot password?
+              </Link>
             </div>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

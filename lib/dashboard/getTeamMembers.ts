@@ -7,6 +7,7 @@ export interface TeamMember {
   email: string;
   role: string;
   status: string;
+  avatarPath: string | null;
   createdAt: string;
 }
 
@@ -22,8 +23,10 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
   const { data, error } = await supabase
     .from("admin_team_members")
     .select(
-      "id, user_id, full_name, email, role, status, created_at",
+      "id, user_id, full_name, email, role, status, avatar_path, created_at",
     )
+    // Permanently deleted members are kept only as an anonymous history label.
+    .neq("status", "removed")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -39,6 +42,7 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
     email: row.email,
     role: row.role,
     status: row.status,
+    avatarPath: row.avatar_path ?? null,
     createdAt: row.created_at,
   }));
 }
