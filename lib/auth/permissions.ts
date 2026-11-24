@@ -32,23 +32,25 @@ export type AdminArea =
   /** See, assign and follow up everyone's tasks (COO). */
   | "team_tasks"
   /** Approve or reject requests, including payment corrections (CEO). */
-  | "approvals";
+  | "approvals"
+  /** Online status, last seen, active time and task performance of the team (CEO). */
+  | "team_activity";
 
 /** Always available to every active team member. */
 export const ALWAYS_AREAS: readonly AdminArea[] = ["dashboard", "tasks"];
 
 /**
- * What each base role can reach (its ceiling). Keep "team_tasks" and
- * "approvals" in step with private.member_has_area() in the database.
+ * What each base role can reach (its ceiling). Keep "team_tasks",
+ * "approvals" and "team_activity" in step with private.member_has_area() in the database.
  */
 export const BASE_ROLE_AREAS: Record<AdminRole, readonly AdminArea[]> = {
   owner: [
     "dashboard", "tasks", "requests", "departures", "messages", "payments", "events",
-    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals", "settings", "audit",
+    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals", "team_activity", "settings", "audit",
   ],
   admin: [
     "dashboard", "tasks", "requests", "departures", "messages", "payments", "events",
-    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals",
+    "community", "reviews", "feedback", "analytics", "team_tasks", "approvals", "team_activity",
   ],
   support: ["dashboard", "tasks", "requests", "departures", "messages", "payments"],
   community_manager: ["dashboard", "tasks", "community", "reviews", "feedback"],
@@ -67,6 +69,7 @@ export const GRANTABLE_AREAS: Array<{ area: AdminArea; label: string; descriptio
   { area: "analytics", label: "Reports", description: "Booking performance, demand and team workload", href: "/admin/analytics" },
   { area: "team_tasks", label: "All team tasks", description: "See, assign and follow up everyone's tasks and deadlines", href: "/admin/tasks?view=all" },
   { area: "approvals", label: "Approve requests", description: "Approve or reject expenses, requests and payment corrections", href: "/admin/approvals" },
+  { area: "team_activity", label: "Team activity", description: "Who's online, last seen, time in the dashboard and task performance", href: "/admin/team-activity" },
 ];
 
 /** Base levels a custom role can be built on (never the owner). */
