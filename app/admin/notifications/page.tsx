@@ -7,8 +7,8 @@ import { getAdminNotifications } from "@/lib/dashboard/getAdminNotifications";
 export const dynamic = "force-dynamic";
 
 export default async function AdminNotificationsPage() {
-  const { user, role } = await requireAdminArea("dashboard");
-  const { notifications, unreadCount } = await getAdminNotifications(user.id, role, { limit: 150 });
+  const { user, access } = await requireAdminArea("dashboard");
+  const { notifications, unreadCount } = await getAdminNotifications(user.id, access.areas, { limit: 150 });
 
   return (
     <div className="mx-auto max-w-[1200px]">

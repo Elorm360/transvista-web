@@ -12,7 +12,7 @@ const PAID_STATUSES = ["deposit-paid", "paid", "in-progress", "completed"];
 
 export default async function AdminEventFeedbackPage() {
   // Owners, admins and community managers only. Data is read on the server after this check.
-  await requireAdminArea("community");
+  await requireAdminArea("feedback");
   const admin = createAdminClient();
 
   const [{ data: feedback, error }, { data: events }] = await Promise.all([

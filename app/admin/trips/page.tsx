@@ -9,7 +9,7 @@ import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 export const dynamic = "force-dynamic";
 
 export default async function AdminTripOperationsPage() {
-  await requireAdminArea("requests");
+  await requireAdminArea("departures");
   const { trips, operators } = await getTripOperations();
   const { departures, candidates } = await getTripDepartureOperations(trips, operators);
 

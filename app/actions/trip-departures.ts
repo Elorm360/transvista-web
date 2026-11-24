@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +34,7 @@ function dateTime(input: string) {
 
 async function getOperationsMember() {
   const supabase = await createClient();
+  if (!(await hasAdminArea("departures"))) return { supabase, member: null, message: NO_ACCESS_MESSAGE };
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { supabase, member: null, message: "Your session has expired. Please sign in again." };
 

@@ -10,7 +10,7 @@ import { isClosed } from "@/lib/admin/bookingHealth";
 export const dynamic = "force-dynamic";
 
 export default async function AdminMessagesPage() {
-  await requireAdminArea("requests");
+  await requireAdminArea("messages");
   const [requests, history] = await Promise.all([
     getTravelRequests(),
     getSmsMessages(),

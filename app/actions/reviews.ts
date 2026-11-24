@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminArea } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -200,6 +201,7 @@ export async function submitReview(form: FormData): Promise<ReviewResult> {
 
 /** Make sure the signed-in user is allowed to moderate; returns their team-member id. */
 async function requireModerator(): Promise<{ ok: true; memberId: string | null } | { ok: false }> {
+  if (!(await hasAdminArea("reviews"))) return { ok: false };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const role = await roleFor(user);

@@ -6,7 +6,6 @@ import {
 import { buttonClass, Card, EmptyState, StatCard, StatusBadge } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
-import { canAccess } from "@/lib/auth/permissions";
 import { loadTravelRequests, type TravelRequestRecord } from "@/lib/dashboard/getTravelRequests";
 import { attentionReasons, balanceDue, bookingTotals, RESPONSE_WINDOW_MS } from "@/lib/admin/bookingHealth";
 
@@ -62,10 +61,10 @@ function buildActionItems(records: TravelRequestRecord[], now: Date): { items: A
 }
 
 export default async function AdminDashboardPage() {
-  const { role } = await requireAdminArea("dashboard");
-  const canSeeOperations = canAccess(role, "requests");
-  const canSeeCommunity = canAccess(role, "community");
-  const canSeeAnalytics = canAccess(role, "analytics");
+  const { access } = await requireAdminArea("dashboard");
+  const canSeeOperations = access.areas.includes("requests");
+  const canSeeCommunity = access.areas.includes("community");
+  const canSeeAnalytics = access.areas.includes("analytics");
   const supabase = await createClient();
   let totals: ReturnType<typeof bookingTotals> | null = null;
   let latest: RecentBooking[] = [];

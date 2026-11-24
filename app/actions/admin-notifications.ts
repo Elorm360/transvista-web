@@ -30,8 +30,8 @@ export async function markNotificationRead(formData: FormData) {
 }
 
 export async function markAllNotificationsRead() {
-  const { user, role } = await getAdminSession();
-  const { notifications } = await getAdminNotifications(user.id, role, { limit: 150 });
+  const { user, access } = await getAdminSession();
+  const { notifications } = await getAdminNotifications(user.id, access.areas, { limit: 150 });
   if (!notifications.length) return;
 
   const supabase = await createClient();

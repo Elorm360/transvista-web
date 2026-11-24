@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { canAccess, type AdminRole } from "@/lib/auth/permissions";
+import type { AdminArea } from "@/lib/auth/permissions";
 
 export type AdminNotification = {
   key: string;
@@ -29,14 +29,14 @@ const activityTitles: Record<string, string> = {
 
 export async function getAdminNotifications(
   userId: string,
-  role: AdminRole,
+  areas: readonly AdminArea[],
   options: NotificationOptions = {},
 ): Promise<{ notifications: AdminNotification[]; unreadCount: number }> {
   const supabase = await createClient();
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const limit = Math.min(Math.max(options.limit ?? 100, 1), 150);
-  const canSeeRequests = canAccess(role, "requests");
-  const canSeeCommunity = canAccess(role, "community");
+  const canSeeRequests = areas.includes("requests");
+  const canSeeCommunity = areas.includes("community");
 
   const [packagesResult, tripsResult, activityResult, leadsResult, operatorsResult, selfResult] =
     await Promise.all([
