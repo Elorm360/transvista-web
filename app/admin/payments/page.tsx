@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
-import { canAccess } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/admin/PageHeader";
 import { CreditCard, FileText } from "lucide-react";
@@ -11,7 +10,7 @@ import { StatCard } from "@/components/admin/ui";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPaymentsPage() {
-  const { role } = await requireAdminArea("payments");
+  const { role, access } = await requireAdminArea("payments");
   const supabase = await createClient();
   const [{data:transactions,error}, {data:ledger,error:ledgerError}, {data:bookings}] = await Promise.all([
     // The table shows the latest 200 entries...
@@ -41,7 +40,7 @@ export default async function AdminPaymentsPage() {
     </div>
     {/* Forms open on demand so the payment history is the first thing you see. */}
     <div className="space-y-3">
-      {canAccess(role,"payments") ? <details className="group rounded-xl border border-slate-200 bg-white shadow-sm">
+      {access.areas.includes("payments") ? <details className="group rounded-xl border border-slate-200 bg-white shadow-sm">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden"><span className="text-base font-semibold text-slate-900">Record a payment</span><span className="text-sm font-medium text-brand-blue-700 group-open:hidden">Open</span><span className="hidden text-sm font-medium text-slate-500 group-open:inline">Close</span></summary>
         <div className="border-t border-slate-100 p-1"><RecordPaymentForm bookings={bookingOptions} /></div>
       </details> : null}

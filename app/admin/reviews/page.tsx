@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
   // Only owners, admins and community managers reach this point.
-  await requireAdminArea("community");
+  await requireAdminArea("reviews");
 
   // Full rows (including private email/reference) are read server-side only,
   // after the role check above, and never sent to public pages.

@@ -1,11 +1,14 @@
 "use server";
 
+import { formFields, logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type RecordPaymentState = { success: boolean; message: string };
 
-export async function recordPackagePayment(_previous: RecordPaymentState, formData: FormData): Promise<RecordPaymentState> {
+async function recordPackagePaymentImpl(_previous: RecordPaymentState, formData: FormData): Promise<RecordPaymentState> {
+  if (!(await hasAdminArea("payments"))) return { success: false, message: NO_ACCESS_MESSAGE };
   const reservationId = Number(String(formData.get("reservationId") ?? ""));
   const amount = Number(String(formData.get("amount") ?? ""));
   const method = String(formData.get("paymentMethod") ?? "").trim() || null;
@@ -26,4 +29,11 @@ export async function recordPackagePayment(_previous: RecordPaymentState, formDa
   if(error||!data?.length){console.error("[recordPackagePayment]",error);return {success:false,message:error?.message??"The payment could not be recorded."};}
   revalidatePath("/admin/payments");revalidatePath("/admin/requests");revalidatePath("/admin");revalidatePath("/admin/analytics");
   return {success:true,message:"Payment recorded and receipt created."};
+}
+
+/** Audited entry point: runs recordPackagePaymentImpl and records it in the audit log on success. */
+export async function recordPackagePayment(...args: Parameters<typeof recordPackagePaymentImpl>) {
+  const result = await recordPackagePaymentImpl(...args);
+  if (result.success) await logAudit("payment.recorded", result.message || "Recorded a verified payment", { type: "package_reservation", id: String(args[1].get("reservationId") ?? "") }, formFields(args[1], ["amount", "paymentMethod", "paymentDate", "externalReference"]));
+  return result;
 }

@@ -1,11 +1,14 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { createClient } from "@/lib/supabase/server";
 import { toActionResult } from "@/lib/actions/result";
 import { roleFor } from "@/lib/auth/isAdmin";
 import { canAccess } from "@/lib/auth/permissions";
 
 async function deleteMemberUnsafe(memberId: string) {
+  if (!(await hasAdminArea("community"))) throw new Error(NO_ACCESS_MESSAGE);
 
   if (!memberId) {
     throw new Error("Member id is required.");
@@ -62,6 +65,13 @@ async function deleteMemberUnsafe(memberId: string) {
 }
 
 // Returned (not thrown) so the message reaches the UI in production.
-export async function deleteMember(memberId: string) {
+async function deleteMemberImpl(memberId: string) {
   return toActionResult(() => deleteMemberUnsafe(memberId));
+}
+
+/** Audited entry point: runs deleteMemberImpl and records it in the audit log on success. */
+export async function deleteMember(...args: Parameters<typeof deleteMemberImpl>) {
+  const result = await deleteMemberImpl(...args);
+  if (result.ok) await logAudit("community.member_deleted", "Deleted a community member", { type: "lead", id: args[0] });
+  return result;
 }

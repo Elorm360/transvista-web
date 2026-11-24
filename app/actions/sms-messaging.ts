@@ -1,5 +1,7 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -26,10 +28,11 @@ function textValue(formData: FormData, key: string, max: number) {
   return String(formData.get(key) ?? "").trim().slice(0, max);
 }
 
-export async function sendRequestSms(
+async function sendRequestSmsImpl(
   _previousState: SmsActionState,
   formData: FormData,
 ): Promise<SmsActionState> {
+  if (!(await hasAdminArea("messages"))) return { success: false, message: NO_ACCESS_MESSAGE };
   const bodyTemplate = textValue(formData, "message", 320);
   const messageType = textValue(formData, "messageType", 40);
   const recipientKeys = Array.from(
@@ -178,4 +181,11 @@ export async function sendRequestSms(
     message: `SMS operation completed: ${details}.`,
     completedAt: new Date().toISOString(),
   };
+}
+
+/** Audited entry point: runs sendRequestSmsImpl and records it in the audit log on success. */
+export async function sendRequestSms(...args: Parameters<typeof sendRequestSmsImpl>) {
+  const result = await sendRequestSmsImpl(...args);
+  if (result.success) await logAudit("sms.sent", result.message || "Sent SMS to travellers", { type: "sms" }, { recipients: args[1].getAll("recipient").length });
+  return result;
 }

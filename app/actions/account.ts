@@ -1,5 +1,6 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -136,9 +137,26 @@ export async function uploadMyAvatar(formData: FormData) {
 export async function removeMyAvatar() {
   return toActionResult(() => removeMyAvatarUnsafe());
 }
-export async function changeMyPassword(input: { password: string; confirm: string }) {
+async function changeMyPasswordImpl(input: { password: string; confirm: string }) {
   return toActionResult(() => changeMyPasswordUnsafe(input));
 }
 export async function setMyTheme(theme: string) {
   return toActionResult(() => setMyThemeUnsafe(theme));
+}
+
+/** Audited entry point: runs changeMyPasswordImpl and records it in the audit log on success. */
+export async function changeMyPassword(...args: Parameters<typeof changeMyPasswordImpl>) {
+  const result = await changeMyPasswordImpl(...args);
+  if (result.ok) await logAudit("account.password_changed", "Changed their own password", { type: "team_member" });
+  return result;
+}
+
+/** Record turning two-step sign-in on or off (the change itself happens in Supabase Auth). */
+export async function recordTwoFactorChange(enabled: boolean) {
+  await getAdminSession();
+  await logAudit(
+    enabled ? "account.mfa_enabled" : "account.mfa_disabled",
+    enabled ? "Turned on two-step sign-in" : "Turned off two-step sign-in",
+    { type: "team_member" },
+  );
 }

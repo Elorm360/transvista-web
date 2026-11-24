@@ -1,38 +1,25 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { roleFor } from "@/lib/auth/isAdmin";
-import { canAccess, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
 import type { User } from "@supabase/supabase-js";
+import { resolveAdminAccess, type AdminAccess } from "@/lib/auth/access";
+import type { AdminArea, AdminRole } from "@/lib/auth/permissions";
 
-export async function getAdminSession(): Promise<{
-  user: User;
-  role: AdminRole;
-}> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const role = await roleFor(user);
-
-  if (!role) {
-    redirect("/unauthorized");
-  }
-
-  return { user, role };
+/**
+ * For admin pages and layouts: the signed-in person's access, or a redirect.
+ * - not signed in → /login
+ * - two-step sign-in set up but not completed → /login/verify
+ * - not an active team member → /unauthorized
+ */
+export async function getAdminSession(): Promise<{ user: User; role: AdminRole; access: AdminAccess }> {
+  const result = await resolveAdminAccess();
+  if (result.status === "signed-out") redirect("/login");
+  if (result.status === "mfa-required") redirect("/login/verify");
+  if (result.status === "no-access") redirect("/unauthorized");
+  return { user: result.access.user, role: result.access.role, access: result.access };
 }
 
+/** Like getAdminSession, and also requires this section to be in their role. */
 export async function requireAdminArea(area: AdminArea) {
   const session = await getAdminSession();
-
-  if (!canAccess(session.role, area)) {
-    redirect("/unauthorized");
-  }
-
+  if (!session.access.areas.includes(area)) redirect("/unauthorized");
   return session;
 }

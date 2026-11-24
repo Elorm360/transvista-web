@@ -1,5 +1,7 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendBookingUpdateEmail } from "@/lib/email/sendBookingUpdateEmail";
@@ -79,6 +81,7 @@ export async function updateBookingOperation(
   _previousState: BookingOperationState,
   formData: FormData,
 ): Promise<BookingOperationState> {
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const kind = textValue(formData, "requestKind", 20);
     const requestId = Number(textValue(formData, "requestId", 20));
@@ -325,10 +328,11 @@ export async function updateBookingOperation(
   }
 }
 
-export async function sendBookingPaymentRequest(
+async function sendBookingPaymentRequestImpl(
   _previousState: BookingOperationState,
   formData: FormData,
 ): Promise<BookingOperationState> {
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const kind = textValue(formData, "requestKind", 20);
     const requestId = Number(textValue(formData, "requestId", 20));
@@ -501,10 +505,11 @@ export async function sendBookingPaymentRequest(
 }
 
 
-export async function setRequestArchiveState(
+async function setRequestArchiveStateImpl(
   _previousState: BookingOperationState,
   formData: FormData,
 ): Promise<BookingOperationState> {
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const kind = textValue(formData, "requestKind", 20);
     const requestId = Number(textValue(formData, "requestId", 20));
@@ -552,10 +557,11 @@ export async function setRequestArchiveState(
   }
 }
 
-export async function permanentlyDeleteRequest(
+async function permanentlyDeleteRequestImpl(
   _previousState: BookingOperationState,
   formData: FormData,
 ): Promise<BookingOperationState> {
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const kind = textValue(formData, "requestKind", 20);
     const requestId = Number(textValue(formData, "requestId", 20));
@@ -597,7 +603,8 @@ export async function permanentlyDeleteRequest(
 }
 
 
-export async function assignSelectedBookings(input: { ids: string[]; assignedTo: string }): Promise<BookingOperationState> {
+async function assignSelectedBookingsImpl(input: { ids: string[]; assignedTo: string }): Promise<BookingOperationState> {
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const ids = Array.from(new Set(input.ids)).slice(0, 50);
     if (!ids.length || ids.length !== input.ids.length || ids.some((id) => !/^(custom|package)-\d+$/.test(id))) {
@@ -642,4 +649,32 @@ export async function assignSelectedBookings(input: { ids: string[]; assignedTo:
     console.error("[assignSelectedBookings]", error);
     return { success: false, message: "The selected bookings could not be assigned." };
   }
+}
+
+/** Audited entry point: runs sendBookingPaymentRequestImpl and records it in the audit log on success. */
+export async function sendBookingPaymentRequest(...args: Parameters<typeof sendBookingPaymentRequestImpl>) {
+  const result = await sendBookingPaymentRequestImpl(...args);
+  if (result.success) await logAudit("booking.payment_requested", result.message || "Sent a payment request", { type: String(args[1].get("requestKind") ?? "booking"), id: String(args[1].get("requestId") ?? "") });
+  return result;
+}
+
+/** Audited entry point: runs setRequestArchiveStateImpl and records it in the audit log on success. */
+export async function setRequestArchiveState(...args: Parameters<typeof setRequestArchiveStateImpl>) {
+  const result = await setRequestArchiveStateImpl(...args);
+  if (result.success) await logAudit("booking.archive_changed", result.message || "Archived or restored a booking", { type: String(args[1].get("requestKind") ?? "booking"), id: String(args[1].get("requestId") ?? "") });
+  return result;
+}
+
+/** Audited entry point: runs permanentlyDeleteRequestImpl and records it in the audit log on success. */
+export async function permanentlyDeleteRequest(...args: Parameters<typeof permanentlyDeleteRequestImpl>) {
+  const result = await permanentlyDeleteRequestImpl(...args);
+  if (result.success) await logAudit("booking.deleted", result.message || "Permanently deleted a booking", { type: String(args[1].get("requestKind") ?? "booking"), id: String(args[1].get("requestId") ?? "") });
+  return result;
+}
+
+/** Audited entry point: runs assignSelectedBookingsImpl and records it in the audit log on success. */
+export async function assignSelectedBookings(...args: Parameters<typeof assignSelectedBookingsImpl>) {
+  const result = await assignSelectedBookingsImpl(...args);
+  if (result.success) await logAudit("booking.bulk_assigned", result.message || "Assigned bookings in bulk", { type: "booking" }, { count: args[0].ids.length, assignedTo: args[0].assignedTo });
+  return result;
 }

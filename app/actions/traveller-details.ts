@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -10,6 +11,7 @@ function optionalDate(value:string){if(!value)return null;if(!/^\d{4}-\d{2}-\d{2
 function list(value:string){return value.split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean).slice(0,30);}
 
 export async function updateTravellerSubmittedDetails(_previous:TravellerDetailsState,formData:FormData):Promise<TravellerDetailsState>{
+  if (!(await hasAdminArea("requests"))) return { success: false, message: NO_ACCESS_MESSAGE };
  try{
   const kind=field(formData,"requestKind",20),id=Number(field(formData,"requestId",20));
   if(!["custom","package"].includes(kind)||!Number.isInteger(id)||id<1)return{success:false,message:"This booking could not be identified."};

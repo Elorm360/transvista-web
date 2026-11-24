@@ -1,9 +1,10 @@
 import { Settings } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
-import SectionCard from "@/components/admin/SectionCard";
 import TeamMembersTable from "@/components/admin/TeamMembersTable";
 import TeamOnboardingGuide from "@/components/admin/TeamOnboardingGuide";
+import RolesManager from "@/components/admin/RolesManager";
 import { getTeamMembers } from "@/lib/dashboard/getTeamMembers";
+import { getCustomRoles } from "@/lib/dashboard/getRoles";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 
 export const dynamic = "force-dynamic";
@@ -11,26 +12,20 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage() {
   await requireAdminArea("settings");
 
-  const members = await getTeamMembers();
+  const [members, roles] = await Promise.all([getTeamMembers(), getCustomRoles()]);
 
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
         icon={Settings}
         title="Settings"
-        description="Your team and who can access what."
+        description="Your team, their roles and what each role can access."
       />
 
       <div className="mt-6 space-y-6">
-        <SectionCard title="Team access">
-          <p className="text-sm leading-7 text-slate-500">
-            Manage the people who have access to the TransVista
-            administration system.
-          </p>
-        </SectionCard>
-
+        <TeamMembersTable members={members} roles={roles} />
+        <RolesManager roles={roles} />
         <TeamOnboardingGuide />
-        <TeamMembersTable members={members} />
       </div>
     </div>
   );

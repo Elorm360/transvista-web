@@ -19,17 +19,22 @@ import {
   removeTeamMember,
   reactivateTeamMember,
   resendTeamInvite,
+  resetTeamMemberTwoFactor,
   deleteTeamMemberPermanently,
   updateTeamMemberDetails,
 } from "@/app/actions/team-members";
 import { unwrapActionResult } from "@/lib/actions/result";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
+import type { CustomRole } from "@/lib/dashboard/getRoles";
 import { StatusBadge } from "@/components/admin/ui";
 import { Avatar } from "@/components/admin/Avatar";
 
 interface TeamMembersTableProps {
   members: TeamMember[];
+  roles: CustomRole[];
 }
+
+type BaseRole = "admin" | "community_manager" | "support";
 
 function formatRole(role: string): string {
   return role
@@ -47,15 +52,28 @@ function formatDate(isoString: string): string {
   });
 }
 
-export default function TeamMembersTable({ members }: TeamMembersTableProps) {
+export default function TeamMembersTable({ members, roles }: TeamMembersTableProps) {
+  // A role choice is a base level ("support") or a custom role ("custom:finance_manager").
+  const decodeRole = (choice: string): { role: BaseRole; customRoleKey: string | null } => {
+    if (choice.startsWith("custom:")) {
+      const custom = roles.find((r) => r.key === choice.slice(7));
+      if (custom) return { role: custom.baseRole, customRoleKey: custom.key };
+    }
+    return { role: choice as BaseRole, customRoleKey: null };
+  };
+  const roleLabelFor = (member: TeamMember) =>
+    (member.customRoleKey && roles.find((r) => r.key === member.customRoleKey)?.name) || formatRole(member.role);
+  const customOptions = roles.length ? (
+    <optgroup label="Custom roles">
+      {roles.map((r) => <option key={r.key} value={`custom:${r.key}`}>{r.name}</option>)}
+    </optgroup>
+  ) : null;
   const router = useRouter();
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<
-    "admin" | "community_manager" | "support"
-  >("community_manager");
+  const [role, setRole] = useState<string>("community_manager");
 
   const [isInviting, setIsInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -74,7 +92,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [isDeletingPermanently, setIsDeletingPermanently] = useState(false);
   const [editTarget, setEditTarget] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState<"admin" | "community_manager" | "support">("support");
+  const [editRole, setEditRole] = useState<string>("support");
   const [editError, setEditError] = useState<string | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
@@ -99,7 +117,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
         await inviteTeamMember({
           fullName,
           email,
-          role,
+          ...decodeRole(role),
         }),
       );
 
@@ -123,14 +141,14 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   }
 
   function openEdit(member: TeamMember) {
-    setEditTarget(member); setEditName(member.fullName); setEditRole(member.role as "admin" | "community_manager" | "support"); setEditError(null);
+    setEditTarget(member); setEditName(member.fullName); setEditRole(member.customRoleKey ? `custom:${member.customRoleKey}` : member.role); setEditError(null);
   }
 
   async function saveEdit() {
     if (!editTarget || isSavingEdit) return;
     setIsSavingEdit(true); setEditError(null);
     try {
-      unwrapActionResult(await updateTeamMemberDetails({memberId:editTarget.id,fullName:editName,role:editRole}));
+      unwrapActionResult(await updateTeamMemberDetails({memberId:editTarget.id,fullName:editName,...decodeRole(editRole)}));
       setEditTarget(null); router.refresh();
     } catch(error) { setEditError(error instanceof Error ? error.message : "Could not save team member details."); }
     finally { setIsSavingEdit(false); }
@@ -260,11 +278,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 <select
                   id="team-member-role"
                   value={role}
-                  onChange={(e) =>
-                    setRole(
-                      e.target.value as "admin" | "community_manager" | "support",
-                    )
-                  }
+                  onChange={(e) => setRole(e.target.value)}
                   className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-600/20"
                 >
                   <option value="community_manager">
@@ -278,6 +292,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                   <option value="support">
                     Support
                   </option>
+                  {customOptions}
                 </select>
               </div>
             </div>
@@ -393,7 +408,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
 
                   <td className="px-6 py-4">
                     <span className="inline-flex rounded-full bg-brand-blue-50 px-3 py-1 text-xs font-semibold text-brand-blue-700">
-                      {formatRole(member.role)}
+                      {roleLabelFor(member)}
                     </span>
                   </td>
 
@@ -472,7 +487,29 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
             <div className="mt-5 space-y-4">
               <label className="block text-sm font-semibold text-slate-700">Full name<input value={editName} onChange={e=>setEditName(e.target.value)} maxLength={120} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 px-3 font-normal"/></label>
               <label className="block text-sm font-semibold text-slate-700">Email / login address<input value={editTarget.email} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 font-normal text-slate-500"/><span className="mt-1 block text-xs font-normal text-slate-500">Login email is protected here to avoid accidentally locking the person out.</span></label>
-              <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value as "admin"|"community_manager"|"support")} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal"><option value="support">Support</option><option value="community_manager">Community Manager</option><option value="admin">Admin</option></select></label>
+              <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal"><option value="support">Support</option><option value="community_manager">Community Manager</option><option value="admin">Admin</option>{customOptions}</select></label>
+              <div className="rounded-xl border border-slate-200 px-3 py-3">
+                <p className="text-sm font-semibold text-slate-700">Two-step sign-in</p>
+                <p className="mt-0.5 text-xs text-slate-500">If they lost the phone with their authenticator app, reset it so they can sign in with their password and set it up again.</p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!window.confirm(`Reset two-step sign-in for ${editTarget.fullName}?`)) return;
+                    setEditError(null);
+                    try {
+                      const result = unwrapActionResult(await resetTeamMemberTwoFactor(editTarget.id));
+                      setEditTarget(null);
+                      setStatusError(null);
+                      setStatusNotice(`Two-step sign-in was reset for ${result.fullName}.`);
+                    } catch (error) {
+                      setEditError(error instanceof Error ? error.message : "Two-step sign-in could not be reset.");
+                    }
+                  }}
+                  className="mt-2 text-sm font-semibold text-brand-blue-700 hover:underline"
+                >
+                  Reset two-step sign-in
+                </button>
+              </div>
               {editError?<p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{editError}</p>:null}
             </div>
             <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={()=>setEditTarget(null)} disabled={isSavingEdit} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button><button type="button" onClick={saveEdit} disabled={isSavingEdit || editName.trim().length<2} className="rounded-xl bg-brand-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{isSavingEdit?"Saving…":"Save changes"}</button></div>

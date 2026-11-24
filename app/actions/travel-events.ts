@@ -1,5 +1,6 @@
 "use server";
 
+import { formFields, logAudit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 import { createClient } from "@/lib/supabase/server";
@@ -86,7 +87,7 @@ function refreshEventPaths() {
   revalidatePath("/");
 }
 
-export async function createTravelEvent(
+async function createTravelEventImpl(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
@@ -115,7 +116,7 @@ export async function createTravelEvent(
   }
 }
 
-export async function updateTravelEvent(
+async function updateTravelEventImpl(
   _previous: TravelEventActionState,
   form: FormData,
 ): Promise<TravelEventActionState> {
@@ -144,4 +145,18 @@ export async function updateTravelEvent(
   } catch (error) {
     return { success: false, message: error instanceof Error ? error.message : "The event could not be updated." };
   }
+}
+
+/** Audited entry point: runs createTravelEventImpl and records it in the audit log on success. */
+export async function createTravelEvent(...args: Parameters<typeof createTravelEventImpl>) {
+  const result = await createTravelEventImpl(...args);
+  if (result.success) await logAudit("event.created", result.message || "Created a group trip", { type: "travel_event" }, formFields(args[1], ["title", "status", "startDate"]));
+  return result;
+}
+
+/** Audited entry point: runs updateTravelEventImpl and records it in the audit log on success. */
+export async function updateTravelEvent(...args: Parameters<typeof updateTravelEventImpl>) {
+  const result = await updateTravelEventImpl(...args);
+  if (result.success) await logAudit("event.updated", result.message || "Updated a group trip", { type: "travel_event", id: String(args[1].get("eventId") ?? args[1].get("id") ?? "") }, formFields(args[1], ["title", "status"]));
+  return result;
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, KeyRound, Trash2, UserRound } from "lucide-react";
 import { Avatar } from "@/components/admin/Avatar";
 import AppearanceSettings from "@/components/admin/AppearanceSettings";
+import TwoFactorSettings from "@/components/admin/TwoFactorSettings";
 import { buttonClass, Card } from "@/components/admin/ui";
 import { changeMyPassword, removeMyAvatar, updateMyProfile, uploadMyAvatar } from "@/app/actions/account";
 import { unwrapActionResult } from "@/lib/actions/result";
@@ -216,6 +217,8 @@ export default function AccountSettings({ profile }: { profile: MyProfile }) {
             </button>
           </form>
         </Card>
+
+        <TwoFactorSettings />
       </div>
     </div>
   );

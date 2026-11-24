@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,6 +25,7 @@ export async function saveTripOperation(
   _previousState: TripOperationActionState,
   formData: FormData,
 ): Promise<TripOperationActionState> {
+  if (!(await hasAdminArea("departures"))) return { success: false, message: NO_ACCESS_MESSAGE };
   try {
     const requestKind = value(formData, "requestKind", 20);
     const requestId = Number(value(formData, "requestId", 20));

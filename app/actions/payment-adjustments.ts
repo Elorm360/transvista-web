@@ -1,14 +1,17 @@
 "use server";
 
+import { formFields, logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type PaymentAdjustmentState = { success: boolean; message: string };
 
-export async function adjustPackagePayment(
+async function adjustPackagePaymentImpl(
   _previous: PaymentAdjustmentState,
   formData: FormData,
 ): Promise<PaymentAdjustmentState> {
+  if (!(await hasAdminArea("payments"))) return { success: false, message: NO_ACCESS_MESSAGE };
   const reservationId = Number(String(formData.get("reservationId") ?? ""));
   const amount = Number(String(formData.get("amount") ?? ""));
   const reason = String(formData.get("reason") ?? "").trim().slice(0, 1000);
@@ -34,4 +37,11 @@ export async function adjustPackagePayment(
   revalidatePath("/admin");
   revalidatePath("/admin/analytics");
   return {success:true,message:"Payment total corrected. The original entries remain in the audit history."};
+}
+
+/** Audited entry point: runs adjustPackagePaymentImpl and records it in the audit log on success. */
+export async function adjustPackagePayment(...args: Parameters<typeof adjustPackagePaymentImpl>) {
+  const result = await adjustPackagePaymentImpl(...args);
+  if (result.success) await logAudit("payment.corrected", result.message || "Corrected a payment total", { type: "package_reservation", id: String(args[1].get("reservationId") ?? "") }, formFields(args[1], ["amount", "reason", "adjustmentDate"]));
+  return result;
 }

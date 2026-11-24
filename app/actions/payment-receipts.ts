@@ -1,10 +1,13 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
+import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendPaymentReceiptEmail } from "@/lib/email/sendPaymentReceiptEmail";
 
-export async function sendPackagePaymentReceipt(formData: FormData): Promise<void> {
+async function sendPackagePaymentReceiptImpl(formData: FormData): Promise<void> {
+  if (!(await hasAdminArea("payments"))) throw new Error(NO_ACCESS_MESSAGE);
   const transactionId=String(formData.get("transactionId")??"").trim();
   if(!transactionId) throw new Error("Receipt transaction is missing.");
   const supabase=await createClient();
@@ -31,4 +34,10 @@ export async function sendPackagePaymentReceipt(formData: FormData): Promise<voi
   revalidatePath("/admin/payments");
   revalidatePath("/admin/payments/"+t.id+"/receipt");
   return;
+}
+
+/** Audited entry point: runs sendPackagePaymentReceiptImpl and records it in the audit log on success. */
+export async function sendPackagePaymentReceipt(...args: Parameters<typeof sendPackagePaymentReceiptImpl>) {
+  await sendPackagePaymentReceiptImpl(...args);
+  await logAudit("payment.receipt_sent", "Emailed a payment receipt", { type: "payment_transaction", id: String(args[0].get("transactionId") ?? "") });
 }

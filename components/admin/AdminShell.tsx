@@ -7,10 +7,10 @@ import {
   LayoutDashboard, ClipboardList, CreditCard, MessageSquareText, CalendarDays, CalendarPlus,
   Users, Star, MessageSquareHeart, BarChart3, Settings, Menu, X, LogOut, Bell, Compass, ChevronRight,
   type LucideIcon,
-  Sun, Moon, Monitor,
+  Sun, Moon, Monitor, ScrollText,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
-import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
+import type { AdminArea } from "@/lib/auth/permissions";
 import { Avatar } from "@/components/admin/Avatar";
 import { setMyTheme } from "@/app/actions/account";
 import { ADMIN_THEME_EVENT, isAdminTheme, type AdminTheme } from "@/lib/admin/theme";
@@ -29,13 +29,13 @@ const sections: NavSection[] = [
     items: [
       { label: "Requests", href: "/admin/requests", icon: ClipboardList, area: "requests" },
       { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments" },
-      { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests" },
+      { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "messages" },
     ],
   },
   {
     title: "Trips",
     items: [
-      { label: "Departures", href: "/admin/trips", icon: CalendarDays, area: "requests" },
+      { label: "Departures", href: "/admin/trips", icon: CalendarDays, area: "departures" },
       { label: "Events", href: "/admin/events", icon: CalendarPlus, area: "events" },
     ],
   },
@@ -43,11 +43,17 @@ const sections: NavSection[] = [
     title: "Customers",
     items: [
       { label: "Community", href: "/admin/community", icon: Users, area: "community" },
-      { label: "Reviews", href: "/admin/reviews", icon: Star, area: "community" },
-      { label: "Feedback", href: "/admin/event-feedback", icon: MessageSquareHeart, area: "community" },
+      { label: "Reviews", href: "/admin/reviews", icon: Star, area: "reviews" },
+      { label: "Feedback", href: "/admin/event-feedback", icon: MessageSquareHeart, area: "feedback" },
     ],
   },
-  { title: "Insights", items: [{ label: "Reports", href: "/admin/analytics", icon: BarChart3, area: "analytics" }] },
+  {
+    title: "Insights",
+    items: [
+      { label: "Reports", href: "/admin/analytics", icon: BarChart3, area: "analytics" },
+      { label: "Audit log", href: "/admin/audit", icon: ScrollText, area: "audit" },
+    ],
+  },
 ];
 
 const settingsItem: NavItem = { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings" };
@@ -72,15 +78,14 @@ function breadcrumbFor(pathname: string): { section: string | null; label: strin
   return extra?.[1] ?? { section: null, label: "Admin" };
 }
 
-export default function AdminShell({ role, children, unreadCount = 0, me, theme: savedTheme = "system" }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number; me: { name: string; avatarPath: string | null }; theme?: AdminTheme }>) {
+export default function AdminShell({ roleLabel, areas, children, unreadCount = 0, me, theme: savedTheme = "system" }: Readonly<{ roleLabel: string; areas: AdminArea[]; children: React.ReactNode; unreadCount?: number; me: { name: string; avatarPath: string | null }; theme?: AdminTheme }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const crumb = breadcrumbFor(pathname);
   const visibleSections = sections
-    .map((section) => ({ ...section, items: section.items.filter((item) => canAccess(role, item.area)) }))
+    .map((section) => ({ ...section, items: section.items.filter((item) => areas.includes(item.area)) }))
     .filter((section) => section.items.length > 0);
-  const canSeeSettings = canAccess(role, settingsItem.area);
-  const roleLabel = formatAdminRole(role);
+  const canSeeSettings = areas.includes(settingsItem.area);
 
   // Theme: the saved preference, updated instantly when changed here or in My account.
   const [themeOverride, setThemeOverride] = useState<AdminTheme | null>(null);

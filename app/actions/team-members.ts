@@ -1,5 +1,6 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 import { toActionResult } from "@/lib/actions/result";
 import { getSiteUrl } from "@/lib/siteUrl";
@@ -8,6 +9,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isOwner } from "@/lib/auth/isAdmin";
 import { formatAdminRole } from "@/lib/auth/permissions";
 import { sendTeamInviteEmail } from "@/lib/email/sendTeamInviteEmail";
+
+/** A custom role must exist and be built on the chosen base level. */
+async function validCustomRoleKey(key: string | null | undefined, role: string): Promise<string | null> {
+  if (!key) return null;
+  const { data } = await createAdminClient().from("admin_roles").select("key, base_role").eq("key", key).maybeSingle();
+  if (!data) throw new Error("That custom role no longer exists. Refresh the page.");
+  if (data.base_role !== role) throw new Error("That custom role doesn't match the chosen access level.");
+  return data.key;
+}
 
 export type InviteableRole = "admin" | "community_manager" | "support";
 
@@ -30,10 +40,12 @@ async function inviteTeamMemberUnsafe({
   fullName,
   email,
   role,
+  customRoleKey,
 }: {
   fullName: string;
   email: string;
   role: InviteableRole;
+  customRoleKey?: string | null;
 }) {
   /*
    * ------------------------------------------------------------
@@ -71,6 +83,8 @@ async function inviteTeamMemberUnsafe({
   if (!allowedRoles.includes(role)) {
     throw new Error("Invalid team member role.");
   }
+
+  const customRole = await validCustomRoleKey(customRoleKey, role);
 
   /*
    * ------------------------------------------------------------
@@ -153,6 +167,7 @@ async function inviteTeamMemberUnsafe({
       full_name: cleanName,
       email: cleanEmail,
       role,
+      custom_role_key: customRole,
     });
 
   if (memberError) {
@@ -234,12 +249,12 @@ async function updateTeamMemberStatus(memberId: string, status: "active" | "inac
   }
   return {success:true,member:{id:member.id,fullName:member.full_name,status}};
 }
-export async function removeTeamMember(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"inactive")); }
-export async function reactivateTeamMember(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"active")); }
+async function removeTeamMemberImpl(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"inactive")); }
+async function reactivateTeamMemberImpl(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"active")); }
 
 
 /** Owner-only profile and role editing. Login email is intentionally immutable here. */
-async function updateTeamMemberDetailsUnsafe({memberId,fullName,role}:{memberId:string;fullName:string;role:InviteableRole}) {
+async function updateTeamMemberDetailsUnsafe({memberId,fullName,role,customRoleKey}:{memberId:string;fullName:string;role:InviteableRole;customRoleKey?:string|null}) {
   const cleanName=fullName.trim();
   if(!memberId || cleanName.length<2 || cleanName.length>120) throw new Error("Enter a valid team member name.");
   if(!allowedRoles.includes(role)) throw new Error("Choose a valid team role.");
@@ -251,7 +266,8 @@ async function updateTeamMemberDetailsUnsafe({memberId,fullName,role}:{memberId:
   if(lookupError || !member) throw new Error("This team member could not be found.");
   if(member.role==="owner") throw new Error("The owner account is protected.");
   if(member.user_id===user.id) throw new Error("You cannot change your own team role.");
-  const {error}=await adminSupabase.from("admin_team_members").update({full_name:cleanName,role,updated_at:new Date().toISOString()}).eq("id",memberId);
+  const customRole=await validCustomRoleKey(customRoleKey,role);
+  const {error}=await adminSupabase.from("admin_team_members").update({full_name:cleanName,role,custom_role_key:customRole,updated_at:new Date().toISOString()}).eq("id",memberId);
   if(error) throw new Error("The team member details could not be saved.");
   if(member.user_id) {
     const {error:authError}=await adminSupabase.auth.admin.updateUserById(member.user_id,{user_metadata:{full_name:cleanName,role}});
@@ -262,11 +278,11 @@ async function updateTeamMemberDetailsUnsafe({memberId,fullName,role}:{memberId:
 
 // Errors are returned rather than thrown so their messages reach the UI in
 // production (see lib/actions/result.ts).
-export async function inviteTeamMember(input: Parameters<typeof inviteTeamMemberUnsafe>[0]) {
+async function inviteTeamMemberImpl(input: Parameters<typeof inviteTeamMemberUnsafe>[0]) {
   return toActionResult(() => inviteTeamMemberUnsafe(input));
 }
 
-export async function updateTeamMemberDetails(input: Parameters<typeof updateTeamMemberDetailsUnsafe>[0]) {
+async function updateTeamMemberDetailsImpl(input: Parameters<typeof updateTeamMemberDetailsUnsafe>[0]) {
   return toActionResult(() => updateTeamMemberDetailsUnsafe(input));
 }
 
@@ -327,7 +343,7 @@ async function resendTeamInviteUnsafe(memberId: string) {
   return { success: true, email: member.email };
 }
 
-export async function resendTeamInvite(memberId: string) {
+async function resendTeamInviteImpl(memberId: string) {
   return toActionResult(() => resendTeamInviteUnsafe(memberId));
 }
 
@@ -406,6 +422,85 @@ async function deleteTeamMemberPermanentlyUnsafe(input: { memberId: string; conf
   return { outcome, fullName: member.full_name };
 }
 
-export async function deleteTeamMemberPermanently(input: { memberId: string; confirmName: string }) {
+async function deleteTeamMemberPermanentlyImpl(input: { memberId: string; confirmName: string }) {
   return toActionResult(() => deleteTeamMemberPermanentlyUnsafe(input));
+}
+
+/** Audited entry point: runs inviteTeamMemberImpl and records it in the audit log on success. */
+export async function inviteTeamMember(...args: Parameters<typeof inviteTeamMemberImpl>) {
+  const result = await inviteTeamMemberImpl(...args);
+  if (result.ok) await logAudit("team.invited", `Invited ${args[0].fullName} as ${args[0].role}`, { type: "team_member" }, { role: args[0].role });
+  return result;
+}
+
+/** Audited entry point: runs resendTeamInviteImpl and records it in the audit log on success. */
+export async function resendTeamInvite(...args: Parameters<typeof resendTeamInviteImpl>) {
+  const result = await resendTeamInviteImpl(...args);
+  if (result.ok) await logAudit("team.invite_resent", "Resent a team invitation", { type: "team_member", id: args[0] });
+  return result;
+}
+
+/** Audited entry point: runs removeTeamMemberImpl and records it in the audit log on success. */
+export async function removeTeamMember(...args: Parameters<typeof removeTeamMemberImpl>) {
+  const result = await removeTeamMemberImpl(...args);
+  if (result.ok) await logAudit("team.access_removed", "Removed a team member's access", { type: "team_member", id: args[0] });
+  return result;
+}
+
+/** Audited entry point: runs reactivateTeamMemberImpl and records it in the audit log on success. */
+export async function reactivateTeamMember(...args: Parameters<typeof reactivateTeamMemberImpl>) {
+  const result = await reactivateTeamMemberImpl(...args);
+  if (result.ok) await logAudit("team.access_restored", "Restored a team member's access", { type: "team_member", id: args[0] });
+  return result;
+}
+
+/** Audited entry point: runs updateTeamMemberDetailsImpl and records it in the audit log on success. */
+export async function updateTeamMemberDetails(...args: Parameters<typeof updateTeamMemberDetailsImpl>) {
+  const result = await updateTeamMemberDetailsImpl(...args);
+  if (result.ok) await logAudit("team.updated", `Updated ${args[0].fullName}'s name or role`, { type: "team_member", id: args[0].memberId }, { role: args[0].role });
+  return result;
+}
+
+/** Audited entry point: runs deleteTeamMemberPermanentlyImpl and records it in the audit log on success. */
+export async function deleteTeamMemberPermanently(...args: Parameters<typeof deleteTeamMemberPermanentlyImpl>) {
+  const result = await deleteTeamMemberPermanentlyImpl(...args);
+  if (result.ok) await logAudit("team.deleted", `Permanently deleted a team member (${result.ok ? result.data.outcome : ""})`, { type: "team_member", id: args[0].memberId });
+  return result;
+}
+
+/**
+ * Owner-only: remove a member's two-step sign-in (e.g. they lost their phone).
+ * They sign in with their password next time and can set it up again.
+ */
+async function resetTeamMemberTwoFactorUnsafe(memberId: string) {
+  if (!memberId) throw new Error("Team member id is required.");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !(await isOwner(user))) throw new Error("Only the TransVista owner can reset two-step sign-in.");
+
+  const adminSupabase = createAdminClient();
+  const { data: member } = await adminSupabase
+    .from("admin_team_members")
+    .select("id, user_id, full_name, role")
+    .eq("id", memberId)
+    .maybeSingle();
+  if (!member || !member.user_id) throw new Error("This team member could not be found.");
+  if (member.user_id === user.id) throw new Error("Turn off your own two-step sign-in from My account.");
+
+  const { data: factors, error: listError } = await adminSupabase.auth.admin.mfa.listFactors({ userId: member.user_id });
+  if (listError) throw new Error("Their two-step sign-in could not be checked.");
+  const all = factors?.factors ?? [];
+  if (!all.length) throw new Error(`${member.full_name} doesn't have two-step sign-in turned on.`);
+
+  for (const factor of all) {
+    const { error } = await adminSupabase.auth.admin.mfa.deleteFactor({ userId: member.user_id, id: factor.id });
+    if (error) throw new Error("Their two-step sign-in could not be reset. Please try again.");
+  }
+  return { fullName: member.full_name };
+}
+
+export async function resetTeamMemberTwoFactor(memberId: string) {
+  const result = await toActionResult(() => resetTeamMemberTwoFactorUnsafe(memberId));
+  if (result.ok) await logAudit("team.mfa_reset", `Reset ${result.data.fullName}'s two-step sign-in`, { type: "team_member", id: memberId });
+  return result;
 }
