@@ -13,17 +13,20 @@ export async function sendTeamInviteEmail({
   email,
   roleLabel,
   inviteUrl,
+  variant = "invite",
 }: {
   fullName: string;
   email: string;
   roleLabel: string;
   inviteUrl: string;
+  variant?: "invite" | "reset";
 }) {
   const html = await render(
     <TeamInviteEmail
       fullName={fullName}
       roleLabel={roleLabel}
       inviteUrl={inviteUrl}
+      variant={variant}
     />,
   );
 
@@ -31,7 +34,7 @@ export async function sendTeamInviteEmail({
     from: "TransVista Africa <welcome@transvistaafrica.com>",
     to: email,
     replyTo: "info@transvistaafrica.com",
-    subject: "You're invited to TransVista Admin",
+    subject: variant === "reset" ? "Reset your TransVista Admin password" : "You're invited to TransVista Admin",
     html,
   });
 

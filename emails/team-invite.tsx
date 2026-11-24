@@ -17,6 +17,8 @@ interface TeamInviteEmailProps {
   fullName: string;
   roleLabel: string;
   inviteUrl: string;
+  /** "invite" for new team members, "reset" for a forgotten password. */
+  variant?: "invite" | "reset";
 }
 
 /**
@@ -28,8 +30,12 @@ export default function TeamInviteEmail({
   fullName,
   roleLabel,
   inviteUrl,
+  variant = "invite",
 }: TeamInviteEmailProps) {
-  const previewText = `You've been invited to the TransVista admin team as ${roleLabel}.`;
+  const isReset = variant === "reset";
+  const previewText = isReset
+    ? "Reset your TransVista admin password."
+    : `You've been invited to the TransVista admin team as ${roleLabel}.`;
 
   return (
     <Html>
@@ -51,24 +57,35 @@ export default function TeamInviteEmail({
           <Hr style={hr} />
 
           <Heading style={heading}>
-            You&apos;re invited to TransVista Admin
+            {isReset ? "Reset your password" : <>You&apos;re invited to TransVista Admin</>}
           </Heading>
 
           <Text style={paragraph}>Hello {fullName},</Text>
 
-          <Text style={paragraph}>
-            You&apos;ve been invited to join the TransVista administration
-            team as <strong>{roleLabel}</strong>.
-          </Text>
+          {isReset ? (
+            <Text style={paragraph}>
+              We received a request to reset the password for your TransVista
+              admin account. Click the button below to choose a new one. The
+              link works once and expires soon. If you didn&apos;t ask for this,
+              you can ignore this email.
+            </Text>
+          ) : (
+            <>
+              <Text style={paragraph}>
+                You&apos;ve been invited to join the TransVista administration
+                team as <strong>{roleLabel}</strong>.
+              </Text>
 
-          <Text style={paragraph}>
-            Click the button below to create your password and sign in.
-            This link is unique to you and should not be shared.
-          </Text>
+              <Text style={paragraph}>
+                Click the button below to create your password and sign in.
+                This link is unique to you and should not be shared.
+              </Text>
+            </>
+          )}
 
           <Section style={buttonSection}>
             <Button href={inviteUrl} style={button}>
-              Accept invitation
+              {isReset ? "Choose a new password" : "Accept invitation"}
             </Button>
           </Section>
 

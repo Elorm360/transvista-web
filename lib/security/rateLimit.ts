@@ -46,6 +46,10 @@ export const FORM_RATE_LIMITS = {
   review: {
     ip: { limit: 5, windowSeconds: TEN_MINUTES },
   },
+  password_reset: {
+    ip: { limit: 5, windowSeconds: TEN_MINUTES },
+    email: { limit: 3, windowSeconds: ONE_HOUR },
+  },
 } satisfies Record<string, FormRules>;
 
 export type RateLimitedForm = keyof typeof FORM_RATE_LIMITS;
