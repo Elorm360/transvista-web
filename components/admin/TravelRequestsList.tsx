@@ -415,7 +415,7 @@ export default function TravelRequestsList({
                       </button>
                       <p className="mt-0.5 whitespace-nowrap text-xs text-slate-500">{request.reference}{request.archivedAt ? " · Archived" : ""}</p>
                     </td>
-                    <td className="max-w-[260px] px-3 py-3">
+                    <td className="max-w-[220px] px-3 py-3">
                       <p className="truncate text-sm text-slate-700" title={request.summary}>{request.summary}</p>
                       <p className="mt-0.5 text-xs text-slate-500">
                         {request.source === "package" ? "Group trip" : "Custom trip"} · {request.travellers} {request.travellers === 1 ? "traveller" : "travellers"}
@@ -433,7 +433,7 @@ export default function TravelRequestsList({
                       <p className="mt-0.5 text-xs text-slate-500">{money(request.quoteCurrency, request.amountPaid)} received</p>
                     </td>
                     <td className="px-3 py-3 text-sm text-slate-600">{request.assigneeName ?? <span className="text-brand-orange-800">Unassigned</span>}</td>
-                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-600">{request.followUpAt ? formatDateTime(request.followUpAt) : "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-600" title={request.followUpAt ? formatDateTime(request.followUpAt) : undefined}>{request.followUpAt ? formatDate(request.followUpAt) : "—"}</td>
                     <td className="px-3 py-3 text-right text-slate-400"><ChevronRight className="ml-auto h-4 w-4" aria-hidden="true" /></td>
                   </tr>
                 ))}
