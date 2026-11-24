@@ -95,11 +95,11 @@ export default function AdminShell({ role, children, unreadCount = 0 }: Readonly
         onClick={() => setSidebarOpen(false)}
         aria-current={active ? "page" : undefined}
         className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-          active ? "bg-white/[0.12] text-white" : "text-blue-100/70 hover:bg-white/[0.06] hover:text-white"
+          active ? "bg-white/[0.12] text-white" : "text-brand-blue-100/70 hover:bg-white/[0.06] hover:text-white"
         }`}
       >
         {active && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-brand-orange-500" />}
-        <Icon aria-hidden="true" className={`h-[18px] w-[18px] shrink-0 ${active ? "text-brand-orange-400" : "text-blue-200/60 group-hover:text-white"}`} />
+        <Icon aria-hidden="true" className={`h-[18px] w-[18px] shrink-0 ${active ? "text-brand-orange-400" : "text-brand-blue-200/60 group-hover:text-white"}`} />
         {item.label}
       </Link>
     );
@@ -122,10 +122,10 @@ export default function AdminShell({ role, children, unreadCount = 0 }: Readonly
             </span>
             <span className="leading-tight">
               <span className="block text-sm font-bold tracking-tight">TransVista</span>
-              <span className="block text-xs text-blue-200/60">Admin</span>
+              <span className="block text-xs text-brand-blue-200/60">Admin</span>
             </span>
           </Link>
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-blue-100/70 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation">
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-brand-blue-100/70 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -134,7 +134,7 @@ export default function AdminShell({ role, children, unreadCount = 0 }: Readonly
           {visibleSections.map((section) => (
             <div key={section.title ?? "home"}>
               {section.title && (
-                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-blue-200/40">{section.title}</p>
+                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-brand-blue-200/40">{section.title}</p>
               )}
               <div className="space-y-0.5">{section.items.map(navLink)}</div>
             </div>
@@ -144,7 +144,7 @@ export default function AdminShell({ role, children, unreadCount = 0 }: Readonly
         <div className="space-y-0.5 border-t border-white/10 px-3 py-3">
           {canSeeSettings && navLink(settingsItem)}
           <form action={signOut}>
-            <button type="submit" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400">
+            <button type="submit" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-brand-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400">
               <LogOut className="h-[18px] w-[18px]" aria-hidden="true" /> Sign out
             </button>
           </form>

@@ -35,7 +35,7 @@ export default async function AdminRequestsPage({
       {loadError ? (
         <div
           role="alert"
-          className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900"
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900"
         >
           <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <div>

@@ -17,7 +17,7 @@ export default function CommunitySkeleton() {
       </div>
 
       {/* Table card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         {/* Toolbar */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="h-10 w-full animate-pulse rounded-xl bg-slate-200 lg:max-w-xs" />

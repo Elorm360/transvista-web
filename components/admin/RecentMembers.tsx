@@ -14,11 +14,11 @@ interface RecentMembersProps {
  */
 export default function RecentMembers({ members }: RecentMembersProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+    <div className="rounded-xl border border-slate-200 bg-white p-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100">
-          <Users className="h-5 w-5 text-blue-700" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue-100">
+          <Users className="h-5 w-5 text-brand-blue-700" />
         </div>
         <h2 className="text-lg font-semibold text-slate-900">
           Recent Community Members

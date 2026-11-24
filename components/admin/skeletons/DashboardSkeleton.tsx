@@ -23,7 +23,7 @@ export default function DashboardSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-6"
+            className="rounded-xl border border-slate-200 bg-white p-6"
           >
             <div className="h-10 w-10 animate-pulse rounded-xl bg-slate-200" />
             <div className="mt-4 h-8 w-16 animate-pulse rounded bg-slate-200" />

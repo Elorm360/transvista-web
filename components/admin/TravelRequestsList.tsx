@@ -37,7 +37,7 @@ import type {
   RequestOperator,
   TravelRequestRecord,
 } from "@/lib/dashboard/getTravelRequests";
-import { buttonClass, StatusBadge } from "@/components/admin/ui";
+import { buttonClass, StatusBadge, statusLabel } from "@/components/admin/ui";
 import {
   attentionReasons,
   bookingTotals,
@@ -344,7 +344,7 @@ export default function TravelRequestsList({
         </div>
       )}
 
-      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200" role="tablist" aria-label="Booking views">
+      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200 [scrollbar-width:none]" role="tablist" aria-label="Booking views">
         {views.map(([value, title, count]) => {
           const active = savedView === value;
           return (
@@ -407,13 +407,13 @@ export default function TravelRequestsList({
                         onChange={(event) => setSelectedIds((current) => event.target.checked ? [...current, request.id] : current.filter((id) => id !== request.id))}
                         className="h-4 w-4 rounded border-slate-300 text-brand-blue-600 focus:ring-brand-blue-600" />
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="min-w-[170px] px-3 py-3">
                       {/* The name is the keyboard-accessible way to open the booking. */}
                       <button type="button" onClick={(event) => { event.stopPropagation(); setSelected(request); }}
                         className="text-left text-sm font-medium text-slate-900 hover:text-brand-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600">
                         {request.fullName}
                       </button>
-                      <p className="mt-0.5 text-xs text-slate-500">{request.reference}{request.archivedAt ? " · Archived" : ""}</p>
+                      <p className="mt-0.5 whitespace-nowrap text-xs text-slate-500">{request.reference}{request.archivedAt ? " · Archived" : ""}</p>
                     </td>
                     <td className="max-w-[260px] px-3 py-3">
                       <p className="truncate text-sm text-slate-700" title={request.summary}>{request.summary}</p>
@@ -428,8 +428,8 @@ export default function TravelRequestsList({
                         {["urgent", "high"].includes(request.priority) && <StatusBadge status="failed" label={label(request.priority)} />}
                       </div>
                     </td>
-                    <td className="px-3 py-3">
-                      <p className="text-sm text-slate-700">{label(request.paymentStatus)}</p>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <p className="text-sm text-slate-700">{statusLabel(request.paymentStatus)}</p>
                       <p className="mt-0.5 text-xs text-slate-500">{money(request.quoteCurrency, request.amountPaid)} received</p>
                     </td>
                     <td className="px-3 py-3 text-sm text-slate-600">{request.assigneeName ?? <span className="text-brand-orange-800">Unassigned</span>}</td>
@@ -565,7 +565,7 @@ function RequestDrawer({
               <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-4">
                 {[
                   ["Trip date", request.tripDate ? formatDate(request.tripDate) : "—"],
-                  ["Payment", `${money(request.quoteCurrency, request.amountPaid)} · ${label(request.paymentStatus)}`],
+                  ["Payment", `${money(request.quoteCurrency, request.amountPaid)} · ${statusLabel(request.paymentStatus)}`],
                   ["Assigned", request.assigneeName ?? "Unassigned"],
                   ["Follow-up", request.followUpAt ? formatDateTime(request.followUpAt) : "—"],
                 ].map(([term, value]) => (
@@ -683,14 +683,14 @@ function RequestRetentionPanel({
 
   return (
     <section className={
-      "rounded-2xl border bg-white p-5 " +
-      (request.archivedAt ? "border-slate-300" : "border-blue-200")
+      "rounded-xl border bg-white p-5 " +
+      (request.archivedAt ? "border-slate-300" : "border-brand-blue-200")
     }>
       <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
         {request.archivedAt ? (
-          <ArchiveRestore className="h-5 w-5 text-blue-600" />
+          <ArchiveRestore className="h-5 w-5 text-brand-blue-600" />
         ) : (
-          <Archive className="h-5 w-5 text-blue-600" />
+          <Archive className="h-5 w-5 text-brand-blue-600" />
         )}
         Request cleanup
       </h3>
@@ -713,7 +713,7 @@ function RequestRetentionPanel({
             <button
               type="submit"
               disabled={archivePending}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue-700 px-5 text-sm font-bold text-white transition hover:bg-brand-blue-800 disabled:cursor-wait disabled:opacity-60"
             >
               <ArchiveRestore className="h-4 w-4" />
               {archivePending ? "Restoring…" : "Restore to active queue"}
@@ -804,7 +804,7 @@ function RequestRetentionPanel({
           <button
             type="submit"
             disabled={archivePending}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 text-sm font-bold text-slate-800 transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 text-sm font-bold text-slate-800 transition hover:border-brand-blue-300 hover:bg-brand-blue-50 disabled:cursor-wait disabled:opacity-60"
           >
             <Archive className="h-4 w-4" />
             {archivePending ? "Archiving…" : "Archive request"}
@@ -1004,17 +1004,17 @@ function BookingOperationsForm({
         />
       </Field>
 
-      <label className="flex items-start gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4">
+      <label className="flex items-start gap-3 rounded-xl border border-brand-orange-200 bg-brand-orange-50 p-4">
         <input
           type="checkbox"
           name="notifyTraveller"
-          className="mt-0.5 h-4 w-4 rounded border-orange-300 text-orange-600"
+          className="mt-0.5 h-4 w-4 rounded border-brand-orange-300 text-brand-orange-600"
         />
         <span>
-          <span className="block text-sm font-semibold text-orange-950">
+          <span className="block text-sm font-semibold text-brand-orange-950">
             Email this update to the traveller
           </span>
-          <span className="mt-1 block text-xs leading-5 text-orange-800">
+          <span className="mt-1 block text-xs leading-5 text-brand-orange-800">
             Sends the current booking status, payment status, amount recorded and
             the note above.
           </span>
@@ -1037,7 +1037,7 @@ function BookingOperationsForm({
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue-700 px-5 text-sm font-bold text-white transition hover:bg-brand-blue-800 disabled:cursor-wait disabled:opacity-60"
       >
         <Save className="h-4 w-4" />
         {pending ? "Saving changes…" : "Save booking operations"}
@@ -1146,13 +1146,13 @@ function PaymentRequestForm({ request }: { request: TravelRequestRecord }) {
         />
       </Field>
 
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
+      <div className="rounded-xl border border-brand-blue-200 bg-brand-blue-50 p-4 text-sm leading-6 text-brand-blue-950">
         <p className="font-bold">Payment channels included</p>
         <p className="mt-1">
           MTN MoMo 0248442916 and Telecel Cash 0506191365, both registered
           to TRANSVISTA AFRICA LTD.
         </p>
-        <p className="mt-2 text-xs text-blue-800">
+        <p className="mt-2 text-xs text-brand-blue-800">
           Bank transfer is withheld until verified bank-account details are
           configured. The booking reference is used as the payment reference.
         </p>
@@ -1182,7 +1182,7 @@ function PaymentRequestForm({ request }: { request: TravelRequestRecord }) {
       <button
         type="submit"
         disabled={pending || outstanding <= 0}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 text-sm font-bold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-orange-600 px-5 text-sm font-bold text-white transition hover:bg-brand-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Send className="h-4 w-4" />
         {pending ? "Creating documents and sending…" : "Send payment request"}
@@ -1197,7 +1197,7 @@ function PaymentRequestForm({ request }: { request: TravelRequestRecord }) {
 }
 
 const inputClass =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100";
 
 function Field({ label: fieldLabel, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -1242,7 +1242,7 @@ function FilterSelect({
 
 function EmptyMessage({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
+    <div className="rounded-xl border border-slate-200 bg-white px-6 py-16 text-center">
       <p className="font-semibold text-slate-900">{title}</p>
       <p className="mt-2 text-sm text-slate-500">{body}</p>
     </div>

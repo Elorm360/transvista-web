@@ -20,8 +20,8 @@ export default function AdminError({
   }, [error]);
 
   return (
-    <div role="alert" className="mx-auto mt-10 max-w-lg rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center shadow-sm">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+    <div role="alert" className="mx-auto mt-10 max-w-lg rounded-xl border border-slate-200 bg-white px-6 py-10 text-center shadow-sm">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
         <CircleAlert className="h-6 w-6" aria-hidden="true" />
       </span>
       <h2 className="mt-4 text-lg font-semibold text-slate-900">This page couldn&apos;t load</h2>

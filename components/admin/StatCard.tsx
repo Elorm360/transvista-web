@@ -23,10 +23,10 @@ interface StatCardProps {
  */
 export default function StatCard({ icon: Icon, title, value }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 transition-colors duration-200 ease-out hover:border-slate-300">
+    <div className="rounded-xl border border-slate-200 bg-white p-6 transition-colors duration-200 ease-out hover:border-slate-300">
       {/* Icon */}
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100">
-        <Icon className="h-5 w-5 text-blue-700" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue-100">
+        <Icon className="h-5 w-5 text-brand-blue-700" />
       </div>
 
       {/* Value */}

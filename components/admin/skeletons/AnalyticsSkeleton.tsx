@@ -21,7 +21,7 @@ export default function AnalyticsSkeleton() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5"
+            className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5"
           >
             <div className="h-10 w-10 animate-pulse rounded-xl bg-slate-200" />
             <div className="min-w-0 flex-1">
@@ -37,7 +37,7 @@ export default function AnalyticsSkeleton() {
         {Array.from({ length: 2 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-6"
+            className="rounded-xl border border-slate-200 bg-white p-6"
           >
             <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
             <div className="mt-1 h-3 w-48 animate-pulse rounded bg-slate-200" />
@@ -48,7 +48,7 @@ export default function AnalyticsSkeleton() {
 
       {/* Interest breakdown placeholder */}
       <div className="mt-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
           <div className="h-4 w-36 animate-pulse rounded bg-slate-200" />
           <div className="mt-1 h-3 w-44 animate-pulse rounded bg-slate-200" />
           <div className="mt-6 h-64 animate-pulse rounded-xl bg-slate-100" />

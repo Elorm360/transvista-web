@@ -21,6 +21,7 @@ import {
 } from "@/app/actions/team-members";
 import { unwrapActionResult } from "@/lib/actions/result";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
+import { StatusBadge } from "@/components/admin/ui";
 
 interface TeamMembersTableProps {
   members: TeamMember[];
@@ -146,12 +147,12 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-6 py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-              <Shield className="h-5 w-5 text-blue-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue-50">
+              <Shield className="h-5 w-5 text-brand-blue-600" />
             </div>
 
             <div>
@@ -168,7 +169,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
           <button
             type="button"
             onClick={() => setShowAddForm(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600 focus-visible:ring-offset-2"
           >
             <Plus className="h-4 w-4" />
             Add Team Member
@@ -215,7 +216,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Lydia Tornyi"
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-600/20"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-600/20"
                 />
               </div>
 
@@ -233,7 +234,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@transvistaafrica.com"
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-600/20"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-600/20"
                 />
               </div>
 
@@ -253,7 +254,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                       e.target.value as "admin" | "community_manager" | "support",
                     )
                   }
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-600/20"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-600/20"
                 >
                   <option value="community_manager">
                     Community Manager
@@ -295,7 +296,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                 type="button"
                 onClick={handleInvite}
                 disabled={isInviting}
-                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-brand-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isInviting ? "Sending…" : "Send Invitation"}
               </button>
@@ -377,16 +378,13 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    <span className="inline-flex rounded-full bg-brand-blue-50 px-3 py-1 text-xs font-semibold text-brand-blue-700">
                       {formatRole(member.role)}
                     </span>
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className={member.status === "active" ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700" : "inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"}>
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      {member.status}
-                    </span>
+                    <StatusBadge status={member.status} />
                   </td>
 
                   <td className="px-6 py-4 text-sm text-slate-500">
@@ -405,7 +403,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                           type="button"
                           onClick={async () => { if (member.status === "inactive") { setStatusError(null); try { unwrapActionResult(await reactivateTeamMember(member.id)); router.refresh(); } catch (error) { setStatusError(error instanceof Error ? error.message : "Could not reactivate this team member."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
                           aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
-                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                          className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${member.status === "active" ? "text-red-600 hover:bg-red-50" : "text-brand-blue-700 hover:bg-brand-blue-50"}`}
                         >
                           {member.status === "active" ? <Trash2 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                           {member.status === "active" ? "Deactivate" : "Reactivate"}
@@ -423,7 +421,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
 
       {editTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-team-member-title">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div><h2 id="edit-team-member-title" className="text-lg font-bold text-slate-950">Edit team member</h2><p className="mt-1 text-sm text-slate-500">Update their display name and access role.</p></div>
               <button type="button" onClick={()=>setEditTarget(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="Close edit form"><X className="h-5 w-5"/></button>
@@ -434,7 +432,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
               <label className="block text-sm font-semibold text-slate-700">Access role<select value={editRole} onChange={e=>setEditRole(e.target.value as "admin"|"community_manager"|"support")} className="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 font-normal"><option value="support">Support</option><option value="community_manager">Community Manager</option><option value="admin">Admin</option></select></label>
               {editError?<p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{editError}</p>:null}
             </div>
-            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={()=>setEditTarget(null)} disabled={isSavingEdit} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button><button type="button" onClick={saveEdit} disabled={isSavingEdit || editName.trim().length<2} className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{isSavingEdit?"Saving…":"Save changes"}</button></div>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={()=>setEditTarget(null)} disabled={isSavingEdit} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancel</button><button type="button" onClick={saveEdit} disabled={isSavingEdit || editName.trim().length<2} className="rounded-xl bg-brand-blue-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{isSavingEdit?"Saving…":"Save changes"}</button></div>
           </div>
         </div>
       )}
@@ -451,7 +449,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
             onClick={() => !isRemoving && setDeleteTarget(null)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
               <Trash2 className="h-6 w-6 text-red-600" />
             </div>

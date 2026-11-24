@@ -14,6 +14,8 @@ import type {
   TripDepartureRecord,
 } from "@/lib/dashboard/getTripDepartureOperations";
 import type { TripOperationsOperator } from "@/lib/dashboard/getTripOperations";
+import { StatCard } from "@/components/admin/ui";
+import type { LucideIcon } from "lucide-react";
 
 const initialState: TripDepartureActionState = { success: false, message: "" };
 
@@ -34,7 +36,7 @@ function human(value: string) {
 
 function statusStyle(status: string) {
   if (status === "ready" || status === "completed") return "bg-emerald-50 text-emerald-800";
-  if (status === "underway") return "bg-blue-50 text-blue-800";
+  if (status === "underway") return "bg-brand-blue-50 text-brand-blue-800";
   if (status === "cancelled") return "bg-slate-100 text-slate-600";
   if (status === "confirmed") return "bg-indigo-50 text-indigo-800";
   return "bg-amber-50 text-amber-800";
@@ -70,7 +72,7 @@ export default function TripDepartureManager({
         <Metric label="Currently underway" value={underway} icon={CarFront} />
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
             <h2 className="text-base font-bold text-slate-950">Bookings awaiting a departure</h2>
@@ -93,7 +95,7 @@ export default function TripDepartureManager({
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
             <h2 className="text-base font-bold text-slate-950">Departure operations</h2>
@@ -142,7 +144,7 @@ function CreateDepartureCard({
           <p className="truncate text-sm font-bold text-slate-900">{candidate.title}</p>
           <p className="mt-1 text-xs text-slate-500">{dateLabel(candidate.departureDate)}{candidate.returnDate !== candidate.departureDate ? " – " + dateLabel(candidate.returnDate) : ""}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-800">{candidate.bookings.length} bookings</span>
+        <span className="shrink-0 rounded-full bg-brand-blue-50 px-2.5 py-1 text-xs font-bold text-brand-blue-800">{candidate.bookings.length} bookings</span>
       </div>
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-600">
         <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{candidate.travellers} travellers</span>
@@ -150,24 +152,24 @@ function CreateDepartureCard({
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {candidate.bookings.map((booking) => (
-          <span key={booking.id} className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">{booking.reference}</span>
+          <span key={booking.id} className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{booking.reference}</span>
         ))}
       </div>
       <input type="hidden" name="bookingKeys" value={JSON.stringify(bookingKeys)} />
       <input type="hidden" name="departureDate" value={candidate.departureDate} />
       <label className="mt-4 block">
-        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Departure name</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Departure name</span>
         <input name="title" required minLength={2} maxLength={160} defaultValue={candidate.title} className={inputClass} />
       </label>
       <label className="mt-3 block">
-        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Operations lead (optional)</span>
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Operations lead (optional)</span>
         <select name="operationsLeadId" defaultValue="" className={inputClass}>
           <option value="">Assign later</option>
           {operators.map((operator) => <option key={operator.id} value={operator.id}>{operator.fullName} · {human(operator.role)}</option>)}
         </select>
       </label>
       {state.message && <p aria-live="polite" className={"mt-3 rounded-lg px-3 py-2 text-xs font-semibold " + (state.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800")}>{state.message}</p>}
-      <button type="submit" disabled={pending || readOnly} className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
+      <button type="submit" disabled={pending || readOnly} className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-700 px-4 text-xs font-bold text-white hover:bg-brand-blue-800 disabled:opacity-60">
         {readOnly ? "Read-only preview" : pending ? "Creating departure…" : "Create shared departure"}
       </button>
     </form>
@@ -195,22 +197,22 @@ function DepartureCard({
 
   return (
     <article className="px-5 py-4">
-      <button type="button" onClick={() => setExpanded(!expanded)} className="flex w-full flex-wrap items-center justify-between gap-3 text-left">
+      <button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded} className="flex w-full flex-wrap items-center justify-between gap-3 text-left">
         <div className="min-w-[220px] flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-blue-700">{departure.reference}</span>
-            <span className={"rounded-full px-2.5 py-1 text-[10px] font-semibold " + statusStyle(departure.status)}>{human(departure.status)}</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-brand-blue-700">{departure.reference}</span>
+            <span className={"rounded-full px-2.5 py-1 text-xs font-semibold " + statusStyle(departure.status)}>{human(departure.status)}</span>
           </div>
           <p className="mt-1 text-sm font-bold text-slate-950">{departure.title}</p>
           <p className="mt-1 text-xs text-slate-500">{dateLabel(departure.departureDate)}{departure.returnDate ? " – " + dateLabel(departure.returnDate) : ""} · {departure.bookings.length} bookings · {departure.bookings.reduce((sum, booking) => sum + booking.travellers, 0)} travellers</p>
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span>{completeCount}/{departure.checklist.length} checklist items</span>
-          <span className="font-bold text-blue-700">{expanded ? "Close" : "Manage"}</span>
+          <span className="font-bold text-brand-blue-700">{expanded ? "Close" : "Manage"}</span>
         </div>
       </button>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-500">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{departure.meetingPoint || "Pickup not set"}</span>
         <span className="inline-flex items-center gap-1"><CarFront className="h-3.5 w-3.5" />{departure.vehicleType || "Vehicle not assigned"}</span>
         <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{departure.operationsLeadName || "No operations lead"}</span>
@@ -253,7 +255,7 @@ function DepartureCard({
             </label>
             <Field label="Operations briefing / notes"><textarea name="operationsNotes" rows={3} maxLength={3000} defaultValue={departure.operationsNotes} className={inputClass + " h-auto py-3"} /></Field>
             {state.message && <p aria-live="polite" className={"rounded-lg px-3 py-2 text-xs font-semibold " + (state.success ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800")}>{state.message}</p>}
-            <button type="submit" disabled={pending || readOnly} className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-blue-700 px-4 text-xs font-bold text-white hover:bg-blue-800 disabled:opacity-60">
+            <button type="submit" disabled={pending || readOnly} className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-blue-700 px-4 text-xs font-bold text-white hover:bg-brand-blue-800 disabled:opacity-60">
               {readOnly ? "Preview — saving disabled" : pending ? "Saving departure…" : "Save departure details"}
             </button>
           </form>
@@ -277,8 +279,8 @@ function DepartureCard({
               <div className="mt-3 space-y-2">
                 {departure.bookings.length ? departure.bookings.map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
-                    <div className="min-w-0"><p className="truncate text-xs font-semibold text-slate-800">{booking.travellerName}</p><p className="text-[10px] text-slate-500">{booking.reference} · {booking.travellers} travellers</p></div>
-                    <span className="shrink-0 text-[10px] font-semibold text-slate-500">{human(booking.paymentStatus)}</span>
+                    <div className="min-w-0"><p className="truncate text-xs font-semibold text-slate-800">{booking.travellerName}</p><p className="text-xs text-slate-500">{booking.reference} · {booking.travellers} travellers</p></div>
+                    <span className="shrink-0 text-xs font-semibold text-slate-500">{human(booking.paymentStatus)}</span>
                   </div>
                 )) : <p className="rounded-lg bg-white px-3 py-4 text-xs text-slate-500">No booking links are recorded for this departure.</p>}
               </div>
@@ -291,14 +293,11 @@ function DepartureCard({
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="block"><span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>{children}</label>;
+  return <label className="block"><span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>{children}</label>;
 }
 
-function Metric({ label, value, icon: Icon }: { label: string; value: number; icon: typeof CalendarDays }) {
-  return <div className="rounded-xl border border-slate-200 bg-white p-4"><div className="flex items-center justify-between"><p className="text-xs font-semibold text-slate-500">{label}</p><Icon className="h-4 w-4 text-slate-400" /></div><p className="mt-2 text-2xl font-bold text-slate-950">{value}</p></div>;
-}
 
-const inputClass = "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+const inputClass = "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100";
 
 /** One checklist tick, with its own saving state and error message. */
 function ChecklistItem({
@@ -333,4 +332,9 @@ function ChecklistItem({
       ) : null}
     </form>
   );
+}
+
+/** Page-level number, rendered with the shared admin StatCard. */
+function Metric({ label, value, icon }: { label: string; value: number | string; icon?: LucideIcon }) {
+  return <StatCard label={label} value={String(value)} icon={icon} />;
 }

@@ -22,15 +22,15 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeS
 function scoreColour(avg: number | null) {
   if (avg === null) return "bg-slate-300";
   if (avg >= 4.5) return "bg-emerald-500";
-  if (avg >= 3.5) return "bg-[#1A3A9C]";
+  if (avg >= 3.5) return "bg-brand-blue-600";
   if (avg >= 2.5) return "bg-amber-500";
   return "bg-red-500";
 }
 
 function Kpi({ icon: Icon, label, value, sub, tone = "blue" }: { icon: typeof Users; label: string; value: string; sub?: string; tone?: "blue" | "orange" | "green" }) {
-  const toneClass = tone === "orange" ? "bg-orange-50 text-[#c85f16]" : tone === "green" ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-[#1A3A9C]";
+  const toneClass = tone === "orange" ? "bg-brand-orange-50 text-brand-orange-700" : tone === "green" ? "bg-emerald-50 text-emerald-700" : "bg-brand-blue-50 text-brand-blue-600";
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-center gap-3">
         <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${toneClass}`}><Icon className="h-[18px] w-[18px]" /></span>
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</p>
@@ -84,7 +84,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
 
   if (!rows.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
         No feedback has been received yet. Share the feedback link with travellers after each trip.
       </div>
     );
@@ -131,7 +131,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         {/* Category scores */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-base font-bold text-slate-900">How each part of the trip scored</h2>
           <p className="mt-1 text-xs text-slate-500">Average out of 5</p>
           <ul className="mt-5 space-y-4">
@@ -148,9 +148,9 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
             ))}
           </ul>
           {stats.weakest && (
-            <div className="mt-6 flex gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4">
-              <Target className="mt-0.5 h-5 w-5 shrink-0 text-[#c85f16]" />
-              <p className="text-sm text-orange-900">
+            <div className="mt-6 flex gap-3 rounded-xl border border-brand-orange-200 bg-brand-orange-50 p-4">
+              <Target className="mt-0.5 h-5 w-5 shrink-0 text-brand-orange-700" />
+              <p className="text-sm text-brand-orange-900">
                 <strong>Focus next:</strong> {stats.weakest.label} is the lowest-scoring area ({stats.weakest.average} / 5).
                 Improving it will lift the overall experience the most.
               </p>
@@ -159,7 +159,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
         </section>
 
         {/* NPS breakdown */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-base font-bold text-slate-900">Would they recommend TransVista?</h2>
           <p className="mt-1 text-xs text-slate-500">Based on the 0–10 &ldquo;recommend to a friend&rdquo; score</p>
           <div className="mt-5 flex h-4 overflow-hidden rounded-full bg-slate-100">
@@ -189,9 +189,9 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
       </div>
 
       {/* Destination demand */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-[#c85f16]" />
+          <MapPin className="h-5 w-5 text-brand-orange-700" />
           <h2 className="text-base font-bold text-slate-900">Where travellers want to go next</h2>
         </div>
         <p className="mt-1 text-xs text-slate-500">From the &ldquo;What destination would you like next?&rdquo; answers. Use this to plan upcoming trips.</p>
@@ -204,7 +204,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
                 <li key={d.name} className="grid grid-cols-[1fr_auto] items-center gap-3 sm:grid-cols-[260px_1fr_auto]">
                   <span className="text-sm font-medium text-slate-700">{d.name}</span>
                   <div className="hidden h-2.5 overflow-hidden rounded-full bg-slate-100 sm:block">
-                    <div className="h-full rounded-full bg-[#F47B20]" style={{ width: `${(d.count / stats.demand.ranked[0].count) * 100}%` }} />
+                    <div className="h-full rounded-full bg-brand-orange-600" style={{ width: `${(d.count / stats.demand.ranked[0].count) * 100}%` }} />
                   </div>
                   <span className="text-sm font-semibold text-slate-900">{d.count}</span>
                 </li>
@@ -234,7 +234,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
               ["promoters", `Promoters (${n.promoters})`],
             ] as const).map(([key, label]) => (
               <button key={key} type="button" onClick={() => setFilter(key)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filter === key ? "bg-[#111c36] text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filter === key ? "bg-brand-blue-950 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
                 {label}
               </button>
             ))}
@@ -247,17 +247,17 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
         </div>
 
         {visible.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No responses match.</p>
+          <p className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">No responses match.</p>
         ) : (
           <ul className="mt-4 space-y-4">
             {visible.map((r) => (
-              <li key={r.id} className={`rounded-2xl border bg-white p-5 shadow-sm sm:p-6 ${needsAttention(r) ? "border-red-200" : "border-slate-200"}`}>
+              <li key={r.id} className={`rounded-xl border bg-white p-5 shadow-sm sm:p-6 ${needsAttention(r) ? "border-red-200" : "border-slate-200"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="flex items-center gap-2 font-semibold text-slate-900">
                       {r.full_name}
                       {needsAttention(r) && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">
                           <AlertTriangle className="h-3 w-3" /> Follow up
                         </span>
                       )}
@@ -266,7 +266,7 @@ export default function FeedbackDashboard({ rows, events }: { rows: FeedbackRow[
                     {eventSlug === "all" && <p className="text-xs text-slate-500">{r.event_title}</p>}
                   </div>
                   <div className="flex gap-2">
-                    <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-[#c85f16]">{r.overall_rating} / 5</span>
+                    <span className="rounded-full bg-brand-orange-50 px-3 py-1 text-sm font-semibold text-brand-orange-700">{r.overall_rating} / 5</span>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">{r.recommendation_score} / 10</span>
                   </div>
                 </div>

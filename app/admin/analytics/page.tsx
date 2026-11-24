@@ -54,13 +54,13 @@ export default async function AdminAnalyticsPage({
   return <div className="mx-auto max-w-7xl">
     <PageHeader icon={BarChart3} title="Reports" description="Understand booking performance, payment position, trip demand and team workload using TransVista's recorded data." />
 
-    <form method="get" action="/admin/analytics" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+    <form method="get" action="/admin/analytics" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4">
       <div><p className="text-sm font-bold text-slate-900">Reporting period</p><p className="mt-1 text-xs text-slate-500">Booking and operational metrics use the selected booking creation date range.</p></div>
       <div className="flex items-center gap-2">
         <select name="range" defaultValue={selectedRange.value} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700">
           {rangeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
-        <button type="submit" className="h-10 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white hover:bg-blue-800">Apply</button>
+        <button type="submit" className="h-10 rounded-xl bg-brand-blue-700 px-4 text-sm font-bold text-white hover:bg-brand-blue-800">Apply</button>
       </div>
     </form>
 
@@ -103,7 +103,7 @@ export default async function AdminAnalyticsPage({
         {business.currencies.length ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[540px] text-left text-sm">
-              <thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400"><th className="pb-3">Currency</th><th className="pb-3 text-right">Quoted</th><th className="pb-3 text-right">Received</th><th className="pb-3 text-right">Outstanding</th><th className="pb-3 text-right">Bookings</th></tr></thead>
+              <thead><tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400"><th className="pb-3">Currency</th><th className="pb-3 text-right">Quoted</th><th className="pb-3 text-right">Received</th><th className="pb-3 text-right">Outstanding</th><th className="pb-3 text-right">Bookings</th></tr></thead>
               <tbody>{business.currencies.map((item) => <tr key={item.currency} className="border-b border-slate-50 last:border-0"><td className="py-3 font-bold text-slate-800">{item.currency}</td><td className="py-3 text-right text-slate-600">{money(item.currency,item.quoted)}</td><td className="py-3 text-right font-semibold text-emerald-700">{money(item.currency,item.received)}</td><td className="py-3 text-right font-semibold text-amber-700">{money(item.currency,item.outstanding)}</td><td className="py-3 text-right text-slate-600">{item.bookings}</td></tr>)}</tbody>
             </table>
           </div>
@@ -124,7 +124,7 @@ export default async function AdminAnalyticsPage({
         {business.paymentReconciliation.length ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400">
+              <thead><tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
                 <th className="pb-3">Currency</th><th className="pb-3 text-right">Booking records</th><th className="pb-3 text-right">Verified ledger</th><th className="pb-3 text-right">New payments</th><th className="pb-3 text-right">Opening balances</th><th className="pb-3 text-right">Adjustment deductions</th><th className="pb-3 text-right">Difference</th>
               </tr></thead>
               <tbody>{business.paymentReconciliation.map((item) => <tr key={item.currency} className="border-b border-slate-50 last:border-0">
@@ -144,7 +144,7 @@ export default async function AdminAnalyticsPage({
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[580px] text-left text-xs">
                     <thead><tr className="border-b border-slate-100 uppercase tracking-wide text-slate-400"><th className="pb-2">Booking reference</th><th className="pb-2 text-right">Booking record</th><th className="pb-2 text-right">Verified ledger</th><th className="pb-2 text-right">Difference</th></tr></thead>
-                    <tbody>{business.paymentMismatches.map((item) => <tr key={item.reference} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-blue-700">{item.reference}<span className="ml-2 font-normal text-slate-400">{item.ledgerEntries} ledger entries</span></td><td className="py-3 text-right text-slate-600">{money(item.currency,item.bookingAmountPaid)}</td><td className="py-3 text-right text-slate-600">{money(item.currency,item.verifiedLedgerTotal)}</td><td className="py-3 text-right font-bold text-amber-700">{money(item.currency,item.difference)}</td></tr>)}</tbody>
+                    <tbody>{business.paymentMismatches.map((item) => <tr key={item.reference} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-brand-blue-700">{item.reference}<span className="ml-2 font-normal text-slate-400">{item.ledgerEntries} ledger entries</span></td><td className="py-3 text-right text-slate-600">{money(item.currency,item.bookingAmountPaid)}</td><td className="py-3 text-right text-slate-600">{money(item.currency,item.verifiedLedgerTotal)}</td><td className="py-3 text-right font-bold text-amber-700">{money(item.currency,item.difference)}</td></tr>)}</tbody>
                   </table>
                 </div>
               ) : <p className="rounded-lg bg-emerald-50 px-3 py-3 text-xs font-medium text-emerald-800">No booking-to-ledger differences were found in this period.</p>}
@@ -156,7 +156,7 @@ export default async function AdminAnalyticsPage({
 
     <section className="mb-10">
       <ChartCard title="Team workload" subtitle="Booking ownership and confirmed bookings in the selected period">
-        {business.teamWorkload.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead><tr className="border-b border-slate-100 text-[10px] uppercase tracking-wide text-slate-400"><th className="pb-3">Team member</th><th className="pb-3 text-right">Bookings</th><th className="pb-3 text-right">Confirmed</th></tr></thead><tbody>{business.teamWorkload.map((item) => <tr key={item.name} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-slate-800">{item.name}</td><td className="py-3 text-right text-slate-600">{item.bookings}</td><td className="py-3 text-right text-slate-600">{item.confirmedBookings}</td></tr>)}</tbody></table></div> : <p className="py-10 text-center text-sm text-slate-400">No booking ownership data is available.</p>}
+        {business.teamWorkload.length ? <div className="overflow-x-auto"><table className="w-full min-w-[420px] text-left text-sm"><thead><tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400"><th className="pb-3">Team member</th><th className="pb-3 text-right">Bookings</th><th className="pb-3 text-right">Confirmed</th></tr></thead><tbody>{business.teamWorkload.map((item) => <tr key={item.name} className="border-b border-slate-50 last:border-0"><td className="py-3 font-semibold text-slate-800">{item.name}</td><td className="py-3 text-right text-slate-600">{item.bookings}</td><td className="py-3 text-right text-slate-600">{item.confirmedBookings}</td></tr>)}</tbody></table></div> : <p className="py-10 text-center text-sm text-slate-400">No booking ownership data is available.</p>}
       </ChartCard>
     </section>
 
