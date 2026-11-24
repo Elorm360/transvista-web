@@ -179,6 +179,22 @@ export default function AdminShell({ roleLabel, areas, children, unreadCount = 0
         </nav>
 
         <div className="space-y-0.5 border-t border-white/10 px-3 py-3">
+          {/* Everyone's own profile, password, photo, two-step sign-in and appearance. */}
+          <Link
+            href="/admin/account"
+            onClick={() => setSidebarOpen(false)}
+            aria-current={isActive(pathname, "/admin/account") ? "page" : undefined}
+            className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+              isActive(pathname, "/admin/account") ? "bg-white/[0.12] text-white" : "text-brand-blue-100/70 hover:bg-white/[0.06] hover:text-white"
+            }`}
+          >
+            {isActive(pathname, "/admin/account") && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-brand-orange-500" />}
+            <Avatar name={me.name} path={me.avatarPath} size="sm" className="-ml-1 ring-1 ring-white/20" />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-sm font-medium">My account</span>
+              <span className="block truncate text-xs text-brand-blue-200/60">{me.name}</span>
+            </span>
+          </Link>
           {canSeeSettings && navLink(settingsItem)}
           <form action={signOut}>
             <button type="submit" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-brand-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400">
