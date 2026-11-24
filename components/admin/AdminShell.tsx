@@ -131,7 +131,7 @@ export default function AdminShell({ roleLabel, areas, children, unreadCount = 0
         href={item.href}
         onClick={() => setSidebarOpen(false)}
         aria-current={active ? "page" : undefined}
-        className={`group relative flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+        className={`group relative flex items-center gap-3 rounded-lg px-3 py-[5px] text-sm font-medium transition-colors ${
           active ? "bg-white/[0.12] text-white" : "text-brand-blue-100/70 hover:bg-white/[0.06] hover:text-white"
         }`}
       >
@@ -167,7 +167,7 @@ export default function AdminShell({ roleLabel, areas, children, unreadCount = 0
           </button>
         </div>
 
-        <nav className="sidebar-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pb-2 pl-3 pr-1.5" aria-label="Primary">
+        <nav className="sidebar-scroll min-h-0 flex-1 space-y-2.5 overflow-y-auto pb-2 pl-3 pr-1.5" aria-label="Primary">
           {visibleSections.map((section) => (
             <div key={section.title ?? "home"}>
               {section.title && (
@@ -178,36 +178,33 @@ export default function AdminShell({ roleLabel, areas, children, unreadCount = 0
           ))}
         </nav>
 
-        <div className="shrink-0 space-y-1 border-t border-white/10 px-3 py-2.5">
+        <div className="shrink-0 space-y-0.5 border-t border-white/10 px-3 py-2">
           {canSeeSettings && navLink(settingsItem)}
-          {/* Everyone's own profile, password, photo, two-step sign-in and appearance, with sign out beside it. */}
-          <div className="flex items-center gap-1">
-            <Link
-              href="/admin/account"
-              onClick={() => setSidebarOpen(false)}
-              aria-current={isActive(pathname, "/admin/account") ? "page" : undefined}
-              className={`group relative flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-1.5 transition-colors ${
-                isActive(pathname, "/admin/account") ? "bg-white/[0.12] text-white" : "text-brand-blue-100/70 hover:bg-white/[0.06] hover:text-white"
-              }`}
+          {/* Everyone's own profile, password, photo, two-step sign-in and appearance. */}
+          <Link
+            href="/admin/account"
+            onClick={() => setSidebarOpen(false)}
+            aria-current={isActive(pathname, "/admin/account") ? "page" : undefined}
+            className={`group relative flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors ${
+              isActive(pathname, "/admin/account") ? "bg-white/[0.12] text-white" : "text-brand-blue-100/70 hover:bg-white/[0.06] hover:text-white"
+            }`}
+          >
+            {isActive(pathname, "/admin/account") && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-brand-orange-500" />}
+            <Avatar name={me.name} path={me.avatarPath} size="sm" className="-ml-1 ring-1 ring-white/20" />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-sm font-medium">My account</span>
+              <span className="block truncate text-xs text-brand-blue-200/60">{me.name}</span>
+            </span>
+          </Link>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium text-brand-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400"
             >
-              {isActive(pathname, "/admin/account") && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-brand-orange-500" />}
-              <Avatar name={me.name} path={me.avatarPath} size="sm" className="-ml-1 ring-1 ring-white/20" />
-              <span className="min-w-0 leading-tight">
-                <span className="block text-sm font-medium">My account</span>
-                <span className="block truncate text-xs text-brand-blue-200/60">{me.name}</span>
-              </span>
-            </Link>
-            <form action={signOut}>
-              <button
-                type="submit"
-                title="Sign out"
-                aria-label="Sign out"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-brand-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400"
-              >
-                <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
-              </button>
-            </form>
-          </div>
+              <LogOut className="h-[18px] w-[18px] shrink-0 text-brand-blue-200/60" aria-hidden="true" />
+              Sign out
+            </button>
+          </form>
         </div>
       </aside>
 
