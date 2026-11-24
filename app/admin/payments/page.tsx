@@ -11,22 +11,31 @@ export const dynamic = "force-dynamic";
 export default async function AdminPaymentsPage() {
   const { role } = await requireAdminArea("payments");
   const supabase = await createClient();
-  const [{data:transactions,error}, {data:bookings}] = await Promise.all([
+  const [{data:transactions,error}, {data:ledger,error:ledgerError}, {data:bookings}] = await Promise.all([
+    // The table shows the latest 200 entries...
     supabase.from("package_payment_transactions").select("id,receipt_number,booking_reference,amount,currency,payment_method,payment_date,status,transaction_type,notes").order("payment_date",{ascending:false}).limit(200),
-    supabase.from("package_reservations").select("id,reference,full_name,email,travellers,total_price,amount_paid,currency").order("created_at",{ascending:false}).limit(200),
+    // ...but the totals are computed from every entry, not just the ones shown.
+    supabase.from("package_payment_transactions").select("amount,currency,status,transaction_type"),
+    supabase.from("package_reservations").select("id,reference,full_name,email,travellers,total_price,amount_paid,currency,status,archived_at").order("created_at",{ascending:false}),
   ]);
   if (error) console.error("[AdminPaymentsPage]",error);
+  if (ledgerError) console.error("[AdminPaymentsPage] totals",ledgerError);
   const bookingMap = new Map((bookings ?? []).map((b)=>[b.reference,b]));
-  const verified = (transactions ?? []).filter(t=>t.status==="verified");
-  const total = verified.filter(t=>t.currency==="GHS").reduce((sum,t)=>sum+(t.transaction_type==="adjustment" ? -Number(t.amount) : ["payment","opening_balance"].includes(t.transaction_type) ? Number(t.amount) : 0),0);
-  const bookingOptions=(bookings ?? []).map(b=>({id:b.id,reference:b.reference,name:b.full_name,travellers:b.travellers,total:Number(b.total_price),paid:Number(b.amount_paid),currency:b.currency}));
+  const verifiedAll = (ledger ?? []).filter(t=>t.status==="verified");
+  const signedAmount = (t:{amount:number|string;transaction_type:string}) =>
+    ["payment","opening_balance"].includes(t.transaction_type) ? Number(t.amount)
+    : ["adjustment","refund"].includes(t.transaction_type) ? -Number(t.amount)
+    : 0;
+  const total = verifiedAll.filter(t=>t.currency==="GHS").reduce((sum,t)=>sum+signedAmount(t),0);
+  // Payments can only be recorded against live bookings.
+  const bookingOptions=(bookings ?? []).filter(b=>!b.archived_at && b.status!=="cancelled").map(b=>({id:b.id,reference:b.reference,name:b.full_name,travellers:b.travellers,total:Number(b.total_price),paid:Number(b.amount_paid),currency:b.currency}));
 
   return <div className="mx-auto max-w-[1500px]">
     <PageHeader icon={CreditCard} title="Payments & receipts" description="Record verified payments, correct mistakes transparently and keep a complete history for group bookings." />
     <div className="mb-6 grid gap-4 sm:grid-cols-3">
-      <Metric label="Transactions shown" value={String(transactions?.length ?? 0)} />
-      <Metric label="Verified entries" value={verified.length.toString()} />
-      <Metric label="Net verified received (GHS)" value={new Intl.NumberFormat("en-GH",{style:"currency",currency:"GHS"}).format(total)} />
+      <Metric label="Ledger entries" value={String(ledger?.length ?? transactions?.length ?? 0)} />
+      <Metric label="Verified entries" value={verifiedAll.length.toString()} />
+      <Metric label="Net verified received (GHS)" value={ledgerError ? "—" : new Intl.NumberFormat("en-GH",{style:"currency",currency:"GHS"}).format(total)} />
     </div>
     {["owner","admin","support"].includes(role) ? <RecordPaymentForm bookings={bookingOptions} /> : null}
     {["owner","admin"].includes(role) ? <PaymentAdjustmentForm bookings={bookingOptions} /> : null}
@@ -46,7 +55,7 @@ export default async function AdminPaymentsPage() {
               <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${correction?"bg-amber-100 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{correction?"adjusted":t.status}</span></td>
               <td className="px-4 py-4 text-right">{!correction && t.transaction_type!=="refund" ? <Link className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50" href={`/admin/payments/${t.id}/receipt`}><FileText className="h-4 w-4"/> View receipt</Link> : <span className="text-xs text-slate-400">Internal record</span>}</td>
             </tr>})}
-            {!transactions?.length && <tr><td colSpan={8} className="px-4 py-12 text-center text-slate-500">No payment transactions found.</td></tr>}
+            {!transactions?.length && <tr><td colSpan={8} className="px-4 py-12 text-center text-slate-500">{error ? "Payments could not be loaded. Refresh the page to try again." : "No payment transactions found."}</td></tr>}
           </tbody>
         </table>
       </div>

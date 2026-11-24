@@ -6,123 +6,84 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
+import { canAccess } from "@/lib/auth/permissions";
+import { loadTravelRequests, type TravelRequestRecord } from "@/lib/dashboard/getTravelRequests";
+import { attentionReasons, balanceDue, bookingTotals, RESPONSE_WINDOW_MS } from "@/lib/admin/bookingHealth";
 
 export const dynamic = "force-dynamic";
 const money = (amount: number) => new Intl.NumberFormat("en-GH", { style: "currency", currency: "GHS", maximumFractionDigits: 2 }).format(amount);
 
-type RecentBooking = { id: number; reference: string; full_name: string; description: string; amount_paid: number | string | null; currency: string; status: string; created_at: string; kind: "group" | "custom" };
+type RecentBooking = { id: string; reference: string; full_name: string; description: string; amount_paid: number; currency: string; status: string; created_at: string };
 type LeadRow = { id: number; full_name: string; interest: string | null; created_at: string };
-type SummaryRow = { total_requests: number; attention_requests: number; ghs_received: number | string; ghs_outstanding: number | string };
-type ActionSource = {
-  id: number; reference: string; full_name: string; description: string; status: string;
-  assigned_to: string | null; priority: string | null; created_at: string;
-  follow_up_at: string | null; payment_due_at: string | null;
-  amount_paid: number | string | null; quoted_amount: number | string | null;
-  total_price?: number | string | null; currency: string; kind: "group" | "custom";
-};
 type ActionItem = {
   key: string; reference: string; name: string; description: string; reason: string;
   href: string; severity: "urgent" | "attention" | "normal"; dueAt: string;
   action: string; icon: typeof AlertTriangle;
 };
+type ActionSummary = { urgent: number; paymentOverdue: number; unassigned: number; total: number };
 
-function buildActionItems(rows: ActionSource[], now: Date): ActionItem[] {
+const ACTION_LIMIT = 8;
+
+/** One queue entry per reason a booking needs attention (rules live in lib/admin/bookingHealth). */
+function buildActionItems(records: TravelRequestRecord[], now: Date): { items: ActionItem[]; summary: ActionSummary } {
   const items: ActionItem[] = [];
   const nowMs = now.getTime();
-  const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Africa/Accra", year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(now);
-  const terminal = new Set(["cancelled", "canceled", "rejected", "completed", "archived"]);
 
-  for (const row of rows) {
-    const status = (row.status ?? "").toLowerCase();
-    if (terminal.has(status)) continue;
-    const base = { reference: row.reference, name: row.full_name, description: row.description };
-    const ageMs = nowMs - new Date(row.created_at).getTime();
-    const olderThanSla = Number.isFinite(ageMs) && ageMs > 48 * 60 * 60 * 1000;
+  for (const r of records) {
+    const reasons = attentionReasons(r, now);
+    if (!reasons.length) continue;
+    const base = { reference: r.reference, name: r.fullName, description: r.summary, href: `/admin/requests?open=${encodeURIComponent(r.id)}` };
+    const pastWindow = nowMs - new Date(r.createdAt).getTime() > RESPONSE_WINDOW_MS;
 
-    if (!row.assigned_to) {
-      items.push({
-        ...base, key: `${row.kind}-${row.id}-assign`,
-        reason: olderThanSla ? "Unassigned · response window exceeded" : "Waiting for a team owner",
-        href: "/admin/requests", severity: olderThanSla ? "urgent" : "normal",
-        dueAt: row.created_at, action: "Assign request", icon: UserRoundPlus,
-      });
-    } else if (olderThanSla && ["new", "pending", "submitted", "request_received"].includes(status)) {
-      items.push({
-        ...base, key: `${row.kind}-${row.id}-sla`,
-        reason: "Still awaiting a response after 48 hours",
-        href: "/admin/requests", severity: "urgent", dueAt: row.created_at,
-        action: "Review request", icon: BellRing,
-      });
-    }
-
-    if (row.follow_up_at && new Date(row.follow_up_at).getTime() < nowMs) {
-      items.push({
-        ...base, key: `${row.kind}-${row.id}-followup`,
-        reason: "Scheduled follow-up is overdue",
-        href: "/admin/requests", severity: "urgent", dueAt: row.follow_up_at,
-        action: "Follow up", icon: CalendarClock,
-      });
-    }
-
-    const total = Number(row.quoted_amount ?? row.total_price ?? 0);
-    const paid = Number(row.amount_paid ?? 0);
-    if (row.payment_due_at && row.payment_due_at < today && total > paid) {
-      items.push({
-        ...base, key: `${row.kind}-${row.id}-payment`,
-        reason: `Payment deadline passed · ${row.currency} ${(total - paid).toFixed(2)} outstanding`,
-        href: "/admin/payments", severity: "attention", dueAt: row.payment_due_at,
-        action: "Review payment", icon: CreditCard,
-      });
+    for (const reason of reasons) {
+      if (reason === "unassigned") {
+        items.push({ ...base, key: `${r.id}-assign`, reason: pastWindow ? "Unassigned · response window exceeded" : "Waiting for a team owner", severity: pastWindow ? "urgent" : "normal", dueAt: r.createdAt, action: "Assign request", icon: UserRoundPlus });
+      } else if (reason === "no-response") {
+        items.push({ ...base, key: `${r.id}-sla`, reason: "Still awaiting a response after 48 hours", severity: "urgent", dueAt: r.createdAt, action: "Review request", icon: BellRing });
+      } else if (reason === "follow-up-overdue") {
+        items.push({ ...base, key: `${r.id}-followup`, reason: "Scheduled follow-up is overdue", severity: "urgent", dueAt: r.followUpAt ?? r.createdAt, action: "Follow up", icon: CalendarClock });
+      } else if (reason === "payment-overdue") {
+        items.push({ ...base, key: `${r.id}-payment`, reason: `Payment deadline passed · ${r.quoteCurrency ?? "GHS"} ${balanceDue(r).toFixed(2)} outstanding`, severity: "attention", dueAt: r.paymentDueAt ?? r.createdAt, action: "Review payment", icon: CreditCard });
+      }
     }
   }
 
+  // Count from the full list, before trimming to what fits on screen.
+  const summary: ActionSummary = {
+    urgent: items.filter((i) => i.severity === "urgent").length,
+    paymentOverdue: items.filter((i) => i.key.endsWith("-payment")).length,
+    unassigned: items.filter((i) => i.key.endsWith("-assign")).length,
+    total: items.length,
+  };
+
   const rank = { urgent: 0, attention: 1, normal: 2 };
-  return items.sort((a, b) => rank[a.severity] - rank[b.severity] || new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()).slice(0, 8);
+  items.sort((a, b) => rank[a.severity] - rank[b.severity] || new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
+  return { items: items.slice(0, ACTION_LIMIT), summary };
 }
 
 export default async function AdminDashboardPage() {
   const { role } = await requireAdminArea("dashboard");
-  const canSeeOperations = ["owner", "admin", "support"].includes(role);
-  const canSeeCommunity = ["owner", "admin", "community_manager"].includes(role);
+  const canSeeOperations = canAccess(role, "requests");
+  const canSeeCommunity = canAccess(role, "community");
+  const canSeeAnalytics = canAccess(role, "analytics");
   const supabase = await createClient();
-  let totals: SummaryRow | null = null;
-  let summaryError = false;
+  let totals: ReturnType<typeof bookingTotals> | null = null;
   let latest: RecentBooking[] = [];
   let recentLeads: LeadRow[] = [];
   let actionItems: ActionItem[] = [];
-  let actionLoadError = false;
+  let actionSummary: ActionSummary = { urgent: 0, paymentOverdue: 0, unassigned: 0, total: 0 };
+  let loadError = false;
 
   if (canSeeOperations) {
-    const [summary, packages, custom] = await Promise.all([
-      supabase.rpc("get_admin_operations_summary"),
-      supabase.from("package_reservations").select("id,reference,full_name,package_title,travellers,amount_paid,currency,status,created_at,assigned_to,priority,follow_up_at,payment_due_at,quoted_amount,total_price").is("archived_at", null).order("created_at", { ascending: false }).limit(250),
-      supabase.from("trip_requests").select("id,reference,full_name,destinations,amount_paid,quote_currency,budget_currency,status,created_at,assigned_to,priority,follow_up_at,payment_due_at,quoted_amount").is("archived_at", null).order("created_at", { ascending: false }).limit(250),
-    ]);
-    if (summary.error) { summaryError = true; console.error("[AdminDashboard] Summary unavailable:", summary.error); }
-    totals = (summary.data?.[0] as SummaryRow | undefined) ?? null;
-    if (packages.error || custom.error) {
-      actionLoadError = true;
-      console.error("[AdminDashboard] Action centre records unavailable:", packages.error ?? custom.error);
-    }
-    const packageRows: ActionSource[] = (packages.data ?? []).map((b) => ({
-      id: b.id, reference: b.reference, full_name: b.full_name, description: b.package_title ?? "Group trip",
-      status: b.status, assigned_to: b.assigned_to, priority: b.priority, created_at: b.created_at,
-      follow_up_at: b.follow_up_at, payment_due_at: b.payment_due_at, amount_paid: b.amount_paid,
-      quoted_amount: b.quoted_amount, total_price: b.total_price, currency: b.currency ?? "GHS", kind: "group",
-    }));
-    const customRows: ActionSource[] = (custom.data ?? []).map((b) => ({
-      id: b.id, reference: b.reference, full_name: b.full_name, description: (b.destinations ?? []).join(", ") || "Custom trip",
-      status: b.status, assigned_to: b.assigned_to, priority: b.priority, created_at: b.created_at,
-      follow_up_at: b.follow_up_at, payment_due_at: b.payment_due_at, amount_paid: b.amount_paid,
-      quoted_amount: b.quoted_amount, currency: b.quote_currency ?? b.budget_currency ?? "GHS", kind: "custom",
-    }));
-    const actionSources = [...packageRows, ...customRows];
-    actionItems = buildActionItems(actionSources, new Date());
-    latest = actionSources
-      .map((b) => ({ id: b.id, reference: b.reference, full_name: b.full_name, description: b.description, amount_paid: b.amount_paid, currency: b.currency, status: b.status, created_at: b.created_at, kind: b.kind }))
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
+    const now = new Date();
+    const { requests, loadError: failed } = await loadTravelRequests();
+    loadError = failed;
+    if (!failed) totals = bookingTotals(requests, now);
+    ({ items: actionItems, summary: actionSummary } = buildActionItems(requests, now));
+    latest = requests
+      .filter((r) => !r.archivedAt)
+      .slice(0, 6)
+      .map((r) => ({ id: r.id, reference: r.reference, full_name: r.fullName, description: r.summary, amount_paid: r.amountPaid, currency: r.quoteCurrency ?? "GHS", status: r.status, created_at: r.createdAt }));
   }
 
   if (canSeeCommunity) {
@@ -151,16 +112,17 @@ export default async function AdminDashboardPage() {
     </section>
 
     {canSeeOperations ? <>
-      {summaryError && <div role="status" className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />Some dashboard totals are temporarily unavailable. Open the relevant workspace to review the full records.</div>}
+      {loadError && <div role="status" className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />Bookings could not be loaded right now, so these totals are unavailable. Refresh the page, or open Booking requests to try again.</div>}
+      {totals && totals.stalePastTrips > 0 && <Link href="/admin/requests?view=past-open" className="mb-5 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"><CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" /><span><strong className="font-semibold text-slate-900">{totals.stalePastTrips} booking{totals.stalePastTrips === 1 ? " is" : "s are"} still open for trips that have already happened.</strong> Mark them completed or cancelled so they stop affecting your numbers. <span className="font-semibold text-brand-blue-700">Review them →</span></span></Link>}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-        <Metric label="Booking requests" value={String(totals?.total_requests ?? "—")} hint="All submitted requests" icon={ClipboardList} tone="blue" />
-        <Metric label="Needs attention" value={String(totals?.attention_requests ?? "—")} hint="Requests requiring a team action" icon={Clock3} tone="orange" />
-        <Metric label="Payments received" value={totals ? money(Number(totals.ghs_received)) : "—"} hint="Recorded in Ghana cedis" icon={Wallet} tone="green" />
-        <Metric label="Outstanding balance" value={totals ? money(Number(totals.ghs_outstanding)) : "—"} hint="Across tracked bookings" icon={CreditCard} tone="violet" />
+        <Metric label="Active bookings" value={String(totals?.active ?? "—")} hint="Not archived" icon={ClipboardList} tone="blue" />
+        <Metric label="Needs attention" value={String(totals?.needsAttention ?? "—")} hint="Upcoming bookings with an open task" icon={Clock3} tone="orange" />
+        <Metric label="Payments received" value={totals ? money(totals.receivedGhs) : "—"} hint="Recorded on bookings, in Ghana cedis" icon={Wallet} tone="green" />
+        <Metric label="Outstanding balance" value={totals ? money(totals.outstandingGhs) : "—"} hint="Still owed on upcoming bookings" icon={CreditCard} tone="violet" />
       </div>
     </> : null}
 
-    {canSeeOperations && <ActionCentre items={actionItems} loadError={actionLoadError} />}
+    {canSeeOperations && <ActionCentre items={actionItems} summary={actionSummary} loadError={loadError} />}
 
     <div className={canSeeOperations ? "grid gap-6 2xl:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.85fr)]" : "grid gap-6"}>
       {canSeeOperations ? <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
@@ -169,7 +131,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/requests" className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-[#1a3a9c] transition hover:bg-blue-50">View all requests <ArrowUpRight className="h-3.5 w-3.5" /></Link>
         </div>
         <div className="divide-y divide-slate-100">
-          {latest.map((b) => <div key={b.kind + "-" + b.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50/70 sm:px-6">
+          {latest.map((b) => <div key={b.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50/70 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1a3a9c]"><Compass className="h-[18px] w-[18px]" /></div>
               <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-900">{b.full_name}</p><p className="mt-1 truncate text-xs text-slate-500">{b.reference} <span className="px-1 text-slate-300">·</span> {b.description}</p></div>
@@ -190,7 +152,7 @@ export default async function AdminDashboardPage() {
           <div className="space-y-2">
             {canSeeOperations && <><QuickLink href="/admin/requests" title="Booking operations" detail="Review requests, assign and follow up" icon={ClipboardList} /><QuickLink href="/admin/payments" title="Payments & receipts" detail="Record payments and review balances" icon={CreditCard} /></>}
             {canSeeCommunity && <QuickLink href="/admin/community" title="Community members" detail="Manage traveller sign-ups and interests" icon={Users} />}
-            <QuickLink href="/admin/analytics" title="Performance insights" detail="Explore growth and operational metrics" icon={LayoutDashboard} />
+            {canSeeAnalytics && <QuickLink href="/admin/analytics" title="Performance insights" detail="Explore growth and operational metrics" icon={LayoutDashboard} />}
           </div>
         </div>
 
@@ -229,10 +191,8 @@ function QuickLink({ href, title, detail, icon: Icon }: { href: string; title: s
 }
 
 
-function ActionCentre({ items, loadError }: { items: ActionItem[]; loadError: boolean }) {
-  const urgent = items.filter((item) => item.severity === "urgent").length;
-  const attention = items.filter((item) => item.severity === "attention").length;
-  const unassigned = items.filter((item) => item.key.endsWith("-assign")).length;
+function ActionCentre({ items, summary, loadError }: { items: ActionItem[]; summary: ActionSummary; loadError: boolean }) {
+  const { urgent, paymentOverdue: attention, unassigned } = summary;
   return <section className="mb-8 overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.025]">
     <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
       <div><div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-50 text-[#c85f16]"><ClipboardList className="h-4 w-4" /></span><h3 className="text-[15px] font-bold tracking-tight text-slate-950">Team action queue</h3></div><p className="mt-2 text-xs text-slate-500">A live queue of requests and follow-ups that may need your team’s attention.</p></div>
@@ -254,7 +214,7 @@ function ActionCentre({ items, loadError }: { items: ActionItem[]; loadError: bo
         </div>;
       })}
     </div> : <div className="px-6 py-10 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700"><BadgeCheck className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-slate-800">You’re all caught up</p><p className="mt-1 text-xs text-slate-400">No unassigned requests, overdue follow-ups or missed payment deadlines were found.</p></div>}
-    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 sm:px-6"><p className="text-[10px] text-slate-400">Based on live booking records and scheduled deadlines.</p><p className="text-[10px] font-medium text-slate-500">Showing up to 8 priority items</p></div>
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3 sm:px-6"><p className="text-[10px] text-slate-400">Based on live booking records and scheduled deadlines.</p><p className="text-[10px] font-medium text-slate-500">{summary.total > items.length ? `Showing the ${items.length} most urgent of ${summary.total} items` : `${summary.total} item${summary.total === 1 ? "" : "s"}`}</p></div>
   </section>;
 }
 

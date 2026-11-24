@@ -28,7 +28,8 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
 
   if (error) {
     console.error("[getTeamMembers] Supabase error:", error);
-    return [];
+    // Throw so app/admin/error.tsx shows an error instead of an empty list.
+    throw new Error("Team members could not be loaded.");
   }
 
   return (data ?? []).map((row) => ({

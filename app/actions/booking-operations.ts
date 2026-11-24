@@ -106,7 +106,9 @@ export async function updateBookingOperation(
     if (!(priorities as readonly string[]).includes(priority)) {
       return { success: false, message: "Choose a valid priority." };
     }
-    if (!(paymentStatuses as readonly string[]).includes(paymentStatus)) {
+    // Group-trip payments are recorded in the payment ledger (Payments page),
+    // so payment fields are only accepted for custom trips.
+    if (kind === "custom" && !(paymentStatuses as readonly string[]).includes(paymentStatus)) {
       return { success: false, message: "Choose a valid payment status." };
     }
     if (
@@ -199,6 +201,13 @@ export async function updateBookingOperation(
       return { success: false, message: "This request could not be loaded." };
     }
 
+    // What the traveller is told must match what is actually stored. For group
+    // trips the form never changes payment, so use the recorded values.
+    const recordedPaymentStatus = kind === "custom" ? paymentStatus : String(current.payment_status ?? "");
+    const recordedAmountPaid = kind === "custom"
+      ? amountPaid ?? Number(current.amount_paid ?? 0)
+      : Number(current.amount_paid ?? 0);
+
     const paymentIsVerified = [
       "deposit-paid",
       "paid",
@@ -251,7 +260,7 @@ export async function updateBookingOperation(
       ? "note"
       : current.status !== status
         ? "status"
-        : current.payment_status !== paymentStatus
+        : kind === "custom" && current.payment_status !== paymentStatus
           ? "payment"
           : current.assigned_to !== assignedTo
             ? "assignment"
@@ -289,8 +298,8 @@ export async function updateBookingOperation(
           email: current.email,
           reference: current.reference,
           status: label(status),
-          paymentStatus: label(paymentStatus),
-          amountPaid: amountPaid ?? Number(current.amount_paid ?? 0),
+          paymentStatus: label(recordedPaymentStatus),
+          amountPaid: recordedAmountPaid,
           currency: quoteCurrency ?? "GHS",
           note: note || undefined,
         });

@@ -19,6 +19,7 @@ import {
   reactivateTeamMember,
   updateTeamMemberDetails,
 } from "@/app/actions/team-members";
+import { unwrapActionResult } from "@/lib/actions/result";
 import type { TeamMember } from "@/lib/dashboard/getTeamMembers";
 
 interface TeamMembersTableProps {
@@ -57,6 +58,8 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [deleteTarget, setDeleteTarget] = useState<TeamMember | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  // Errors from the inline Reactivate button (not shown inside the remove dialog).
+  const [statusError, setStatusError] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState<"admin" | "community_manager" | "support">("support");
@@ -80,11 +83,13 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
     setIsInviting(true);
 
     try {
-      await inviteTeamMember({
-        fullName,
-        email,
-        role,
-      });
+      unwrapActionResult(
+        await inviteTeamMember({
+          fullName,
+          email,
+          role,
+        }),
+      );
 
       setInviteSuccess(
         `Invitation sent successfully to ${email.trim().toLowerCase()}.`,
@@ -113,7 +118,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
     if (!editTarget || isSavingEdit) return;
     setIsSavingEdit(true); setEditError(null);
     try {
-      await updateTeamMemberDetails({memberId:editTarget.id,fullName:editName,role:editRole});
+      unwrapActionResult(await updateTeamMemberDetails({memberId:editTarget.id,fullName:editName,role:editRole}));
       setEditTarget(null); router.refresh();
     } catch(error) { setEditError(error instanceof Error ? error.message : "Could not save team member details."); }
     finally { setIsSavingEdit(false); }
@@ -126,7 +131,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
     setRemoveError(null);
 
     try {
-      await removeTeamMember(deleteTarget.id);
+      unwrapActionResult(await removeTeamMember(deleteTarget.id));
       setDeleteTarget(null);
       router.refresh();
     } catch (error) {
@@ -313,6 +318,11 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
         </div>
       ) : (
         <div className="overflow-x-auto">
+          {statusError && (
+            <p role="alert" className="mx-5 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              {statusError}
+            </p>
+          )}
           <table className="w-full min-w-[700px] text-left">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
@@ -393,7 +403,7 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                         </button>
                         <button
                           type="button"
-                          onClick={async () => { if (member.status === "inactive") { try { await reactivateTeamMember(member.id); router.refresh(); } catch (error) { setRemoveError(error instanceof Error ? error.message : "Could not reactivate."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
+                          onClick={async () => { if (member.status === "inactive") { setStatusError(null); try { unwrapActionResult(await reactivateTeamMember(member.id)); router.refresh(); } catch (error) { setStatusError(error instanceof Error ? error.message : "Could not reactivate this team member."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
                           aria-label={`${member.status === "active" ? "Deactivate" : "Reactivate"} ${member.fullName}`}
                           className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                         >

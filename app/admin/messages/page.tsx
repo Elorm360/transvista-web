@@ -5,6 +5,7 @@ import { requireAdminArea } from "@/lib/auth/requireAdminArea";
 import { getSmsMessages } from "@/lib/dashboard/getSmsMessages";
 import { getTravelRequests } from "@/lib/dashboard/getTravelRequests";
 import { isSmsConfigured } from "@/lib/sms/twilio";
+import { isClosed } from "@/lib/admin/bookingHealth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,8 @@ export default async function AdminMessagesPage() {
   ]);
 
   const contacts = requests
-    .filter((request) => request.phone?.trim())
+    // Archived or cancelled bookings shouldn't receive operational SMS.
+    .filter((request) => request.phone?.trim() && !request.archivedAt && !isClosed(request))
     .map((request) => ({
       key: `${request.source}:${request.sourceId}`,
       reference: request.reference,

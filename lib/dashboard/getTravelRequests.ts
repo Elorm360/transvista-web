@@ -88,7 +88,15 @@ export async function getRequestOperators(): Promise<RequestOperator[]> {
   }));
 }
 
-export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
+/**
+ * Load every booking (custom trips and group trips) for the admin.
+ * `loadError` is true when bookings could not be read, so pages can show
+ * an error instead of a misleading "no bookings yet".
+ */
+export async function loadTravelRequests(): Promise<{
+  requests: TravelRequestRecord[];
+  loadError: boolean;
+}> {
   const supabase = await createClient();
 
   const [customResult, packageResult, activityResult, operatorsResult] =
@@ -287,7 +295,14 @@ export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
     };
   });
 
-  return [...custom, ...packages].sort(
-    (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
-  );
+  return {
+    requests: [...custom, ...packages].sort(
+      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+    ),
+    loadError: Boolean(customResult.error || packageResult.error),
+  };
+}
+
+export async function getTravelRequests(): Promise<TravelRequestRecord[]> {
+  return (await loadTravelRequests()).requests;
 }

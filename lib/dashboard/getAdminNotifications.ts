@@ -38,7 +38,7 @@ export async function getAdminNotifications(
   const canSeeRequests = canAccess(role, "requests");
   const canSeeCommunity = canAccess(role, "community");
 
-  const [packagesResult, tripsResult, activityResult, leadsResult, operatorsResult] =
+  const [packagesResult, tripsResult, activityResult, leadsResult, operatorsResult, selfResult] =
     await Promise.all([
       canSeeRequests
         ? supabase.from("package_reservations")
@@ -65,7 +65,10 @@ export async function getAdminNotifications(
       canSeeRequests
         ? supabase.rpc("list_request_operators")
         : Promise.resolve({ data: [], error: null }),
+      // The viewer's own team id, so their own actions don't count as new.
+      supabase.from("admin_team_members").select("id").eq("user_id", userId).maybeSingle(),
     ]);
+  const selfMemberId: string | null = selfResult.data?.id ?? null;
 
   for (const [label, result] of [
     ["package registrations", packagesResult],
@@ -90,7 +93,7 @@ export async function getAdminNotifications(
       key: `booking:package:${row.id}`,
       title: "New group trip registration",
       description: `${row.full_name} · ${row.package_title} · ${row.reference}`,
-      href: "/admin/requests",
+      href: `/admin/requests?open=package-${row.id}`,
       category: "booking",
       createdAt: row.created_at,
       actor: null,
@@ -104,7 +107,7 @@ export async function getAdminNotifications(
       key: `booking:custom:${row.id}`,
       title: "New trip request received",
       description: `${row.full_name} · ${destination} · ${row.reference}`,
-      href: "/admin/requests",
+      href: `/admin/requests?open=custom-${row.id}`,
       category: "booking",
       createdAt: row.created_at,
       actor: null,
@@ -119,11 +122,12 @@ export async function getAdminNotifications(
       key: `activity:${row.id}`,
       title,
       description: `${row.reference} · ${row.summary.replace(/\\s+/g, " ").slice(0, 240)}`,
-      href: isPayment ? "/admin/payments" : "/admin/requests",
+      href: isPayment ? "/admin/payments" : `/admin/requests?open=${row.request_kind}-${row.request_id}`,
       category: isPayment ? "payment" : "team",
       createdAt: row.created_at,
       actor: actorNames.get(row.author_member_id) ?? "TransVista team",
-      read: false,
+      // You don't need to be notified about your own changes.
+      read: Boolean(selfMemberId && row.author_member_id === selfMemberId),
     });
   }
 
@@ -157,7 +161,7 @@ export async function getAdminNotifications(
   const readKeys = new Set((reads ?? []).map((row) => row.notification_key));
   const notifications = visibleEvents.map((event) => ({
     ...event,
-    read: readKeys.has(event.key),
+    read: event.read || readKeys.has(event.key),
   }));
 
   return {

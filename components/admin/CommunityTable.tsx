@@ -1,5 +1,6 @@
 "use client";
 
+import { unwrapActionResult } from "@/lib/actions/result";
 import { useMemo, useState, useEffect } from "react";
 import {
   Search,
@@ -198,9 +199,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
     setIsDeleting(true);
 
     try {
-      const result = await deleteMember(deleteTarget.id);
-
-      console.log("[CommunityTable] Delete result:", result);
+      unwrapActionResult(await deleteMember(deleteTarget.id));
 
       setDeleteTarget(null);
       setOpenMenuId(null);
