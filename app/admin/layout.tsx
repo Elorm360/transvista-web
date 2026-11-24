@@ -47,6 +47,7 @@ export default async function AdminLayout({
       role={role}
       unreadCount={unreadCount}
       me={{ name: profile?.fullName ?? user.email ?? "Team member", avatarPath: profile?.avatarPath ?? null }}
+      theme={profile?.theme ?? "system"}
     >
       {children}
     </AdminShell>
