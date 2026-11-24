@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdminArea } from "@/lib/auth/requireAdminArea";
+import { canAccess } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/admin/PageHeader";
 import { CreditCard, FileText } from "lucide-react";
@@ -31,14 +32,23 @@ export default async function AdminPaymentsPage() {
   const bookingOptions=(bookings ?? []).filter(b=>!b.archived_at && b.status!=="cancelled").map(b=>({id:b.id,reference:b.reference,name:b.full_name,travellers:b.travellers,total:Number(b.total_price),paid:Number(b.amount_paid),currency:b.currency}));
 
   return <div className="mx-auto max-w-[1500px]">
-    <PageHeader icon={CreditCard} title="Payments & receipts" description="Record verified payments, correct mistakes transparently and keep a complete history for group bookings." />
+    <PageHeader icon={CreditCard} title="Payments" description="Verified group-trip payments, corrections and receipts." />
     <div className="mb-6 grid gap-4 sm:grid-cols-3">
       <Metric label="Ledger entries" value={String(ledger?.length ?? transactions?.length ?? 0)} />
       <Metric label="Verified entries" value={verifiedAll.length.toString()} />
       <Metric label="Net verified received (GHS)" value={ledgerError ? "—" : new Intl.NumberFormat("en-GH",{style:"currency",currency:"GHS"}).format(total)} />
     </div>
-    {["owner","admin","support"].includes(role) ? <RecordPaymentForm bookings={bookingOptions} /> : null}
-    {["owner","admin"].includes(role) ? <PaymentAdjustmentForm bookings={bookingOptions} /> : null}
+    {/* Forms open on demand so the payment history is the first thing you see. */}
+    <div className="space-y-3">
+      {canAccess(role,"payments") ? <details className="group rounded-xl border border-slate-200 bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden"><span className="text-base font-semibold text-slate-900">Record a payment</span><span className="text-sm font-medium text-brand-blue-700 group-open:hidden">Open</span><span className="hidden text-sm font-medium text-slate-500 group-open:inline">Close</span></summary>
+        <div className="border-t border-slate-100 p-1"><RecordPaymentForm bookings={bookingOptions} /></div>
+      </details> : null}
+      {["owner","admin"].includes(role) ? <details className="group rounded-xl border border-slate-200 bg-white shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden"><span><span className="block text-base font-semibold text-slate-900">Correct a payment total</span><span className="block text-sm text-slate-500">Owner and admin only. Adds a correction; nothing is deleted.</span></span><span className="text-sm font-medium text-brand-blue-700 group-open:hidden">Open</span><span className="hidden text-sm font-medium text-slate-500 group-open:inline">Close</span></summary>
+        <div className="border-t border-slate-100 p-1"><PaymentAdjustmentForm bookings={bookingOptions} /></div>
+      </details> : null}
+    </div>
     <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-5 py-4"><h2 className="font-bold text-slate-900">Recent payment activity</h2><p className="mt-1 text-sm text-slate-500">Corrections remain visible in the audit history. Only actual payments have customer receipts.</p></div>
       <div className="overflow-x-auto">

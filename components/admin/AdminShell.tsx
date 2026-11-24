@@ -1,114 +1,196 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Users, ClipboardList, CreditCard, MessageSquareText,
-  BarChart3, Settings, Menu, X, LogOut, ChevronRight, Compass, Bell, CalendarDays, Star, CalendarPlus,
+  LayoutDashboard, ClipboardList, CreditCard, MessageSquareText, CalendarDays, CalendarPlus,
+  Users, Star, MessageSquareHeart, BarChart3, Settings, Menu, X, LogOut, Bell, Compass, ChevronRight,
+  type LucideIcon,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
 
-const sidebarItems: { label: string; href: string; icon: typeof LayoutDashboard; area: AdminArea; group: string }[] = [
-  { label: "Overview", href: "/admin", icon: LayoutDashboard, area: "dashboard", group: "WORKSPACE" },
-  { label: "Notifications", href: "/admin/notifications", icon: Bell, area: "dashboard", group: "WORKSPACE" },
-  { label: "Booking requests", href: "/admin/requests", icon: ClipboardList, area: "requests", group: "OPERATIONS" },
-  { label: "Trip operations", href: "/admin/trips", icon: CalendarDays, area: "requests", group: "OPERATIONS" },
-  { label: "Event management", href: "/admin/events", icon: CalendarPlus, area: "events", group: "OPERATIONS" },
-  { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments", group: "OPERATIONS" },
-  { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests", group: "OPERATIONS" },
-  { label: "Community", href: "/admin/community", icon: Users, area: "community", group: "PEOPLE" },
-  { label: "Reviews", href: "/admin/reviews", icon: Star, area: "community", group: "PEOPLE" },
-  { label: "Event feedback", href: "/admin/event-feedback", icon: MessageSquareText, area: "community", group: "PEOPLE" },
-  { label: "Business intelligence", href: "/admin/analytics", icon: BarChart3, area: "analytics", group: "INSIGHTS" },
-  { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings", group: "PREFERENCES" },
+type NavItem = { label: string; href: string; icon: LucideIcon; area: AdminArea };
+type NavSection = { title: string | null; items: NavItem[] };
+
+/**
+ * The admin information architecture: five clear sections instead of a
+ * flat list of twelve. Labels here are also the page titles and breadcrumbs.
+ */
+const sections: NavSection[] = [
+  { title: null, items: [{ label: "Overview", href: "/admin", icon: LayoutDashboard, area: "dashboard" }] },
+  {
+    title: "Bookings",
+    items: [
+      { label: "Requests", href: "/admin/requests", icon: ClipboardList, area: "requests" },
+      { label: "Payments", href: "/admin/payments", icon: CreditCard, area: "payments" },
+      { label: "Messages", href: "/admin/messages", icon: MessageSquareText, area: "requests" },
+    ],
+  },
+  {
+    title: "Trips",
+    items: [
+      { label: "Departures", href: "/admin/trips", icon: CalendarDays, area: "requests" },
+      { label: "Events", href: "/admin/events", icon: CalendarPlus, area: "events" },
+    ],
+  },
+  {
+    title: "Customers",
+    items: [
+      { label: "Community", href: "/admin/community", icon: Users, area: "community" },
+      { label: "Reviews", href: "/admin/reviews", icon: Star, area: "community" },
+      { label: "Feedback", href: "/admin/event-feedback", icon: MessageSquareHeart, area: "community" },
+    ],
+  },
+  { title: "Insights", items: [{ label: "Reports", href: "/admin/analytics", icon: BarChart3, area: "analytics" }] },
 ];
 
-const pageNames: Record<string, string> = {
-  "/admin": "Overview",
-  "/admin/notifications": "Notifications",
-  "/admin/requests": "Booking requests",
-  "/admin/trips": "Trip Operations & Calendar",
-  "/admin/events": "Event Management Centre",
-  "/admin/payments": "Payments",
-  "/admin/messages": "Messages",
-  "/admin/community": "Community",
-  "/admin/reviews": "Traveller reviews",
-  "/admin/event-feedback": "Event feedback dashboard",
-  "/admin/analytics": "Business intelligence",
-  "/admin/settings": "Settings",
+const settingsItem: NavItem = { label: "Settings", href: "/admin/settings", icon: Settings, area: "settings" };
+
+/** Pages reachable outside the sidebar (e.g. from the bell). */
+const extraCrumbs: Record<string, { section: string | null; label: string }> = {
+  "/admin/notifications": { section: null, label: "Notifications" },
 };
+
+function isActive(pathname: string, href: string) {
+  return href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(href + "/");
+}
+
+function breadcrumbFor(pathname: string): { section: string | null; label: string } {
+  for (const section of sections) {
+    const item = section.items.find((entry) => isActive(pathname, entry.href));
+    if (item) return { section: section.title, label: item.label };
+  }
+  if (isActive(pathname, settingsItem.href)) return { section: null, label: settingsItem.label };
+  const extra = Object.entries(extraCrumbs).find(([path]) => isActive(pathname, path));
+  return extra?.[1] ?? { section: null, label: "Admin" };
+}
 
 export default function AdminShell({ role, children, unreadCount = 0 }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const visibleItems = sidebarItems.filter((item) => canAccess(role, item.area));
-  const currentPage = Object.entries(pageNames).find(([path]) => path === "/admin" ? pathname === path : pathname === path || pathname.startsWith(path + "/"))?.[1] ?? "Workspace";
-  const groupedItems = [...new Set(visibleItems.map((item) => item.group))];
+  const crumb = breadcrumbFor(pathname);
+  const visibleSections = sections
+    .map((section) => ({ ...section, items: section.items.filter((item) => canAccess(role, item.area)) }))
+    .filter((section) => section.items.length > 0);
+  const canSeeSettings = canAccess(role, settingsItem.area);
+  const roleLabel = formatAdminRole(role);
+
+  // Close the mobile menu with Escape.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setSidebarOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sidebarOpen]);
+
+  const navLink = (item: NavItem) => {
+    const Icon = item.icon;
+    const active = isActive(pathname, item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setSidebarOpen(false)}
+        aria-current={active ? "page" : undefined}
+        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          active ? "bg-white/[0.12] text-white" : "text-blue-100/70 hover:bg-white/[0.06] hover:text-white"
+        }`}
+      >
+        {active && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-brand-orange-500" />}
+        <Icon aria-hidden="true" className={`h-[18px] w-[18px] shrink-0 ${active ? "text-brand-orange-400" : "text-blue-200/60 group-hover:text-white"}`} />
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f4] text-slate-900">
-      {sidebarOpen && <button type="button" className="fixed inset-0 z-30 bg-slate-950/45 backdrop-blur-[2px] lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation overlay" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-white/10 bg-[#111c36] text-white shadow-2xl shadow-slate-950/10 transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex h-[82px] items-center justify-between border-b border-white/10 px-6">
-          <Link href="/admin" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
-            <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#f47b20] text-white shadow-sm"><Compass className="h-5 w-5" /><span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-[#101d3e] bg-white" /></span>
-            <span><span className="block text-[15px] font-bold tracking-tight text-white">TransVista</span><span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-200/70">Africa · Admin</span></span>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {sidebarOpen && (
+        <button type="button" className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-brand-blue-950 text-white transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        aria-label="Admin navigation"
+      >
+        <div className="flex h-16 items-center justify-between px-5">
+          <Link href="/admin" onClick={() => setSidebarOpen(false)} className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-orange-600 text-white">
+              <Compass className="h-[18px] w-[18px]" aria-hidden="true" />
+            </span>
+            <span className="leading-tight">
+              <span className="block text-sm font-bold tracking-tight">TransVista</span>
+              <span className="block text-xs text-blue-200/60">Admin</span>
+            </span>
           </Link>
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-blue-100/70 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation"><X className="h-5 w-5" /></button>
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-blue-100/70 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Close navigation">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6" aria-label="Primary navigation">
-          {groupedItems.map((group) => (
-            <div key={group} className="mb-7">
-              <p className="mb-2 px-3 text-[10px] font-bold tracking-[0.18em] text-blue-200/45">{group}</p>
-              <div className="space-y-1">
-                {visibleItems.filter((item) => item.group === group).map((item) => {
-                  const Icon = item.icon;
-                  const active = item.href === "/admin" ? pathname === "/admin" : pathname === item.href || pathname.startsWith(item.href + "/");
-                  return <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} aria-current={active ? "page" : undefined}
-                    className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-all duration-200 ${active ? "bg-white text-[#142b65] shadow-lg shadow-slate-950/10" : "text-blue-50/75 hover:bg-white/[0.08] hover:text-white"}`}>
-                    <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? "text-[#f47b20]" : "text-blue-200/65 group-hover:text-white"}`} />
-                    <span className="flex-1">{item.label}</span>
-                    {active && <ChevronRight className="h-4 w-4 text-[#f47b20]" />}
-                  </Link>;
-                })}
-              </div>
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6 pt-2" aria-label="Primary">
+          {visibleSections.map((section) => (
+            <div key={section.title ?? "home"}>
+              {section.title && (
+                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-blue-200/40">{section.title}</p>
+              )}
+              <div className="space-y-0.5">{section.items.map(navLink)}</div>
             </div>
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-            <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-400" /><span className="text-[11px] font-semibold text-blue-50/90">Team workspace</span></div>
-            <p className="mt-1.5 text-[10px] leading-relaxed text-blue-100/45">Secure access based on your assigned role.</p>
-          </div>
+        <div className="space-y-0.5 border-t border-white/10 px-3 py-3">
+          {canSeeSettings && navLink(settingsItem)}
           <form action={signOut}>
-            <button type="submit" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-blue-100/70 transition hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400">
-              <LogOut className="h-[18px] w-[18px]" /> Sign out
+            <button type="submit" className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange-400">
+              <LogOut className="h-[18px] w-[18px]" aria-hidden="true" /> Sign out
             </button>
           </form>
-          <p className="mt-3 px-3 text-[10px] text-blue-100/35">TransVista Africa · Admin workspace</p>
         </div>
       </aside>
 
-      <div className="min-h-screen lg:pl-[264px]">
-        <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-[#fffefa]/95 px-4 backdrop-blur-md sm:px-7 lg:px-10">
+      <div className="min-h-screen lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" onClick={() => setSidebarOpen(true)} className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
-            <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">TransVista Africa</p><h1 className="mt-0.5 truncate text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">{currentPage}</h1></div>
+            <button type="button" onClick={() => setSidebarOpen(true)} className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden" aria-label="Open navigation">
+              <Menu className="h-5 w-5" />
+            </button>
+            <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
+              {crumb.section && (
+                <>
+                  <span className="hidden text-slate-500 sm:inline">{crumb.section}</span>
+                  <ChevronRight className="hidden h-4 w-4 shrink-0 text-slate-300 sm:block" aria-hidden="true" />
+                </>
+              )}
+              <span className="truncate font-semibold text-slate-900">{crumb.label}</span>
+            </nav>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/admin/notifications" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"} className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-orange-200 hover:bg-orange-50 hover:text-[#c85f16]">
-              <Bell className="h-[18px] w-[18px]" />
-              {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#fffefa] bg-[#f47b20] px-1 text-[9px] font-bold text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/admin/notifications"
+              aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                isActive(pathname, "/admin/notifications") ? "border-brand-blue-200 bg-brand-blue-50 text-brand-blue-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-brand-orange-600 px-1 text-[11px] font-bold leading-none text-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
-            <div className="hidden text-right sm:block"><p className="text-xs font-semibold text-slate-800">{formatAdminRole(role)}</p><p className="mt-0.5 text-[10px] text-slate-400">Access level</p></div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-orange-100 bg-orange-50 text-sm font-bold text-[#c85f16]">{formatAdminRole(role).charAt(0)}</div>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 py-1 pl-1 pr-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-orange-50 text-xs font-bold text-brand-orange-800">{roleLabel.charAt(0)}</span>
+              <span className="text-xs font-semibold text-slate-700">{roleLabel}</span>
+            </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-76px)] px-4 py-7 sm:px-7 sm:py-8 lg:px-10 lg:py-9">{children}</main>
+
+        <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
       </div>
     </div>
   );

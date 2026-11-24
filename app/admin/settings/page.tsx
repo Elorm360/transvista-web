@@ -18,7 +18,7 @@ export default async function AdminSettingsPage() {
       <PageHeader
         icon={Settings}
         title="Settings"
-        description="Manage your TransVista admin team and account settings."
+        description="Your team and who can access what."
       />
 
       <div className="mt-6 space-y-6">

@@ -15,7 +15,7 @@ export default async function AdminNotificationsPage() {
       <PageHeader
         icon={Bell}
         title="Notifications"
-        description="Stay on top of new bookings, payment updates and important team activity."
+        description="New bookings, payments and team activity from the last 30 days."
       />
       <NotificationList notifications={notifications} unreadCount={unreadCount} />
     </div>

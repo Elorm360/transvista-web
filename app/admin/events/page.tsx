@@ -20,8 +20,8 @@ export default async function AdminEventsPage() {
     <div className="mx-auto max-w-[1500px]">
       <PageHeader
         icon={CalendarPlus}
-        title="Event Management Centre"
-        description="Plan, publish and manage TransVista group experiences from one workspace. Completed events stay in the archive."
+        title="Events"
+        description="Create, publish and update the group trips shown on the website."
       />
       {error && <p role="status" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">Event records could not be loaded. Refresh the page or contact the administrator.</p>}
       <div className="mt-7">
