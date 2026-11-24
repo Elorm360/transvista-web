@@ -8,8 +8,8 @@ const roles=[
 ];
 
 export default function TeamOnboardingGuide(){
- return <section className="rounded-2xl border border-blue-100 bg-white p-6">
-  <div className="flex items-start gap-3"><div className="rounded-xl bg-blue-50 p-2.5"><BookOpen className="h-5 w-5 text-blue-700"/></div><div><h2 className="font-bold text-slate-950">Getting a new team member started</h2><p className="mt-1 text-sm text-slate-600">A simple, secure process for adding colleagues to the TransVista workspace.</p></div></div>
+ return <section className="rounded-xl border border-brand-blue-100 bg-white p-6">
+  <div className="flex items-start gap-3"><div className="rounded-xl bg-brand-blue-50 p-2.5"><BookOpen className="h-5 w-5 text-brand-blue-700"/></div><div><h2 className="font-bold text-slate-950">Getting a new team member started</h2><p className="mt-1 text-sm text-slate-600">A simple, secure process for adding colleagues to the TransVista workspace.</p></div></div>
   <div className="mt-5 grid gap-4 md:grid-cols-3">
    <div className="rounded-xl bg-slate-50 p-4"><UserPlus className="h-5 w-5 text-slate-600"/><h3 className="mt-3 text-sm font-bold text-slate-900">1. Invite the person</h3><p className="mt-1 text-sm leading-6 text-slate-600">Choose Add Team Member, enter their work name and email, then select the role that matches their responsibilities.</p></div>
    <div className="rounded-xl bg-slate-50 p-4"><MailCheck className="h-5 w-5 text-slate-600"/><h3 className="mt-3 text-sm font-bold text-slate-900">2. They set up access</h3><p className="mt-1 text-sm leading-6 text-slate-600">They open the TransVista invitation email, follow the secure link and set their own password. They should never share passwords.</p></div>

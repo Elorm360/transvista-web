@@ -30,10 +30,10 @@ interface CommunityTableProps {
 
 /** Map a member's interest to a soft initials avatar color. */
 const avatarStyles: Record<string, string> = {
-  Traveler: "bg-blue-100 text-blue-700",
+  Traveler: "bg-brand-blue-100 text-brand-blue-700",
   Partner: "bg-green-100 text-green-700",
   Investor: "bg-purple-100 text-purple-700",
-  "Transport Provider": "bg-orange-100 text-orange-700",
+  "Transport Provider": "bg-brand-orange-100 text-brand-orange-700",
   "Tour Operator": "bg-amber-100 text-amber-700",
   "Tour Guide": "bg-cyan-100 text-cyan-700",
   "Hotel / Accommodation": "bg-rose-100 text-rose-700",
@@ -221,13 +221,13 @@ export default function CommunityTable({ members }: CommunityTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
+    <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-16px_rgba(15,23,42,0.12)]">
       {/* ── Toolbar: search + filters + export ── */}
       <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Summary + Search */}
         <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue-600 to-brand-blue-700 text-white shadow-sm">
               <Users className="h-5 w-5" />
             </div>
             <div>
@@ -249,7 +249,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name or email…"
               aria-label="Search community members"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-brand-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue-600/20"
             />
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               aria-label="Filter by country"
-              className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm text-slate-700 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm text-slate-700 transition-all focus:border-brand-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue-600/20"
             >
               <option value="">All Countries</option>
               {countries.map((c) => (
@@ -276,7 +276,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
               value={interest}
               onChange={(e) => setInterest(e.target.value)}
               aria-label="Filter by interest"
-              className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm text-slate-700 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              className="rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2.5 text-sm text-slate-700 transition-all focus:border-brand-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue-600/20"
             >
               <option value="">All Interests</option>
               {interests.map((i) => (
@@ -354,7 +354,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
                   <td className="px-6 py-4 text-sm">
                     <a
                       href={`mailto:${member.email}`}
-                      className="text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+                      className="text-brand-blue-600 transition-colors hover:text-brand-blue-700 hover:underline"
                     >
                       {member.email}
                     </a>
@@ -387,7 +387,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
                         aria-label={`Actions for ${member.fullName}`}
                         aria-haspopup="menu"
                         aria-expanded={openMenuId === member.id}
-                        className="rounded-lg p-1.5 text-slate-400 transition-colors group-hover:text-slate-600 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors group-hover:text-slate-600 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </button>
@@ -444,7 +444,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
         {/* Empty state */}
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100">
               <Users className="h-7 w-7 text-slate-400" />
             </div>
             <p className="mt-4 text-sm font-semibold text-slate-900">
@@ -521,7 +521,7 @@ export default function CommunityTable({ members }: CommunityTableProps) {
             onClick={() => !isDeleting && setDeleteTarget(null)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
               <Trash2 className="h-6 w-6 text-red-600" />
             </div>
@@ -590,7 +590,7 @@ function MemberDetailModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-5">
           <div className="flex items-center gap-4">
@@ -615,7 +615,7 @@ function MemberDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-600"
             aria-label="Close details"
           >
             <X className="h-5 w-5" />
@@ -678,7 +678,7 @@ function DetailRow({
         {isLink && value !== "—" ? (
           <a
             href={`mailto:${value}`}
-            className="break-all text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+            className="break-all text-sm font-medium text-brand-blue-600 hover:text-brand-blue-700 hover:underline"
           >
             {value}
           </a>

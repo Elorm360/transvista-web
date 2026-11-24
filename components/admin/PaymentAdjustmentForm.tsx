@@ -8,7 +8,7 @@ export default function PaymentAdjustmentForm({bookings}:{bookings:Booking[]}) {
  const router=useRouter();
  const [state,action,pending]=useActionState(adjustPackagePayment,initial);
  useEffect(()=>{if(state.success)router.refresh()},[router,state.success]);
- return <section className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
+ return <section className="mt-5 rounded-xl border border-amber-200 bg-amber-50/50 p-5">
   <h2 className="font-bold text-slate-950">Correct a payment total</h2>
   <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">Owner/admin only. This records a separate correction with a reason; it never edits or deletes the original transaction.</p>
   <form action={action} className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

@@ -6,6 +6,7 @@ import PageHeader from "@/components/admin/PageHeader";
 import { CreditCard, FileText } from "lucide-react";
 import RecordPaymentForm from "@/components/admin/RecordPaymentForm";
 import PaymentAdjustmentForm from "@/components/admin/PaymentAdjustmentForm";
+import { StatCard } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -49,21 +50,21 @@ export default async function AdminPaymentsPage() {
         <div className="border-t border-slate-100 p-1"><PaymentAdjustmentForm bookings={bookingOptions} /></div>
       </details> : null}
     </div>
-    <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <section className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-5 py-4"><h2 className="font-bold text-slate-900">Recent payment activity</h2><p className="mt-1 text-sm text-slate-500">Corrections remain visible in the audit history. Only actual payments have customer receipts.</p></div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1000px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr>{["Reference","Booking","Entry","Amount","Method","Date","Status",""].map(x=><th key={x} className="px-4 py-3">{x}</th>)}</tr></thead>
           <tbody className="divide-y divide-slate-100">
             {(transactions ?? []).map(t=>{const b=bookingMap.get(t.booking_reference);const correction=t.transaction_type==="adjustment";return <tr key={t.id} className={correction?"bg-amber-50/40":""}>
-              <td className="px-4 py-4 font-semibold text-blue-700">{correction?"Adjustment":t.receipt_number}</td>
+              <td className="whitespace-nowrap px-4 py-4 font-semibold text-brand-blue-700">{correction?"Adjustment":t.receipt_number}</td>
               <td className="px-4 py-4"><p className="font-semibold text-slate-900">{b?.full_name ?? t.booking_reference}</p><p className="text-xs text-slate-500">{t.booking_reference}{b ? ` · ${b.travellers} travellers` : ""}</p></td>
               <td className="px-4 py-4"><p className="font-semibold text-slate-800">{correction?"Payment correction":t.transaction_type==="opening_balance"?"Opening balance":t.transaction_type==="refund"?"Refund":"Payment"}</p>{t.notes?<p className="mt-1 max-w-[260px] text-xs text-slate-500">{t.notes}</p>:null}</td>
-              <td className={`px-4 py-4 font-semibold ${correction?"text-amber-800":"text-slate-900"}`}>{correction?"− ":""}{t.currency} {Number(t.amount).toFixed(2)}</td>
+              <td className={`whitespace-nowrap px-4 py-4 font-semibold ${correction?"text-amber-800":"text-slate-900"}`}>{correction?"− ":""}{t.currency} {Number(t.amount).toFixed(2)}</td>
               <td className="px-4 py-4 capitalize text-slate-600">{t.payment_method?.replaceAll("-"," ") ?? "Not supplied"}</td>
               <td className="px-4 py-4 text-slate-600">{new Date(t.payment_date).toLocaleString("en-GB",{timeZone:"Africa/Accra"})}</td>
               <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${correction?"bg-amber-100 text-amber-800":"bg-emerald-50 text-emerald-700"}`}>{correction?"adjusted":t.status}</span></td>
-              <td className="px-4 py-4 text-right">{!correction && t.transaction_type!=="refund" ? <Link className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50" href={`/admin/payments/${t.id}/receipt`}><FileText className="h-4 w-4"/> View receipt</Link> : <span className="text-xs text-slate-400">Internal record</span>}</td>
+              <td className="px-4 py-4 text-right">{!correction && t.transaction_type!=="refund" ? <Link className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50" href={`/admin/payments/${t.id}/receipt`}><FileText className="h-4 w-4"/> View receipt</Link> : <span className="text-xs text-slate-400">Internal record</span>}</td>
             </tr>})}
             {!transactions?.length && <tr><td colSpan={8} className="px-4 py-12 text-center text-slate-500">{error ? "Payments could not be loaded. Refresh the page to try again." : "No payment transactions found."}</td></tr>}
           </tbody>
@@ -73,6 +74,7 @@ export default async function AdminPaymentsPage() {
   </div>;
 }
 
-function Metric({label,value}:{label:string;value:string}) {
- return <div className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold text-slate-950">{value}</p></div>;
+/** Page-level number, rendered with the shared admin StatCard. */
+function Metric({ label, value }: { label: string; value: number | string }) {
+  return <StatCard label={label} value={String(value)} />;
 }

@@ -18,10 +18,10 @@ interface KpiCardProps {
  */
 export default function KpiCard({ label, value, icon: Icon }: KpiCardProps) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300">
+    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300">
       {Icon && (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50">
-          <Icon className="h-5 w-5 text-blue-700" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue-50">
+          <Icon className="h-5 w-5 text-brand-blue-700" />
         </div>
       )}
       <div className="min-w-0">

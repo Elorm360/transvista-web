@@ -88,7 +88,7 @@ export default function SmsMessagingPanel({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.8fr)]">
-      <form action={action} className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+      <form action={action} className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 md:p-6">
         {/* Every selected traveller is submitted, even if a search hides them. */}
         {selected.map((key) => (
           <input key={key} type="hidden" name="recipient" value={key} />
@@ -118,7 +118,7 @@ export default function SmsMessagingPanel({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search name, reference, phone or trip"
-            className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100"
           />
         </label>
 
@@ -136,7 +136,7 @@ export default function SmsMessagingPanel({
                     : Array.from(new Set([...current, ...visibleKeys])).slice(0, 20),
                 )
               }
-              className="text-xs font-bold text-blue-700 hover:text-blue-900"
+              className="text-xs font-bold text-brand-blue-700 hover:text-brand-blue-900"
             >
               {allVisibleSelected ? "Clear visible" : "Select visible"}
             </button>
@@ -153,7 +153,7 @@ export default function SmsMessagingPanel({
                     value={contact.key}
                     checked={selected.includes(contact.key)}
                     onChange={() => toggle(contact.key)}
-                    className="mt-1 h-4 w-4 accent-blue-600"
+                    className="mt-1 h-4 w-4 accent-brand-blue-600"
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold text-slate-900">
@@ -184,7 +184,7 @@ export default function SmsMessagingPanel({
             name="messageType"
             value={messageType}
             onChange={(event) => chooseTemplate(event.target.value)}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100"
           >
             <option value="booking-update">Booking update</option>
             <option value="payment-reminder">Payment reminder</option>
@@ -205,7 +205,7 @@ export default function SmsMessagingPanel({
             onChange={(event) => setMessage(event.target.value.slice(0, 320))}
             rows={5}
             placeholder="Write a booking-related update."
-            className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm leading-6 outline-none focus:border-brand-blue-500 focus:ring-2 focus:ring-brand-blue-100"
           />
           <p className="mt-1 text-xs text-slate-500">
             Use {"{name}"} and {"{reference}"} to personalize each message.
@@ -217,7 +217,7 @@ export default function SmsMessagingPanel({
             required
             type="checkbox"
             name="operationalConfirm"
-            className="mt-1 h-4 w-4 accent-blue-600"
+            className="mt-1 h-4 w-4 accent-brand-blue-600"
           />
           <span className="text-sm font-medium leading-5 text-amber-950">
             I confirm this message is operational and directly related to the selected travel requests—not a marketing broadcast.
@@ -240,7 +240,7 @@ export default function SmsMessagingPanel({
         <button
           type="submit"
           disabled={pending || !selected.length || !message.trim()}
-          className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-blue-700 px-5 text-sm font-bold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand-blue-700 px-5 text-sm font-bold text-white hover:bg-brand-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending
             ? "Sending securely…"
@@ -248,7 +248,7 @@ export default function SmsMessagingPanel({
         </button>
       </form>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+      <section className="rounded-xl border border-slate-200 bg-white p-5 md:p-6">
         <h2 className="text-lg font-bold text-slate-950">Recent SMS activity</h2>
         <p className="mt-1 text-sm text-slate-500">
           The latest 50 delivery attempts are retained for operations.
