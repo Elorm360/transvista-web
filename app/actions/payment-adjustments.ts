@@ -4,8 +4,9 @@ import { formFields, logAudit } from "@/lib/audit";
 import { hasAdminArea, NO_ACCESS_MESSAGE } from "@/lib/auth/access";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requestPaymentCorrectionApproval } from "@/lib/approvals";
 
-export type PaymentAdjustmentState = { success: boolean; message: string };
+export type PaymentAdjustmentState = { success: boolean; message: string; pendingApproval?: boolean };
 
 async function adjustPackagePaymentImpl(
   _previous: PaymentAdjustmentState,
@@ -25,6 +26,20 @@ async function adjustPackagePaymentImpl(
   if (!user) return {success:false,message:"Your session has expired. Sign in again."};
   const {data:member} = await supabase.from("admin_team_members").select("id,role,status").eq("user_id",user.id).maybeSingle();
   if (!member || member.status !== "active" || !["owner","admin"].includes(member.role)) return {success:false,message:"Only an active owner or admin can correct payment totals."};
+
+  // Sensitive: unless this person approves on the CEO's behalf, the correction
+  // waits in Approvals and is applied only when the CEO approves it.
+  if (!(await hasAdminArea("approvals"))) {
+    const {data:booking} = await supabase.from("package_reservations").select("reference,currency,full_name").eq("id",reservationId).maybeSingle();
+    if (!booking) return {success:false,message:"This booking could not be found."};
+    const requestId = await requestPaymentCorrectionApproval(
+      {reservationId,amount:Math.round(amount*100)/100,reason,adjustmentDate},
+      {reference:booking.reference,currency:booking.currency ?? "GHS",name:booking.full_name},
+    );
+    if (!requestId) return {success:false,message:"The correction could not be sent for approval. Please try again."};
+    return {success:true,pendingApproval:true,message:"Sent to the CEO for approval. The total will change once it's approved; you can follow it under Approvals."};
+  }
+
   const {error} = await supabase.rpc("adjust_package_payment",{
     p_reservation_id:reservationId,p_amount:amount,p_reason:reason,p_adjustment_date:adjustmentDate
   });
@@ -42,6 +57,7 @@ async function adjustPackagePaymentImpl(
 /** Audited entry point: runs adjustPackagePaymentImpl and records it in the audit log on success. */
 export async function adjustPackagePayment(...args: Parameters<typeof adjustPackagePaymentImpl>) {
   const result = await adjustPackagePaymentImpl(...args);
-  if (result.success) await logAudit("payment.corrected", result.message || "Corrected a payment total", { type: "package_reservation", id: String(args[1].get("reservationId") ?? "") }, formFields(args[1], ["amount", "reason", "adjustmentDate"]));
+  // A correction sent for approval is logged when it's requested and when it's applied.
+  if (result.success && !result.pendingApproval) await logAudit("payment.corrected", result.message || "Corrected a payment total", { type: "package_reservation", id: String(args[1].get("reservationId") ?? "") }, formFields(args[1], ["amount", "reason", "adjustmentDate"]));
   return result;
 }

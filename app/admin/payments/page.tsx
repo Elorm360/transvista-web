@@ -46,7 +46,7 @@ export default async function AdminPaymentsPage() {
       </details> : null}
       {["owner","admin"].includes(role) ? <details className="group rounded-xl border border-slate-200 bg-white shadow-sm">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden"><span><span className="block text-base font-semibold text-slate-900">Correct a payment total</span><span className="block text-sm text-slate-500">Owner and admin only. Adds a correction; nothing is deleted.</span></span><span className="text-sm font-medium text-brand-blue-700 group-open:hidden">Open</span><span className="hidden text-sm font-medium text-slate-500 group-open:inline">Close</span></summary>
-        <div className="border-t border-slate-100 p-1"><PaymentAdjustmentForm bookings={bookingOptions} /></div>
+        <div className="border-t border-slate-100 p-1"><PaymentAdjustmentForm bookings={bookingOptions} needsApproval={!access.areas.includes("approvals")} /></div>
       </details> : null}
     </div>
     <section className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">

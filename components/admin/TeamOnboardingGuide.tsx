@@ -1,6 +1,6 @@
 import { BookOpen, ShieldCheck, UserPlus, MailCheck, Compass } from "lucide-react";
 import type { CustomRole } from "@/lib/dashboard/getRoles";
-import { effectiveAreas, GRANTABLE_AREAS } from "@/lib/auth/permissions";
+import { ALWAYS_AREAS, effectiveAreas, GRANTABLE_AREAS } from "@/lib/auth/permissions";
 
 const steps = [
   { icon: UserPlus, title: "1. Invite", text: "Add team member → enter their name and work email → pick their role. The form shows exactly what they'll be able to open." },
@@ -41,7 +41,7 @@ export default function TeamOnboardingGuide({ roles }: { roles: CustomRole[] }) 
             <p className="text-sm leading-6 text-slate-600">Everything, including team and role settings, the audit log and all financial information.</p>
           </div>
           {roles.map((role) => {
-            const areas = effectiveAreas(role.baseRole, role.permissions).filter((area) => area !== "dashboard");
+            const areas = effectiveAreas(role.baseRole, role.permissions).filter((area) => !ALWAYS_AREAS.includes(area));
             return (
               <div key={role.key} className="grid gap-1 px-4 py-3 sm:grid-cols-[240px_1fr]">
                 <p className="text-sm font-semibold text-slate-900">{role.name}</p>

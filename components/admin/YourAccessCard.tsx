@@ -25,7 +25,11 @@ export default function YourAccessCard({ name, roleLabel, areas }: { name: strin
 
   if (hidden) return null;
 
-  const sections = GRANTABLE_AREAS.filter((item) => areas.includes(item.area));
+  const sections = [
+    { area: "tasks", label: "Tasks", description: "Your to-dos and deadlines; escalate anything stuck to the CEO", href: "/admin/tasks" },
+    { area: "tasks-approvals", label: "Approvals", description: "Ask the CEO to approve an expense or a decision", href: "/admin/approvals" },
+    ...GRANTABLE_AREAS.filter((item) => areas.includes(item.area)),
+  ];
   const firstName = name.split(/\s+/)[0] || name;
 
   function dismiss() {
