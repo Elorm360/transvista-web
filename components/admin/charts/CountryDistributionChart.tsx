@@ -43,23 +43,24 @@ export default function CountryDistributionChart({
           <YAxis
             type="category"
             dataKey="country"
-            tick={{ fontSize: 12, fill: "#475569" }}
+            tick={{ fontSize: 12, fill: "var(--color-slate-600)" }}
             tickLine={false}
             axisLine={false}
             width={90}
           />
           <Tooltip
-            cursor={{ fill: "#f1f5f9" }}
+            cursor={{ fill: "var(--color-slate-100)" }}
             contentStyle={{
               borderRadius: "12px",
-              border: "1px solid #e2e8f0",
+              border: "1px solid var(--color-slate-200)",
+              backgroundColor: "var(--admin-surface, #ffffff)",
               fontSize: "12px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
             }}
-            labelStyle={{ fontWeight: 600, color: "#0f172a" }}
+            labelStyle={{ fontWeight: 600, color: "var(--color-slate-900)" }}
             formatter={(value) => [`${value} members`, "Members"]}
           />
-          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 4, 4]} barSize={18} />
+          <Bar dataKey="count" fill="var(--color-brand-blue-600)" radius={[4, 4, 4, 4]} barSize={18} />
         </BarChart>
       </ResponsiveContainer>
     </div>

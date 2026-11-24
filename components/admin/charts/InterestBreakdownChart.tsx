@@ -60,11 +60,12 @@ export default function InterestBreakdownChart({
           <Tooltip
             contentStyle={{
               borderRadius: "12px",
-              border: "1px solid #e2e8f0",
+              border: "1px solid var(--color-slate-200)",
+              backgroundColor: "var(--admin-surface, #ffffff)",
               fontSize: "12px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
             }}
-            labelStyle={{ fontWeight: 600, color: "#0f172a" }}
+            labelStyle={{ fontWeight: 600, color: "var(--color-slate-900)" }}
             formatter={(value, name) => [`${value} members`, name]}
           />
         </PieChart>

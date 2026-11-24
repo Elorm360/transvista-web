@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, KeyRound, Trash2, UserRound } from "lucide-react";
 import { Avatar } from "@/components/admin/Avatar";
+import AppearanceSettings from "@/components/admin/AppearanceSettings";
 import { buttonClass, Card } from "@/components/admin/ui";
 import { changeMyPassword, removeMyAvatar, updateMyProfile, uploadMyAvatar } from "@/app/actions/account";
 import { unwrapActionResult } from "@/lib/actions/result";
@@ -193,6 +194,8 @@ export default function AccountSettings({ profile }: { profile: MyProfile }) {
             </button>
           </form>
         </Card>
+
+        <AppearanceSettings initialTheme={profile.theme} />
 
         <Card title={<span className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-slate-400" aria-hidden="true" />Password</span>} bodyClassName="p-5">
           <form onSubmit={savePassword} className="space-y-4">

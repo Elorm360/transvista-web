@@ -7,10 +7,13 @@ import {
   LayoutDashboard, ClipboardList, CreditCard, MessageSquareText, CalendarDays, CalendarPlus,
   Users, Star, MessageSquareHeart, BarChart3, Settings, Menu, X, LogOut, Bell, Compass, ChevronRight,
   type LucideIcon,
+  Sun, Moon, Monitor,
 } from "lucide-react";
 import { signOut } from "@/app/actions/signout";
 import { canAccess, formatAdminRole, type AdminArea, type AdminRole } from "@/lib/auth/permissions";
 import { Avatar } from "@/components/admin/Avatar";
+import { setMyTheme } from "@/app/actions/account";
+import { ADMIN_THEME_EVENT, isAdminTheme, type AdminTheme } from "@/lib/admin/theme";
 
 type NavItem = { label: string; href: string; icon: LucideIcon; area: AdminArea };
 type NavSection = { title: string | null; items: NavItem[] };
@@ -69,7 +72,7 @@ function breadcrumbFor(pathname: string): { section: string | null; label: strin
   return extra?.[1] ?? { section: null, label: "Admin" };
 }
 
-export default function AdminShell({ role, children, unreadCount = 0, me }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number; me: { name: string; avatarPath: string | null } }>) {
+export default function AdminShell({ role, children, unreadCount = 0, me, theme: savedTheme = "system" }: Readonly<{ role: AdminRole; children: React.ReactNode; unreadCount?: number; me: { name: string; avatarPath: string | null }; theme?: AdminTheme }>) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const crumb = breadcrumbFor(pathname);
@@ -78,6 +81,26 @@ export default function AdminShell({ role, children, unreadCount = 0, me }: Read
     .filter((section) => section.items.length > 0);
   const canSeeSettings = canAccess(role, settingsItem.area);
   const roleLabel = formatAdminRole(role);
+
+  // Theme: the saved preference, updated instantly when changed here or in My account.
+  const [themeOverride, setThemeOverride] = useState<AdminTheme | null>(null);
+  const theme = themeOverride ?? savedTheme;
+  useEffect(() => {
+    const onTheme = (event: Event) => {
+      const value = (event as CustomEvent).detail;
+      if (isAdminTheme(value)) setThemeOverride(value);
+    };
+    window.addEventListener(ADMIN_THEME_EVENT, onTheme);
+    return () => window.removeEventListener(ADMIN_THEME_EVENT, onTheme);
+  }, []);
+  const nextTheme: Record<AdminTheme, AdminTheme> = { light: "dark", dark: "system", system: "light" };
+  const themeLabels: Record<AdminTheme, string> = { light: "Light", dark: "Dark", system: "Match my device" };
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+  function cycleTheme() {
+    const value = nextTheme[theme];
+    setThemeOverride(value);
+    void setMyTheme(value);
+  }
 
   // Close the mobile menu with Escape.
   useEffect(() => {
@@ -153,7 +176,8 @@ export default function AdminShell({ role, children, unreadCount = 0, me }: Read
         </div>
       </aside>
 
-      <div className="min-h-screen lg:pl-64">
+      {/* Theme applies to the content area; the sidebar is always dark. */}
+      <div className="admin-theme min-h-screen bg-slate-50 lg:pl-64" data-theme={theme}>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" onClick={() => setSidebarOpen(true)} className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 lg:hidden" aria-label="Open navigation">
@@ -171,6 +195,15 @@ export default function AdminShell({ role, children, unreadCount = 0, me }: Read
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={cycleTheme}
+              title={`Theme: ${themeLabels[theme]} (click for ${themeLabels[nextTheme[theme]]})`}
+              aria-label={`Theme: ${themeLabels[theme]}. Switch to ${themeLabels[nextTheme[theme]]}`}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              <ThemeIcon className="h-[18px] w-[18px]" aria-hidden="true" />
+            </button>
             <Link
               href="/admin/notifications"
               aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
