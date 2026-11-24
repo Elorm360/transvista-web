@@ -12,11 +12,13 @@ import {
   Users,
   Trash2,
   Pencil,
+  Send,
 } from "lucide-react";
 import {
   inviteTeamMember,
   removeTeamMember,
   reactivateTeamMember,
+  resendTeamInvite,
   updateTeamMemberDetails,
 } from "@/app/actions/team-members";
 import { unwrapActionResult } from "@/lib/actions/result";
@@ -61,6 +63,8 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
   const [removeError, setRemoveError] = useState<string | null>(null);
   // Errors from the inline Reactivate button (not shown inside the remove dialog).
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [statusNotice, setStatusNotice] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState<"admin" | "community_manager" | "support">("support");
@@ -319,6 +323,11 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
         </div>
       ) : (
         <div className="overflow-x-auto">
+          {statusNotice && (
+            <p role="status" className="mx-5 mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              {statusNotice}
+            </p>
+          )}
           {statusError && (
             <p role="alert" className="mx-5 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {statusError}
@@ -399,6 +408,27 @@ export default function TeamMembersTable({ members }: TeamMembersTableProps) {
                         <button type="button" onClick={() => openEdit(member)} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
                           <Pencil className="h-4 w-4" /> Edit
                         </button>
+                        {member.status === "active" && (
+                          <button
+                            type="button"
+                            disabled={resendingId === member.id}
+                            onClick={async () => {
+                              setStatusError(null); setStatusNotice(null); setResendingId(member.id);
+                              try {
+                                const result = unwrapActionResult(await resendTeamInvite(member.id));
+                                setStatusNotice(`A new sign-in link was emailed to ${result.email}.`);
+                              } catch (error) {
+                                setStatusError(error instanceof Error ? error.message : "Could not resend the invitation.");
+                              } finally {
+                                setResendingId(null);
+                              }
+                            }}
+                            aria-label={`Resend invitation to ${member.fullName}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-blue-700 transition-colors hover:bg-brand-blue-50 disabled:opacity-60"
+                          >
+                            <Send className="h-4 w-4" /> {resendingId === member.id ? "Sending…" : "Resend invite"}
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={async () => { if (member.status === "inactive") { setStatusError(null); try { unwrapActionResult(await reactivateTeamMember(member.id)); router.refresh(); } catch (error) { setStatusError(error instanceof Error ? error.message : "Could not reactivate this team member."); } } else { setRemoveError(null); setDeleteTarget(member); } }}
