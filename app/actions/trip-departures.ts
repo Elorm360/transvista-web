@@ -257,15 +257,20 @@ export async function saveTripDeparture(
   }
 }
 
-export async function setTripDepartureChecklistItem(formData: FormData) {
-  if (process.env.VERCEL_ENV === "preview") return;
+export async function setTripDepartureChecklistItem(
+  _previous: TripDepartureActionState,
+  formData: FormData,
+): Promise<TripDepartureActionState> {
+  if (process.env.VERCEL_ENV === "preview") {
+    return { success: false, message: "Checklist changes are disabled on preview deployments." };
+  }
   const id = String(formData.get("departureId") ?? "").trim();
   const itemId = String(formData.get("itemId") ?? "").trim();
   const isComplete = String(formData.get("isComplete") ?? "") === "true";
-  if (!id || !itemId) return;
+  if (!id || !itemId) return { success: false, message: "This checklist item could not be identified." };
 
   const { supabase, member } = await getOperationsMember();
-  if (!member) return;
+  if (!member) return { success: false, message: "You do not have permission to update this checklist." };
 
   const { error } = await supabase.from("trip_departure_checklist_items").update({
     is_complete: isComplete,
@@ -273,6 +278,10 @@ export async function setTripDepartureChecklistItem(formData: FormData) {
     completed_at: isComplete ? new Date().toISOString() : null,
   }).eq("id", itemId).eq("departure_id", id);
 
-  if (error) console.error("[setTripDepartureChecklistItem] Update failed:", error);
+  if (error) {
+    console.error("[setTripDepartureChecklistItem] Update failed:", error);
+    return { success: false, message: "That change wasn't saved. Please try again." };
+  }
   revalidatePath("/admin/trips");
+  return { success: true, message: "", completedAt: new Date().toISOString() };
 }

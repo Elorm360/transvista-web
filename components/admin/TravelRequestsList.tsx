@@ -39,6 +39,13 @@ import type {
   RequestOperator,
   TravelRequestRecord,
 } from "@/lib/dashboard/getTravelRequests";
+import {
+  attentionReasons,
+  bookingTotals,
+  isStalePastTrip,
+  needsAttention,
+  todayInAccra,
+} from "@/lib/admin/bookingHealth";
 import TravellerDetailsEditor from "@/components/admin/TravellerDetailsEditor";
 
 const customStatuses = [
@@ -140,16 +147,26 @@ function priorityClass(priority: string) {
   return "bg-blue-50 text-blue-700";
 }
 
+const SAVED_VIEWS = new Set(["all", "attention", "new", "awaiting-payment", "confirmed", "overdue", "past-open"]);
+
 export default function TravelRequestsList({
   requests,
   operators,
   adminRole,
+  initialOpenId,
+  initialView,
 }: {
   requests: TravelRequestRecord[];
   operators: RequestOperator[];
   adminRole: string;
+  /** Open this booking on load (e.g. from an Overview action link). */
+  initialOpenId?: string;
+  /** Start on this saved view (e.g. "past-open"). */
+  initialView?: string;
 }) {
-  const [selectedSnapshot, setSelected] = useState<TravelRequestRecord | null>(null);
+  const [selectedSnapshot, setSelected] = useState<TravelRequestRecord | null>(
+    () => (initialOpenId ? requests.find((request) => request.id === initialOpenId) ?? null : null),
+  );
   // Reference time for "overdue" checks, fixed when the page loads so renders stay pure.
   const [now] = useState(() => Date.now());
   const [query, setQuery] = useState("");
@@ -161,7 +178,9 @@ export default function TravelRequestsList({
   const [tripDateFrom, setTripDateFrom] = useState("");
   const [tripDateTo, setTripDateTo] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState("active");
-  const [savedView, setSavedView] = useState("all");
+  const [savedView, setSavedView] = useState(() =>
+    initialView && SAVED_VIEWS.has(initialView) ? initialView : "all",
+  );
   const [rawSelectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkAssignee, setBulkAssignee] = useState("");
   const [bulkMessage, setBulkMessage] = useState("");
@@ -189,7 +208,9 @@ export default function TravelRequestsList({
         (savedView === "awaiting-payment" && !["cancelled", "closed", "completed"].includes(request.status) &&
           ["not-requested", "payment-requested", "deposit-requested"].includes(request.paymentStatus)) ||
         (savedView === "confirmed" && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(request.status)) ||
-        (savedView === "overdue" && Boolean(request.followUpAt && Date.parse(request.followUpAt) < now));
+        (savedView === "attention" && needsAttention(request, new Date(now))) ||
+        (savedView === "overdue" && attentionReasons(request, new Date(now)).includes("follow-up-overdue")) ||
+        (savedView === "past-open" && isStalePastTrip(request, todayInAccra(new Date(now))));
       return matchesQuery && matchesKind && matchesStatus && matchesPriority && matchesPayment &&
         matchesAssignee && matchesTripDate && matchesVisibility && matchesSavedView;
     });
@@ -201,38 +222,8 @@ export default function TravelRequestsList({
     return rawSelectedIds.filter((id) => visibleIds.has(id));
   }, [filteredRequests, rawSelectedIds]);
 
-  const activeRequests = useMemo(
-    () => requests.filter((request) => !request.archivedAt),
-    [requests],
-  );
-
-  const needsAttention = useMemo(
-    () =>
-      activeRequests.filter((request) =>
-        ["new", "pending-review"].includes(request.status),
-      ).length,
-    [activeRequests],
-  );
-  const activeCount = useMemo(
-    () =>
-      activeRequests.filter((request) =>
-        [
-          "confirmed",
-          "confirmed-awaiting-deposit",
-          "deposit-paid",
-          "paid",
-          "in-progress",
-        ].includes(request.status),
-      ).length,
-    [activeRequests],
-  );
-  const amountCollected = useMemo(
-    () =>
-      activeRequests
-        .filter((request) => !request.quoteCurrency || request.quoteCurrency === "GHS")
-        .reduce((total, request) => total + request.amountPaid, 0),
-    [activeRequests],
-  );
+  // Same rules as the Overview (lib/admin/bookingHealth), so the numbers always match.
+  const totals = useMemo(() => bookingTotals(requests, new Date(now)), [requests, now]);
 
   // Always show the latest copy of the open request after a refresh.
   const selected = useMemo(
@@ -300,23 +291,23 @@ export default function TravelRequestsList({
   return (
     <>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={Inbox} label="Active requests" value={String(activeRequests.length)} />
+        <Metric icon={Inbox} label="Active bookings" value={String(totals.active)} />
         <Metric
           icon={CalendarClock}
           label="Needs attention"
-          value={String(needsAttention)}
+          value={String(totals.needsAttention)}
           accent="orange"
         />
         <Metric
           icon={UserRoundCheck}
-          label="Confirmed or active"
-          value={String(activeCount)}
+          label="Upcoming trips"
+          value={String(totals.open)}
           accent="blue"
         />
         <Metric
           icon={CircleDollarSign}
-          label="GHS recorded"
-          value={money("GHS", amountCollected)}
+          label="GHS received"
+          value={money("GHS", totals.receivedGhs)}
           accent="green"
         />
       </div>
@@ -324,11 +315,13 @@ export default function TravelRequestsList({
       <div className="mb-5 space-y-3">
         <div className="flex flex-wrap gap-2">
           {[
-            ["all", "All bookings", requests.length],
+            ["all", "All bookings", totals.active],
+            ["attention", "Needs attention", totals.needsAttention],
             ["new", "New requests", requests.filter((r) => !r.archivedAt && ["new", "pending-review"].includes(r.status)).length],
             ["awaiting-payment", "Awaiting payment", requests.filter((r) => !r.archivedAt && !["cancelled", "closed", "completed"].includes(r.status) && ["not-requested", "payment-requested", "deposit-requested"].includes(r.paymentStatus)).length],
             ["confirmed", "Confirmed trips", requests.filter((r) => !r.archivedAt && ["confirmed", "confirmed-awaiting-deposit", "deposit-paid", "paid", "in-progress"].includes(r.status)).length],
-            ["overdue", "Overdue follow-ups", requests.filter((r) => !r.archivedAt && Boolean(r.followUpAt && Date.parse(r.followUpAt) < now)).length],
+            ["overdue", "Overdue follow-ups", requests.filter((r) => attentionReasons(r, new Date(now)).includes("follow-up-overdue")).length],
+            ...(totals.stalePastTrips ? [["past-open", "Past trips still open", totals.stalePastTrips] as const] : []),
           ].map(([value, title, count]) => (
             <button key={value} type="button" onClick={() => setSavedView(String(value))}
               className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${savedView === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"}`}>
@@ -946,42 +939,63 @@ function BookingOperationsForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Amount received">
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="amountPaid"
-              defaultValue={request.amountPaid}
-              className={inputClass}
-            />
-          </Field>
-          <Field label="Payment status">
-            <select
-              name="paymentStatus"
-              defaultValue={request.paymentStatus}
-              className={inputClass}
-            >
-              {paymentStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {label(status)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Payment method">
-            <select
-              name="paymentMethod"
-              defaultValue={request.paymentMethod ?? ""}
-              className={inputClass}
-            >
-              <option value="">Not recorded</option>
-              <option value="mobile-money">Mobile Money</option>
-              <option value="card">Debit or credit card</option>
-              <option value="bank-transfer">Bank transfer</option>
-              <option value="cash">Cash</option>
-            </select>
-          </Field>
+          {request.source === "custom" ? (
+            <>
+              <Field label="Amount received">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  name="amountPaid"
+                  defaultValue={request.amountPaid}
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Payment status">
+                <select
+                  name="paymentStatus"
+                  defaultValue={request.paymentStatus}
+                  className={inputClass}
+                >
+                  {paymentStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {label(status)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Payment method">
+                <select
+                  name="paymentMethod"
+                  defaultValue={request.paymentMethod ?? ""}
+                  className={inputClass}
+                >
+                  <option value="">Not recorded</option>
+                  <option value="mobile-money">Mobile Money</option>
+                  <option value="card">Debit or credit card</option>
+                  <option value="bank-transfer">Bank transfer</option>
+                  <option value="cash">Cash</option>
+                </select>
+              </Field>
+            </>
+          ) : (
+            // Group-trip payments live in the verified payment ledger; editing
+            // them here was silently ignored, so show them read-only instead.
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 sm:col-span-2">
+              <p>
+                <span className="font-semibold text-slate-900">
+                  {money(request.quoteCurrency, request.amountPaid)} received
+                </span>{" "}
+                · {label(request.paymentStatus)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Group-trip payments are recorded in the payment ledger.{" "}
+                <a href="/admin/payments" className="font-semibold text-brand-blue-700 underline-offset-2 hover:underline">
+                  Record a payment
+                </a>
+              </p>
+            </div>
+          )}
         </div>
         {request.paymentVerifiedAt && (
           <p className="mt-3 text-xs font-medium text-emerald-700">

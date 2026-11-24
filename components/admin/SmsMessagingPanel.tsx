@@ -45,6 +45,15 @@ export default function SmsMessagingPanel({
   const [messageType, setMessageType] = useState("booking-update");
   const [message, setMessage] = useState(templates["booking-update"]);
 
+  // After a successful send, clear the recipients so the same batch can't
+  // be sent twice by accident. (Adjusting state during render when the
+  // action result changes, rather than in an effect.)
+  const [handledState, setHandledState] = useState(state);
+  if (state !== handledState) {
+    setHandledState(state);
+    if (state.success) setSelected([]);
+  }
+
   const filtered = useMemo(() => {
     const value = query.trim().toLowerCase();
     if (!value) return contacts;
@@ -80,6 +89,10 @@ export default function SmsMessagingPanel({
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.8fr)]">
       <form action={action} className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
+        {/* Every selected traveller is submitted, even if a search hides them. */}
+        {selected.map((key) => (
+          <input key={key} type="hidden" name="recipient" value={key} />
+        ))}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-slate-950">Compose operational SMS</h2>
@@ -137,7 +150,6 @@ export default function SmsMessagingPanel({
                 >
                   <input
                     type="checkbox"
-                    name="recipient"
                     value={contact.key}
                     checked={selected.includes(contact.key)}
                     onChange={() => toggle(contact.key)}

@@ -79,7 +79,16 @@ export default function NotificationList({
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center gap-2">
-                  <Link href={item.href} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-bold text-[#1a3a9c] transition hover:bg-blue-50">Open <ChevronRight className="h-3.5 w-3.5" /></Link>
+                  <Link
+                    href={item.href}
+                    onClick={() => {
+                      // Opening a notification counts as reading it.
+                      if (item.read) return;
+                      const data = new FormData();
+                      data.set("notificationKey", item.key);
+                      void markNotificationRead(data);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-bold text-[#1a3a9c] transition hover:bg-blue-50">Open <ChevronRight className="h-3.5 w-3.5" /></Link>
                   {!item.read && <form action={markNotificationRead}><input type="hidden" name="notificationKey" value={item.key} /><button type="submit" aria-label={`Mark ${item.title} as read`} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"><Check className="h-3 w-3" /> Read</button></form>}
                 </div>
               </article>

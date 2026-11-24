@@ -1,3 +1,4 @@
+import { todayInAccra } from "@/lib/admin/bookingHealth";
 import "server-only";
 
 import type { TripOperationRecord, TripOperationsOperator } from "@/lib/dashboard/getTripOperations";
@@ -106,7 +107,10 @@ export async function getTripDepartureOperations(
   }));
 
   const candidateGroups = new Map<string, TripOperationRecord[]>();
+  // Only suggest departures for trips that haven't happened yet.
+  const today = todayInAccra();
   for (const trip of trips) {
+    if (trip.tripEnd && trip.tripEnd.slice(0, 10) < today) continue;
     const bookingKey = trip.requestKind + "-" + trip.requestId;
     const eligible = trip.requestKind === "custom"
       ? ["confirmed", "in-progress"].includes(trip.bookingStatus)

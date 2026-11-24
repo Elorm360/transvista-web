@@ -1,12 +1,11 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { toActionResult } from "@/lib/actions/result";
 import { roleFor } from "@/lib/auth/isAdmin";
 import { canAccess } from "@/lib/auth/permissions";
 
-export async function deleteMember(memberId: string) {
-  console.log("[deleteMember] Starting deletion");
-  console.log("[deleteMember] memberId:", memberId);
+async function deleteMemberUnsafe(memberId: string) {
 
   if (!memberId) {
     throw new Error("Member id is required.");
@@ -19,8 +18,6 @@ export async function deleteMember(memberId: string) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  console.log("[deleteMember] user:", user?.email);
-  console.log("[deleteMember] auth error:", userError);
 
   if (userError) {
     console.error("[deleteMember] Auth error:", userError);
@@ -51,7 +48,6 @@ export async function deleteMember(memberId: string) {
     );
   }
 
-  console.log("[deleteMember] Deleted rows:", data);
 
   if (!data || data.length === 0) {
     throw new Error(
@@ -63,4 +59,9 @@ export async function deleteMember(memberId: string) {
     success: true,
     deletedMember: data[0],
   };
+}
+
+// Returned (not thrown) so the message reaches the UI in production.
+export async function deleteMember(memberId: string) {
+  return toActionResult(() => deleteMemberUnsafe(memberId));
 }

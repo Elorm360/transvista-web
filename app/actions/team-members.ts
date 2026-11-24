@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { toActionResult } from "@/lib/actions/result";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isOwner } from "@/lib/auth/isAdmin";
 import { formatAdminRole } from "@/lib/auth/permissions";
@@ -23,7 +24,7 @@ const allowedRoles: InviteableRole[] = [
  * generateLink() is used instead of inviteUserByEmail() so the email
  * comes from welcome@transvistaafrica.com rather than Supabase.
  */
-export async function inviteTeamMember({
+async function inviteTeamMemberUnsafe({
   fullName,
   email,
   role,
@@ -213,12 +214,12 @@ async function updateTeamMemberStatus(memberId: string, status: "active" | "inac
   if (error) throw new Error("The team member's access could not be updated.");
   return {success:true,member:{id:member.id,fullName:member.full_name,status}};
 }
-export async function removeTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"inactive"); }
-export async function reactivateTeamMember(memberId: string) { return updateTeamMemberStatus(memberId,"active"); }
+export async function removeTeamMember(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"inactive")); }
+export async function reactivateTeamMember(memberId: string) { return toActionResult(() => updateTeamMemberStatus(memberId,"active")); }
 
 
 /** Owner-only profile and role editing. Login email is intentionally immutable here. */
-export async function updateTeamMemberDetails({memberId,fullName,role}:{memberId:string;fullName:string;role:InviteableRole}) {
+async function updateTeamMemberDetailsUnsafe({memberId,fullName,role}:{memberId:string;fullName:string;role:InviteableRole}) {
   const cleanName=fullName.trim();
   if(!memberId || cleanName.length<2 || cleanName.length>120) throw new Error("Enter a valid team member name.");
   if(!allowedRoles.includes(role)) throw new Error("Choose a valid team role.");
@@ -237,4 +238,14 @@ export async function updateTeamMemberDetails({memberId,fullName,role}:{memberId
     if(authError) throw new Error("The team profile was updated, but the login profile metadata could not be synchronized. Please contact support.");
   }
   return {success:true};
+}
+
+// Errors are returned rather than thrown so their messages reach the UI in
+// production (see lib/actions/result.ts).
+export async function inviteTeamMember(input: Parameters<typeof inviteTeamMemberUnsafe>[0]) {
+  return toActionResult(() => inviteTeamMemberUnsafe(input));
+}
+
+export async function updateTeamMemberDetails(input: Parameters<typeof updateTeamMemberDetailsUnsafe>[0]) {
+  return toActionResult(() => updateTeamMemberDetailsUnsafe(input));
 }

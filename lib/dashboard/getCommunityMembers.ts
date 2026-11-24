@@ -35,7 +35,8 @@ export async function getCommunityMembers(): Promise<CommunityMember[]> {
 
   if (error) {
     console.error("[getCommunityMembers] Supabase error:", error);
-    return [];
+    // Throw so app/admin/error.tsx shows an error instead of an empty list.
+    throw new Error("Community members could not be loaded.");
   }
 
   return (data ?? []).map((row) => ({

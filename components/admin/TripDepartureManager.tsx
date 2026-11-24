@@ -267,15 +267,7 @@ function DepartureCard({
               <p className="mt-1 text-xs text-slate-500">Every item must be completed before this departure can be marked ready.</p>
               <div className="mt-3 space-y-2">
                 {departure.checklist.map((item) => (
-                  <form key={item.id} action={setTripDepartureChecklistItem}>
-                    <input type="hidden" name="departureId" value={departure.id} />
-                    <input type="hidden" name="itemId" value={item.id} />
-                    <input type="hidden" name="isComplete" value={item.isComplete ? "false" : "true"} />
-                    <button type="submit" disabled={readOnly} className="flex w-full items-start gap-2 rounded-lg p-2 text-left hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
-                      <span className={"mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border " + (item.isComplete ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-300 bg-white")}>{item.isComplete ? <CheckCircle2 className="h-3 w-3" /> : null}</span>
-                      <span className={"text-xs " + (item.isComplete ? "text-slate-400 line-through" : "text-slate-700")}>{item.label}</span>
-                    </button>
-                  </form>
+                  <ChecklistItem key={item.id} departureId={departure.id} item={item} readOnly={readOnly} />
                 ))}
               </div>
             </section>
@@ -307,3 +299,38 @@ function Metric({ label, value, icon: Icon }: { label: string; value: number; ic
 }
 
 const inputClass = "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+
+/** One checklist tick, with its own saving state and error message. */
+function ChecklistItem({
+  departureId,
+  item,
+  readOnly,
+}: {
+  departureId: string;
+  item: { id: string; label: string; isComplete: boolean };
+  readOnly: boolean;
+}) {
+  const [state, formAction, pending] = useActionState(setTripDepartureChecklistItem, initialState);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="departureId" value={departureId} />
+      <input type="hidden" name="itemId" value={item.id} />
+      <input type="hidden" name="isComplete" value={item.isComplete ? "false" : "true"} />
+      <button
+        type="submit"
+        disabled={readOnly || pending}
+        aria-pressed={item.isComplete}
+        className="flex w-full items-start gap-2 rounded-lg p-2 text-left hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        <span className={"mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border " + (item.isComplete ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-300 bg-white")}>{item.isComplete ? <CheckCircle2 className="h-3 w-3" /> : null}</span>
+        <span className={"text-xs " + (item.isComplete ? "text-slate-400 line-through" : "text-slate-700")}>
+          {item.label}
+          {pending ? <span className="ml-2 text-slate-400">Saving…</span> : null}
+        </span>
+      </button>
+      {!pending && !state.success && state.message ? (
+        <p role="alert" className="px-2 pb-1 text-xs text-red-700">{state.message}</p>
+      ) : null}
+    </form>
+  );
+}
